@@ -14,14 +14,14 @@ angular.module('koodainApp')
   /**
    * Controller for the deploy view.
    */
-  .controller('DeployCtrl', function ($scope, $http, $resource, $uibModal, Notification, VisDataSet, queryDevices, deviceManagerUrl) {
+  .controller('DeployCtrl', function ($scope, $http, $resource, $uibModal, Notification, VisDataSet, DeviceManager, deviceManagerUrl) {
 
   var Project = $resource('/api/projects');
   $scope.projects = Project.query();
 
   $scope.deviceManagerUrl = deviceManagerUrl;
     
-  var deviceManager = queryDevices(deviceManagerUrl);
+  var deviceManager = DeviceManager(deviceManagerUrl);
 
   // Groups for Vis.js network
   // http://visjs.org/docs/network/groups.html
@@ -300,6 +300,7 @@ angular.module('koodainApp')
       }
     }).result.then(function() {
       $scope.deployments = [];
+      reloadDevices();
     });
   };
 
@@ -461,6 +462,7 @@ angular.module('koodainApp')
       // TODO: what to do on (partially) unsuccessful deployment??!?!?!
       delete $scope.deploying;
       Notification.error('Deployment failed!');
+      $uibModalInstance.dismiss('cancel');
     });
   };
 })
