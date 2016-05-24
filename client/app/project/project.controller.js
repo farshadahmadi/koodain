@@ -6,6 +6,8 @@
  * Antti Nieminen <antti.h.nieminen@tut.fi>
  */
 /* globals ace */
+/* globals SwaggerParser */
+/* globals esprima*/
 'use strict';
 
 angular.module('koodainApp')
@@ -13,7 +15,7 @@ angular.module('koodainApp')
   /**
    * Controller for the view for editing project sources.
    */
-  .controller('ProjectCtrl', function ($scope, $stateParams, $resource, Notification, Upload, project, files, resources) {
+  .controller('ProjectCtrl', function ($scope, $stateParams, $resource, $http, Notification, Upload, project, files, resources, apitocode, deviceManagerUrl, apiParser) {
 
     // project, files, and resources are resolved in project.js
 
@@ -25,6 +27,106 @@ angular.module('koodainApp')
 
     // The resource files of the project
     $scope.resources = resources;
+
+    // Added by Farshad for debugging
+    console.log($scope.project);
+    console.log($scope.files);
+    console.log($scope.resources);
+
+    // get the list of device capabilities
+    $http({
+      method: 'GET',
+       url: deviceManagerUrl + '/devicecapabilities'
+    }).then(function(res){
+      $scope.devCaps = res.data;
+      // add free-class category to the list
+      $scope.devCaps.push({name:"free-class", description:"not bound to any device"});
+      // extract liquidiot.json file
+      var liqFile = $scope.files.files.filter(function(f) { return f.name === 'liquidiot.json'; });
+      if (liqFile.length > 0) {
+        $scope.liquidiotJson = liqFile[0];
+        // shows in the device capabilities select wich capabilities were selected
+        $scope.selectedDevCaps = JSON.parse($scope.liquidiotJson.content).deviceClasses;
+      }
+    });
+
+
+    $scope.$watch("selectedDevCaps", function(){
+      // get the list of app interfaces
+      $http({
+        method: 'GET',
+        url: deviceManagerUrl + '/apis',
+        params: {devcap: $scope.selectedDevCaps}
+      }).then(function(res) {
+        $scope.apis = res.data;
+        // shows in the application interface select wich interfaces were selected
+        $scope.selectedAppCaps = JSON.parse($scope.liquidiotJson.content).classes;
+      });
+    });
+
+    $scope.generateCode = function(){
+
+      // Synchronizes liquidiot.josn file with the selected
+      // device capability and app interfaces
+      var liFile = JSON.parse($scope.liquidiotJson.content);
+      liFile.classes = $scope.selectedAppCaps;
+      liFile.deviceClasses = $scope.selectedDevCaps;
+      $scope.liquidiotJson.content = JSON.stringify(liFile);
+
+      var mainFileContent = $scope.mainFile.content;
+
+      // the list of implemented apis in the code
+      var implementedApis = apiParser.getApiList(mainFileContent);
+
+      mainFileContent = apiParser.markAsDirty(implementedApis, $scope.selectedAppCaps, mainFileContent);
+      $scope.mainFile.content = mainFileContent;
+
+      var workingApiNames = implementedApis
+        .filter(function(api){
+          return api.state == "working";
+        })
+        .map(function(api){
+          return api.name;
+        });
+
+      for(var i = 0; i < $scope.selectedAppCaps.length; i++){
+        if(workingApiNames.indexOf($scope.selectedAppCaps[i]) == -1){
+          apitocode.generate( deviceManagerUrl + "/apis/" + $scope.selectedAppCaps[i])
+            .then(function(code){
+              $scope.mainFile.content += code;
+            })
+            //.catch(function(err){
+              //console.log(err);
+            //});
+        }
+      }
+
+    };
+
+    $scope.deleteDirtyApis = function(){
+      var mainFileContent = $scope.mainFile.content;
+      // the list of implemented apis in the code
+      var implementedApis = apiParser.getApiList(mainFileContent);
+      $scope.mainFile.content = apiParser.deleteDirtyApis(implementedApis, mainFileContent);
+    }
+
+    // Watch modifications to the main.js file,
+    // and save the file to the backend on every modification.
+    $scope.$watch('mainFile.content', function() {
+      var f = $scope.mainFile;
+      if (f) {
+        File.update({name: f.name}, f);
+      }
+    });
+
+    // Watch modifications to the liquidiot.json file,
+    // and save the file to the backend on every modification.
+    $scope.$watch('liquidiotJson.content', function() {
+      var f = $scope.liquidiotJson;
+      if (f) {
+        File.update({name: f.name}, f);
+      }
+    });
 
     // Ace editor modes
     var modelist = ace.require('ace/ext/modelist');
@@ -42,6 +144,7 @@ angular.module('koodainApp')
     var mainJss = files.files.filter(function(f) { return f.name === 'main.js'; });
     if (mainJss.length > 0) {
       $scope.openFile(mainJss[0]);
+      $scope.mainFile = mainJss[0];
     }
 
     // Get the editor instance on ace load
@@ -96,4 +199,104 @@ angular.module('koodainApp')
         $scope.resources = $resource(toUrl).get();
       });
     };
+  })
+
+  .factory('apitocode', function($q){
+    var generate = function(apiUrl){
+      return $q(function(resolve, reject){
+          SwaggerParser.validate(apiUrl)
+            .then(function(api){
+              var code = "\n/**\n * class: " + api.info.title + "\n */";
+              for(var path in api.paths){
+                for(var method in api.paths[path]){
+                  code += generateApi(method, path);
+                }
+             }
+              resolve(code + "// " + api.info.title + " - end\n");
+            })
+            //.catch(function(error){
+              //reject(error.toString());
+            //});
+      });
+    };
+
+    var generateApi = function(method, path){
+      return "\napp." + method + "(basePath + \"" + path + "\", function(req, res){});\n"
+    }
+
+    return {
+      generate: generate
+    }
+  })
+
+  .factory('apiParser', function(){
+
+    // parses the content of a code snippet and returns the list of implemented Apis, their states (dirty or working)
+    // and theirpositions on the file ==> {name:"", state="", range:[]}
+    var getApiList = function(codeSnippet){
+      var classes = [];
+      var tree = esprima.parse(codeSnippet, {comment:true, range:true});
+      for(var j = 0; j < tree.comments.length; j++){
+        var comment = tree.comments[j];
+        if(comment.type == "Block" && comment.value.includes("class")){
+          var apiName = "";
+          var state = "";
+          if(comment.value.indexOf("class") == 5){
+            var substrr = comment.value.substring(12);
+            var endIndex = substrr.indexOf("\n");
+            apiName = substrr.substring(0, endIndex);
+          } else {
+            var substrr = comment.value.substring(13);
+            var endIndex = substrr.indexOf("\n");
+            apiName = substrr.substring(0, endIndex - 1);
+          }
+          if(comment.value.includes("dirty")){
+            state = "dirty";
+          } else {
+            state = "working";
+          }
+          classes.push({name:apiName, range:[comment.range[0], comment.range[1]], state:state});
+        } else if(comment.type == "Line" && (classes.length > 0) && 
+            comment.value.includes(classes[classes.length - 1].name)) {
+          classes[classes.length - 1].range.push(comment.range[0]);
+          classes[classes.length - 1].range.push(comment.range[1]);
+        }
+      }
+      return classes;
+    };
+
+    // mark apis as dirty if they are implemented in the code snippet but not included in the selected api list
+    var markAsDirty = function(implementedApis, selectedApis, codeSnippet){
+
+      for(var l = implementedApis.length - 1; l >= 0; l--){
+        if(implementedApis[l].state != "dirty" && selectedApis.indexOf(implementedApis[l].name) == -1){
+          codeSnippet = codeSnippet.slice(0, implementedApis[l].range[1] - 2)
+                              + "* dirty\n "
+                              + codeSnippet.slice(implementedApis[l].range[1] - 2, implementedApis[l].range[1])
+                              + "\n/*"
+                              + codeSnippet.slice(implementedApis[l].range[1], implementedApis[l].range[2])
+                              + "*/\n"
+                              + codeSnippet.slice(implementedApis[l].range[2]);
+        }
+      }
+      return codeSnippet;
+    };
+
+    var deleteDirtyApis = function(implementedApis, codeSnippet){
+
+      for(var l = implementedApis.length - 1; l >= 0; l--){
+        if(implementedApis[l].state == "dirty"){
+          codeSnippet = codeSnippet.slice(0, implementedApis[l].range[0] - 1)
+                              + codeSnippet.slice(implementedApis[l].range[3] + 1);
+        } 
+      }
+      return codeSnippet;
+    }
+
+    return {
+      getApiList: getApiList,
+      markAsDirty: markAsDirty,
+      deleteDirtyApis: deleteDirtyApis
+    };
+
   });

@@ -29,6 +29,27 @@ div(ng-include='"components/navbar/navbar.html"')
             .btn.btn-default(ngf-select="uploadResource($file)")
               i.fa.fa-plus
               |  Upload
+        h4 Device Capabilities
+        ul.nya-bs-select(ng-model='selectedDevCaps', title="All Capabilities" , data-live-search='true', multiple)
+          li(nya-bs-option='devCap in devCaps', data-value="devCap.name")
+            a 
+              {{devCap.name}}
+              span.glyphicon.glyphicon-ok.check-mark
+        h4 App Capabilities
+        ul.nya-bs-select(ng-model='selectedAppCaps', data-live-search='true', multiple)
+          li(nya-bs-option='api in apis group by api.devcap', data-value="api.name")
+            span.dropdown-header {{$group}}
+            a 
+              {{api.name}}
+              span.glyphicon.glyphicon-ok.check-mark
+        div
+          .btn-group(role="group")
+            button.btn.btn-default(ng-click='generateCode()')
+              i.fa.fa-code
+              |   Generate API Code
+            button.btn.btn-default(ng-click="deleteDirtyApis()")
+              i.fa.fa-times
+              |   Delete dirty APIs
 
     .col-sm-9
       .the-editor(ng-if='activeFile', ui-ace='{onLoad: aceLoaded, mode: activeFile.mode}', ng-model='activeFile.content', ng-model-options='{debounce: 500}')

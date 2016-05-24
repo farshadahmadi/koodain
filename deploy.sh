@@ -85,7 +85,7 @@ git checkout $BRANCH || git checkout -b $BRANCH --track $REMOTE_NAME/$BRANCH
 cd ..
 
 # Build the project
-grunt build
+grunt build --force
 
 # Commit the built app
 cd dist

@@ -205,6 +205,7 @@ angular.module('koodainApp')
     deviceManager.queryDevices().then(function(devices) {
 
       allDevices = deviceListAsObject(devices);
+      //if you want to remove mock device, comment this line
       deviceManager.addMockDevicesTo(allDevices);
 
       updateNodesAndEdges();

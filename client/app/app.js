@@ -19,9 +19,12 @@ angular.module('koodainApp', [
   'ui-notification',
   'ui.ace',
   'rt.encodeuri',
+  'nya.bootstrap.select'//,
+  //'SwaggerParser'
 ])
-  .constant('deviceManagerUrl', 'http://130.230.142.101:3001')
-  .config(function ($stateProvider, $urlRouterProvider, $locationProvider, $httpProvider, NotificationProvider) {
+  //.constant('deviceManagerUrl', 'http://130.230.142.101:3001')
+ .constant('deviceManagerUrl', 'http://localhost:3000')
+ .config(function ($stateProvider, $urlRouterProvider, $locationProvider, $httpProvider, NotificationProvider) {
     $urlRouterProvider
       .otherwise('/');
 

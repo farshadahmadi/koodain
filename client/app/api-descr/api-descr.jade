@@ -19,9 +19,11 @@ div(ng-include='"components/navbar/navbar.html"')
       label(for="apiClass") New API:
       |  
       input.form-control(type="text", required, id="apiClass", name="apiClass", ng-model='newApiClass', placeholder="Class name")
+      label(for="apiSelect")  Device Capability:
+      select.form-control(ng-model="selectedDevCap", id="apiSelect")
+        option(ng-repeat="devCap in devCaps") {{devCap.name}}
       |  
       input.form-control(type="submit", value="Create", ng-disabled="!newApiClass")
-
 
 
 div(ng-include='"components/footer/footer.html"')

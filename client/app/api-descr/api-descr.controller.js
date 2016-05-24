@@ -11,7 +11,7 @@ angular.module('koodainApp')
    */
   .controller('ApiDescrCtrl', function ($scope, $http, deviceManagerUrl) {
 
-    function createNewApi(name) {
+    function createNewApi(name, devCap) {
       // Default swagger fragment
       var api = {
         "swagger": "2.0",
@@ -61,17 +61,29 @@ angular.module('koodainApp')
               }
             }
           }
-        }
+        },
+        "x-device-capability": devCap
       };
 
       return $http({
         method: 'PUT',
         url: deviceManagerUrl + '/apis/' + name,
-        data: api,
+        data: api
       });
     }
 
     $scope.deviceManagerUrl = deviceManagerUrl;
+    $scope.selectedDevCap = "";
+
+    function loadDevCaps() {
+      $http({
+        method: 'GET',
+        url: deviceManagerUrl + '/devicecapabilities',
+      }).then(function(res) {
+        $scope.devCaps = res.data;
+      });
+    }
+    loadDevCaps();
 
     function loadApis() {
       $http({
@@ -84,7 +96,8 @@ angular.module('koodainApp')
     loadApis();
 
     $scope.newApi = function() {
-      createNewApi($scope.newApiClass).then(function() {
+      console.log($scope.selectedDevCap);
+      createNewApi($scope.newApiClass, $scope.selectedDevCap).then(function() {
         loadApis();
       });
     };
