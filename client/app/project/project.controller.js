@@ -46,7 +46,7 @@ angular.module('koodainApp')
       if (liqFile.length > 0) {
         $scope.liquidiotJson = liqFile[0];
         // shows in the device capabilities select wich capabilities were selected
-        $scope.selectedDevCaps = JSON.parse($scope.liquidiotJson.content).deviceClasses;
+        $scope.selectedDevCaps = JSON.parse($scope.liquidiotJson.content).deviceCapabilities;
       }
     });
 
@@ -60,7 +60,7 @@ angular.module('koodainApp')
       }).then(function(res) {
         $scope.apis = res.data;
         // shows in the application interface select wich interfaces were selected
-        $scope.selectedAppCaps = JSON.parse($scope.liquidiotJson.content).classes;
+        $scope.selectedAppCaps = JSON.parse($scope.liquidiotJson.content).applicationInterfaces;
       });
     });
 
@@ -69,8 +69,8 @@ angular.module('koodainApp')
       // Synchronizes liquidiot.josn file with the selected
       // device capability and app interfaces
       var liFile = JSON.parse($scope.liquidiotJson.content);
-      liFile.classes = $scope.selectedAppCaps;
-      liFile.deviceClasses = $scope.selectedDevCaps;
+      liFile.applicationInterfaces = $scope.selectedAppCaps;
+      liFile.deviceCapabilities = $scope.selectedDevCaps;
       $scope.liquidiotJson.content = JSON.stringify(liFile);
 
       var mainFileContent = $scope.mainFile.content;
@@ -234,7 +234,7 @@ angular.module('koodainApp')
     // parses the content of a code snippet and returns the list of implemented Apis, their states (dirty or working)
     // and theirpositions on the file ==> {name:"", state="", range:[]}
     var getApiList = function(codeSnippet){
-      var classes = [];
+      var interfaces = [];
       var tree = esprima.parse(codeSnippet, {comment:true, range:true});
       for(var j = 0; j < tree.comments.length; j++){
         var comment = tree.comments[j];
@@ -255,14 +255,14 @@ angular.module('koodainApp')
           } else {
             state = "working";
           }
-          classes.push({name:apiName, range:[comment.range[0], comment.range[1]], state:state});
-        } else if(comment.type == "Line" && (classes.length > 0) && 
-            comment.value.includes(classes[classes.length - 1].name)) {
-          classes[classes.length - 1].range.push(comment.range[0]);
-          classes[classes.length - 1].range.push(comment.range[1]);
+          interfaces.push({name:apiName, range:[comment.range[0], comment.range[1]], state:state});
+        } else if(comment.type == "Line" && (interfaces.length > 0) && 
+            comment.value.includes(interfaces[interfaces.length - 1].name)) {
+          interfaces[interfaces.length - 1].range.push(comment.range[0]);
+          interfaces[interfaces.length - 1].range.push(comment.range[1]);
         }
       }
-      return classes;
+      return interfaces;
     };
 
     // mark apis as dirty if they are implemented in the code snippet but not included in the selected api list

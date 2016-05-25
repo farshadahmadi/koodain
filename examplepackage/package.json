@@ -1,5 +1,5 @@
 {
-  "name": "liquidiot-<%= project.name %>",
+  "name": "liquidiot-hello1",
   "version": "1.0.0",
   "description": "",
   "main": "main.js",

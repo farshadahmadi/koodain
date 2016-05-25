@@ -38,7 +38,7 @@ div(ng-include='"components/navbar/navbar.html"')
               a 
                 {{devCap.name}}
                 span.glyphicon.glyphicon-ok.check-mark
-          h4 App Capabilities
+          h4 Application Interfaces
           ul.nya-bs-select(ng-model='selectedAppCaps', data-live-search='true', multiple)
             li(nya-bs-option='api in apis group by api.devcap', data-value="api.name")
               span.dropdown-header {{$group}}

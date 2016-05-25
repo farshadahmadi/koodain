@@ -1,5 +1,1 @@
-{
-  "device-classes": [],
-  "classes": ["<%= project.name %>"]
-}
-
+{"deviceCapabilities":[], "applicationInterfaces":[]}
