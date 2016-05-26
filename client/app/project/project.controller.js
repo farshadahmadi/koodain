@@ -77,6 +77,7 @@ angular.module('koodainApp')
 
       // the list of implemented apis in the code
       var implementedApis = apiParser.getApiList(mainFileContent);
+      console.log(implementedApis);
 
       mainFileContent = apiParser.markAsDirty(implementedApis, $scope.selectedAppCaps, mainFileContent);
       $scope.mainFile.content = mainFileContent;
@@ -206,7 +207,7 @@ angular.module('koodainApp')
       return $q(function(resolve, reject){
           SwaggerParser.validate(apiUrl)
             .then(function(api){
-              var code = "\n/**\n * class: " + api.info.title + "\n */";
+              var code = "\n/**\n * Application Interface: " + api.info.title + "\n */";
               for(var path in api.paths){
                 for(var method in api.paths[path]){
                   code += generateApi(method, path);
@@ -232,21 +233,21 @@ angular.module('koodainApp')
   .factory('apiParser', function(){
 
     // parses the content of a code snippet and returns the list of implemented Apis, their states (dirty or working)
-    // and theirpositions on the file ==> {name:"", state="", range:[]}
+    // and their positions on the file ==> {name:"", state="", range:[]}
     var getApiList = function(codeSnippet){
       var interfaces = [];
       var tree = esprima.parse(codeSnippet, {comment:true, range:true});
       for(var j = 0; j < tree.comments.length; j++){
         var comment = tree.comments[j];
-        if(comment.type == "Block" && comment.value.includes("class")){
+        if(comment.type == "Block" && comment.value.includes("Application Interface")){
           var apiName = "";
           var state = "";
-          if(comment.value.indexOf("class") == 5){
-            var substrr = comment.value.substring(12);
+          if(comment.value.indexOf("Application Interface") == 5){
+            var substrr = comment.value.substring(28);
             var endIndex = substrr.indexOf("\n");
             apiName = substrr.substring(0, endIndex);
           } else {
-            var substrr = comment.value.substring(13);
+            var substrr = comment.value.substring(29);
             var endIndex = substrr.indexOf("\n");
             apiName = substrr.substring(0, endIndex - 1);
           }
@@ -269,7 +270,8 @@ angular.module('koodainApp')
     var markAsDirty = function(implementedApis, selectedApis, codeSnippet){
 
       for(var l = implementedApis.length - 1; l >= 0; l--){
-        if(implementedApis[l].state != "dirty" && selectedApis.indexOf(implementedApis[l].name) == -1){
+        if(implementedApis[l].state == "working" && selectedApis.indexOf(implementedApis[l].name) == -1){
+          console.log(l);
           codeSnippet = codeSnippet.slice(0, implementedApis[l].range[1] - 2)
                               + "* dirty\n "
                               + codeSnippet.slice(implementedApis[l].range[1] - 2, implementedApis[l].range[1])
