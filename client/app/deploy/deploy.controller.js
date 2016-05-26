@@ -358,15 +358,15 @@ angular.module('koodainApp')
 
   $scope.selectDevicesForProject = function(project) {
     // Read the liquidiot.json and construct a query based on its
-    // 'device-classes' field.
+    // 'deviceCapabilities' field.
     $http({
       method: 'GET',
       url: '/api/projects/' + project.name + '/files/liquidiot.json'
     }).then(function(res) {
       var json = JSON.parse(res.data.content);
-      var dcs = json['device-classes'];
+      var dcs = json['deviceCapabilities'];
       if (!dcs || !dcs.length) {
-        // No device-classes, query everything *
+        // No deviceCapabilities, query everything *
         $scope.devicequery = '*';
       }
       else {
