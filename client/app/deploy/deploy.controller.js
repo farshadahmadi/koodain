@@ -365,6 +365,13 @@ angular.module('koodainApp')
     }).then(function(res) {
       var json = JSON.parse(res.data.content);
       var dcs = json['deviceCapabilities'];
+      // free-class means all devices, so we remove it from device capabilities.
+      // if array becomes empty we query all devices
+      // otherwise we query the remaining devices
+      var index = dcs.indexOf("free-class");
+      if(index != -1){
+        dcs.splice(index, 1);
+      }
       if (!dcs || !dcs.length) {
         // No deviceCapabilities, query everything *
         $scope.devicequery = '*';
