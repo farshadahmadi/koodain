@@ -337,6 +337,8 @@ angular.module('koodainApp')
       // This is a bit of quickndirty way to update app,
       // would be better to load it from the server for realz...
       app.status = response.data.status;
+    }, function(error){
+      Notification.error("Connection to the application was not succeccfull.");
     });
   };
 
@@ -353,6 +355,8 @@ angular.module('koodainApp')
           return;
         }
       }
+    }, function(error){
+      Notification.error("Connection to the application was not succeccfull.");
     });
   };
 
@@ -476,7 +480,7 @@ angular.module('koodainApp')
 /**
  * Controller for showing application log.
  */
-.controller('AppLogCtrl', function($scope, $http, $uibModalInstance, device, app) {
+.controller('AppLogCtrl', function($scope, $http, $uibModalInstance, Notification, device, app) {
 
     // TODO: refactor, this is needed in 2(?) controllers...
     function devicePipeUrl(url) {
@@ -495,6 +499,9 @@ angular.module('koodainApp')
         url: devicePipeUrl(url),
       }).then(function(response) {
         $scope.log = response.data;
+      },function(error){
+        $scope.cancel();
+        Notification.error("Connection to the application was not successful.");
       });
     }, 2000);
   });
