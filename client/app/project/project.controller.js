@@ -15,7 +15,7 @@ angular.module('koodainApp')
   /**
    * Controller for the view for editing project sources.
    */
-  .controller('ProjectCtrl', function ($scope, $stateParams, $resource, $http, $location, $state, Notification, Upload, project, files, resources, apitocode, deviceManagerUrl, apiParser) {
+  .controller('ProjectCtrl', function ($scope, $stateParams, $resource, $http, Notification, Upload, project, files, resources, apitocode, deviceManagerUrl, apiParser) {
 
     // project, files, and resources are resolved in project.js
 
@@ -32,11 +32,6 @@ angular.module('koodainApp')
     console.log($scope.project);
     console.log($scope.files);
     console.log($scope.resources);
-
-    $scope.changeView = function(view){
-      $state.go("deploy", {project:$scope.project.name});
-      //$location.path("/deploy").search('project', $scope.project.name);
-    }
 
     // get the list of device capabilities
     $http({

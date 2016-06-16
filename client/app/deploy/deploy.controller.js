@@ -14,12 +14,10 @@ angular.module('koodainApp')
   /**
    * Controller for the deploy view.
    */
-  .controller('DeployCtrl', function ($scope, $http, $resource, $uibModal, Notification, VisDataSet, DeviceManager, deviceManagerUrl, $stateParams) {
+  .controller('DeployCtrl', function ($scope, $http, $resource, $uibModal, Notification, VisDataSet, DeviceManager, deviceManagerUrl) {
 
-    console.log($stateParams);
   var Project = $resource('/api/projects');
   $scope.projects = Project.query();
-
 
   $scope.deviceManagerUrl = deviceManagerUrl;
     
@@ -42,7 +40,7 @@ angular.module('koodainApp')
       icon: {
         face: 'FontAwesome',
         code: '\uf233',
-        size: 85,
+        size: 50,
         color: 'purple',
       }
     }
@@ -56,27 +54,19 @@ angular.module('koodainApp')
       measureTemperature: '\uf0e4',
     };
 
-    //console.log(name);
-
     if (!(name in codes)) {
-      //console.log(name);
       name = 'default';
-      //console.log(name);
     }
 
     if (name in visGroups) {
-      //console.log(visGroups);
-      //console.log('yes');
       return name;
     }
-
-    //console.log(visGroups);
 
     var code = codes[name];
     if (!code) {
       code = '\uf059';
     }
-
+    
     visGroups[name] = {
       shape: 'icon',
       icon: {
@@ -112,46 +102,9 @@ angular.module('koodainApp')
     var n = {
       id: id,
       label: device.name || id,
-      title: generateTooltip(device),//JSON.stringify(device, null, 2),
       group: groupForDevice(),
-      fixed:false
     };
     return n;
-  }
-
-  var generateTooltip = function(device){
-
-    var tooltip = "<div class='panel panel-success' style='margin-bottom:0px'>"+
-        "<div class='panel-heading'>"+
-          "<h3 class='panel-title'>device</h3>"+
-        "</div>"+
-        "<div class='panel-body' style='padding-top: 0px; padding-bottom: 0px'>"+
-          "<table class='table' style='border: none; margin-bottom:1px'>"+
-            "<tr>"+
-              "<td>id</td>"+
-              "<td>" + device.id + "</td>"+
-            "</tr>"+
-            "<tr>"+
-              "<td>name</td>"+
-              "<td>" + device.name + "</td>"+
-            "</tr>"+
-            "<tr>"+
-              "<td>capabilities</td>"+
-              "<td>" + device.classes.join(", ") + "</td>"+
-            "</tr>"+
-            "<tr>"+
-              "<td>location</td>"+
-              "<td>" + device.location + "</td>"+
-            "</tr>"+
-            "<tr>"+
-              "<td>url</td>"+
-              "<td>" + device.url + "</td>"+
-            "</tr>"+
-          "</table>"+
-        "</div>"+
-      "</div>";
-
-    return tooltip;
   }
 
   /// Returns a Vis.js node for the app
@@ -161,7 +114,6 @@ angular.module('koodainApp')
       label: app.name,
       group: groupForApp(app),
       selectable: false,
-      fixed: false
     };
     return n;
   }
@@ -182,13 +134,10 @@ angular.module('koodainApp')
   // Load the devices from the device manager
   function loadDevices() {
     deviceManager.queryDevices().then(function(devices) {
-      //console.log(devices);
       allDevices = deviceListAsObject(devices);
-      //console.log(allDevices);
 
       // Adding some mock devices for now... :)
       deviceManager.addMockDevicesTo(allDevices);
-      //console.log(allDevices);
 
       nodes = new VisDataSet();
       edges = new VisDataSet();
@@ -207,43 +156,6 @@ angular.module('koodainApp')
   // Initial loading of the devices
   loadDevices();
 
-  var focusedNodeIndex = -1;
-  $scope.camera = {
-    // Zooms out so all node fit on the canvas
-    fit : function(){
-      network.fit();
-    },
-    // Zooms out so all selected node fit on the canvas
-    fitOnSelectedNodes : function(){
-      if(selectedNodeIds.length == 1){
-        network.focus(selectedNodeIds[0], {scale:1});
-      } else {
-        network.fit({nodes: selectedNodeIds});
-      }
-    },
-    checkCrawling: function(){
-      if(selectedNodeIds.length > 1){
-        focusedNodeIndex = 0;
-        $scope.isCrawlingPossible = true;
-      } else {
-        focusedNodeIndex = -1;
-        $scope.isCrawlingPossible = false;
-      }
-    },
-    crawl : function(){
-      if(focusedNodeIndex >= 0 && focusedNodeIndex <= selectedNodeIds.length) {
-        if(focusedNodeIndex == selectedNodeIds.length){
-          Notification.info({message:"Crawling started again!", delay:1000});
-        }
-        focusedNodeIndex %= selectedNodeIds.length;
-        //console.log("focusedNodeId: " + focusedNodeIndex);
-        network.focus(selectedNodeIds[focusedNodeIndex], {scale:1});
-        focusedNodeIndex++; 
-      }
-    }
-
-  };
-
   // List of ids of the nodes that are currently selected
   var selectedNodeIds = [];
 
@@ -260,15 +172,10 @@ angular.module('koodainApp')
         group: groupForDevice(allDevices[id]) + ':selected'
       };
     }));
-    //console.log("ns: " + ns);
-    //console.log("selectedNodeIds:" + selectedNodeIds);
     selectedNodeIds = ns;
     $scope.selectedDevices = selectedNodeIds.map(function(id) {
       return allDevices[id];
     });
-    //$scope.camera.fitOnSelectedNodes();
-    $scope.camera.fit();
-    $scope.camera.checkCrawling();
   }
 
   // The Vis.js network object, assigned on Vis.js onload event
@@ -278,7 +185,6 @@ angular.module('koodainApp')
   // This is called every time either of them changes
   function updateSelection() {
     var sel = deviceManager.filter(allDevices, $scope.devicequery, $scope.appquery);
-    //console.log(sel);
     network.selectNodes(sel);
     select(sel);
   }
@@ -288,10 +194,10 @@ angular.module('koodainApp')
     onload: function(_network) {
       network = _network;
       $scope.$watch('devicequery', updateSelection);
-      //$scope.$watch('appquery', updateSelection);
+      $scope.$watch('appquery', updateSelection);
     },
     selectNode: selectClick,
-    deselectNode: selectClick
+    deselectNode: selectClick,
   };
 
   // TODO: refactor loadDevices + reloadDevices -- DRY
@@ -310,7 +216,7 @@ angular.module('koodainApp')
   }
   
   // Update Vis.js nodes and edges based on 
-  /*function updateNodesAndEdges() {
+  function updateNodesAndEdges() {
     nodes.clear();
     edges.clear();
 
@@ -325,7 +231,7 @@ angular.module('koodainApp')
         nodes.add(apps.map(nodeFromApp));
         /* jshint -W083 */
         // Edge from each app to the device it's in
-        /*edges.add(apps.map(function(app) {
+        edges.add(apps.map(function(app) {
           return {
             from: 'app:' + app.id,
             to: d.id,
@@ -333,39 +239,7 @@ angular.module('koodainApp')
         }));
       }
     }
-  }*/
-
-  // Update Vis.js nodes and edges based on 
-  function updateNodesAndEdges() {
-      var edgesArray = [];
-      var nodesArray = Object.keys(allDevices).map(function(id) {
-        return nodeFromDevice(allDevices[id]);
-      });
-
-      for (var i in allDevices) {
-        var d = allDevices[i];
-        var apps = d.apps;
-        if (apps) {
-          nodesArray.push.apply(nodesArray, apps.map(nodeFromApp));
-          //nodes.add(apps.map(nodeFromApp));
-          /* jshint -W083 */
-          // Edge from each app to the device it's in
-          edgesArray.push.apply(edgesArray, apps.map(function(app) {
-            return {
-              from: 'app:' + app.id,
-              to: d.id,
-            };
-          }));
-        }
-      }
-      nodes = new VisDataSet(nodesArray);
-      edges = new VisDataSet(edgesArray);
-      $scope.graphData = {
-        nodes: nodes,
-        edges: edges
-      };
-    }
-
+  }
 
   $scope.reloadDevices = reloadDevices;
 
@@ -375,9 +249,6 @@ angular.module('koodainApp')
     groups: visGroups,
     interaction: {
       multiselect: true,
-    },
-    physics: {
-      enabled: true
     }
   };
 
@@ -399,73 +270,6 @@ angular.module('koodainApp')
     $scope.devicequery = selDevices.map(function(id) { return '#'+id; }).join(',');
     $scope.$apply();  // Needed?
   }
-
-  /*function reload(){
-
-    deviceManager.queryDevices().then(function(devices) {
-
-      allDevices = deviceListAsObject(devices);
-      //if you want to remove mock device, comment this line
-      deviceManager.addMockDevicesTo(allDevices);
-
-      var edgesArray = [];
-      var nodesArray = Object.keys(allDevices).map(function(id) {
-        return nodeFromDevice(allDevices[id]);
-      });
-
-      for (var i in allDevices) {
-        var d = allDevices[i];
-        var apps = d.apps;
-        if (apps) {
-          nodesArray.push.apply(nodesArray, apps.map(nodeFromApp));
-          //nodes.add(apps.map(nodeFromApp));
-          /* jshint -W083 */
-          // Edge from each app to the device it's in
-         /* edgesArray.push.apply(edgesArray, apps.map(function(app) {
-            return {
-              from: 'app:' + app.id,
-              to: d.id,
-            };
-          }));
-        }
-      }
-      nodes = new VisDataSet(nodesArray);
-      edges = new VisDataSet(edgesArray);
-        $scope.graphData = {
-          nodes: nodes,
-          edges: edges
-        };
-      console.log(nodesArray);    
-      console.log(edgesArray);    
-      updateSelection();
-      $scope.$apply();
-    });
-
-        //$scope.graphData = {
-          //nodes: nodes,
-          //edges: edges,
-        //};
-
-        // Seems like we have to update the view manually here by calling $scope.$apply?
-        //$scope.$apply();
-  }
-
-  function addAppsNodes(){
-    var dm = devicelib(deviceManagerUrl);
-    function addAppNodes(deployment){
-      dm.devices(deployment.devicequery, deployment.appquery).then(function(devices) {
-        //deployment.devices = devices;
-        devices.forEach(function(device){
-          device.apps.filter(function(app){
-            //app.id == 
-          });
-        });
-        console.log(devices);
-        console.log(deployment.project);
-      });
-    }
-    $scope.deployments.forEach(addAppNodes);
-  }*/
 
   // A list of "deployment objects".
   // Currently the staged deployment is only stored here in this controller;
@@ -581,15 +385,6 @@ angular.module('koodainApp')
       }
     });
   };
-
-  if($stateParams.project){
-    $resource('/api/projects/' + $stateParams.project).get(function(project){
-      $scope.selectDevicesForProject(project);
-    });
-    console.log("1");
-    console.log($scope.devicequery);
-  }
-
 })
 
 /**
@@ -619,7 +414,6 @@ angular.module('koodainApp')
       removeOld: $scope.removeOld,
     };
     $uibModalInstance.close(deployment);
-    //console.log(deployment);
   };
 })
 
