@@ -49,6 +49,19 @@ div(ng-include='"components/navbar/navbar.html"')
               code(ng-repeat="cls in device.classes") {{cls}}
     .col-sm-8
       p
+        | Select a proejct to find compatible target devices
+        ul.nya-bs-select(ng-model='selectedProject', title='select a project', data-live-search='true')
+          li(nya-bs-option='project in projects')
+            a 
+              {{project.name}}
+              //span.glyphicon.glyphicon-ok.check-mark
+      //p
+        | Select a proejct to find compatible target devices
+        ui-select(ng-model='selectedProject', theme='bootsrap', title='select a project')
+          ui-select-choices(repeat='project in projects')
+            a
+              {{project.name}}
+      //p
         | Select devices compatible with project:
         .btn-group(role="group")
             button.btn.btn-default(ng-repeat="project in projects", ng-click="selectDevicesForProject(project)") {{project.name}}
@@ -62,8 +75,16 @@ div(ng-include='"components/navbar/navbar.html"')
       #network
         vis-network(data="graphData", options="graphOptions", events="graphEvents", component="network")
       p
-        button.btn.btn-default(ng-click="reloadDevices()")
-          span.fa.fa-refresh
+        .btn-group(role="group")
+          button.btn.btn-default(ng-click="reloadDevices()")
+            span.fa.fa-refresh
+          button.btn.btn-default(ng-click="camera.fit()")
+            span.fa.fa-arrows-alt  fit camera
+          button.btn.btn-default(ng-click="camera.fitOnSelectedNodes()")
+            span.fa.fa-arrows-alt  fit camera on selection
+          button.btn.btn-default(ng-click="camera.crawl()", ng-show="isCrawlingPossible" )
+            span.fa.fa-arrows-alt  crawl in selection
+
 
 div(ng-include='"components/footer/footer.html"')
 
