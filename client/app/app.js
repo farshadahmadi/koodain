@@ -16,15 +16,15 @@ angular.module('koodainApp', [
   'ngVis',
   'ui.router',
   'ui.bootstrap',
-  'ui-Notification',
+  'ui-notification',
   'ui.ace',
   'rt.encodeuri',
   'nya.bootstrap.select'//,
   //'ui.select'//,
   //'ngSanitize'
 ])
-  .constant('deviceManagerUrl', 'http://130.230.142.101:3001')
- //.constant('deviceManagerUrl', 'http://localhost:3000')
+  //.constant('deviceManagerUrl', 'http://130.230.142.101:3001')
+ .constant('deviceManagerUrl', 'http://localhost:3000')
  .config(function ($stateProvider, $urlRouterProvider, $locationProvider, $httpProvider, NotificationProvider) {
     $urlRouterProvider
       .otherwise('/');
