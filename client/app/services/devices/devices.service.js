@@ -223,6 +223,8 @@ angular.module('koodainApp')
           var devsArr = jsonDevs.data;
           var devices = {};
           for (var i=0; i<devsArr.length; i++) {
+            // add coordination manually since it is not included in json file
+            devsArr[i].coords = {x:(i%10)*200, y:Math.floor(i/10)*200};
             var d = devsArr[i];
             devices[d.id] = d;
           }

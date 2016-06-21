@@ -35,7 +35,10 @@ angular.module('koodainApp')
         code: '\uf233',
         size: 50,
         color: 'gray',
-      }
+      },
+      // comment the line below if you want to enable dragging
+      fixed: true
+      //physics: false
     },
     'device:selected': {
       shape: 'icon',
@@ -44,7 +47,10 @@ angular.module('koodainApp')
         code: '\uf233',
         size: 85,
         color: 'purple',
-      }
+      },
+      //physics: false
+      // comment the line below if you want to enable dragging
+      fixed: true
     }
   };
 
@@ -105,6 +111,8 @@ angular.module('koodainApp')
       id: id,
       label: device.name || id,
       title: generateTooltip(device),
+      x: device.coords.x,
+      y: device.coords.y,
       group: groupForDevice()
     };
     return n;
@@ -138,6 +146,10 @@ angular.module('koodainApp')
               "<td>url</td>"+
               "<td>" + device.url + "</td>"+
             "</tr>"+
+            "<tr>"+
+              "<td>coordination</td>"+
+              "<td>" + device.coords.x + "," + device.coords.y + "</td>"+
+            "</tr>"+
           "</table>"+
         "</div>"+
       "</div>";
@@ -160,6 +172,8 @@ angular.module('koodainApp')
   function deviceListAsObject(devs) {
     var obj = {};
     for (var i=0; i<devs.length; i++) {
+      // add coordination manually since it is not included in json file
+      devs[i].coords = {x:(i%10)*200, y:(Math.floor(i/10)+10)*200};
       var d = devs[i];
       obj[d.id] = d;
     }
@@ -268,6 +282,7 @@ angular.module('koodainApp')
       //deviceManager.addMockDevicesTo(allDevices);
       deviceManager.addMockDevicesTo(allDevices).then(function(){
 
+        console.log(allDevices);
         updateNodesAndEdges();
 
         //updateSelection();
@@ -324,6 +339,7 @@ angular.module('koodainApp')
             return {
               from: 'app:' + app.id,
               to: d.id,
+              length: 50
             };
           }));
         }
@@ -345,13 +361,20 @@ angular.module('koodainApp')
     groups: visGroups,
     interaction: {
       multiselect: true
-    },
-    layout:{
-      randomSeed: 1
-    }//,
-    //physics: {
-      //enabled: true
-    //}
+    }/*,
+    nodes: {
+      fixed:{
+        x: true,
+        y: true
+      }
+    }/*,
+    /*layout:{
+      //randomSeed: 1
+    //},
+    //physics: false
+    /*, nodes:{
+      physics: false
+    }*/
   };
 
   function isAppNodeId(nodeId) {
