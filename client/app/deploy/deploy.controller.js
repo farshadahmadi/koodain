@@ -20,15 +20,16 @@ angular.module('koodainApp')
   // Returns a promise for getting the device capabilities
   // mentioned in liquidiot.json file of the the project
   function getDevCapsPromise(project) {
-    return $q(function(resolve, reject){
+    //return $q(function(resolve, reject){
       return $http({
         method: 'GET',
         url: '/api/projects/' + project.name + '/files/liquidiot.json'
       }).then(function(res){
         res.name = project.name;
-        resolve(res);
+        //resolve(res);
+        return res;
       });
-    });
+    //});
   }
 
   var Project = $resource('/api/projects/:project');
@@ -358,6 +359,7 @@ angular.module('koodainApp')
       //return Promise.resolve(allDevices);
     }).then(function(devs){
       allDevices = devs;
+      console.log(allDevices);
       updateNodesAndEdges();
       //updateSelection();
       $scope.$apply();
