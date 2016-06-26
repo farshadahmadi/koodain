@@ -211,8 +211,6 @@ angular.module('koodainApp')
   // These will be assigned when devices are loaded.
   var allDevices = [], nodes, edges;
 
-  // loading of the devices
-  loadDevices();
 
   // This counter is used for crawling the camera between selected devices
   var focusedNodeIndex = -1;
@@ -349,21 +347,25 @@ angular.module('koodainApp')
   function loadDevices() {
     deviceManager.queryDevices().then(function(devices) {
 
+      console.log(devices);
+
       allDevices = deviceListAsObject(devices);
+      console.log(allDevices);
 
-      //if you want to remove mock device, comment this line
-      //deviceManager.addMockDevicesTo(allDevices);
-      deviceManager.addMockDevicesTo(allDevices).then(function(){
-
-        //console.log(allDevices);
-        updateNodesAndEdges();
-
-        //updateSelection();
-        //$scope.$apply();
-      });
+      // if you want to remove visual devices,
+      // comment this line and uncomment the next line
+      return deviceManager.addMockDevicesTo(allDevices);
+      //return Promise.resolve(allDevices);
+    }).then(function(devs){
+      allDevices = devs;
+      updateNodesAndEdges();
+      //updateSelection();
+      $scope.$apply();
     });
   }
   
+  // loading of the devices
+  loadDevices();
   // Update Vis.js nodes and edges
   // look at resetAllNodes() function here http://visjs.org/examples/network/data/datasets.html
 
@@ -506,7 +508,7 @@ angular.module('koodainApp')
       return allDevices[devId].classes;
     });
     allSelectedDevCaps = mergeArrs(selectedDevCaps);
-    console.log(selectedDevCaps);
+    //console.log(selectedDevCaps);
   }
 
   function findAllSelectedDevCaps(params) {
@@ -520,7 +522,7 @@ angular.module('koodainApp')
     } else {
       var selectedDevCaps = allDevices[selDevices[selDevices.length - 1]].classes;
       allSelectedDevCaps = mergeTwoArrs(allSelectedDevCaps, selectedDevCaps);
-      console.log(allSelectedDevCaps);
+      //console.log(allSelectedDevCaps);
       //allSelectedDevCaps = allSelectedDevCaps.concat(selectedDevCaps.filter(function(selectedDevCap){
         //return allSelectedDevCaps.indexOf(selectedDevCap) == -1;
       //}));
@@ -710,7 +712,7 @@ angular.module('koodainApp')
   //console.log(data.selectedProject);
 
   var selectedDevCaps = data.allSelectedDevCaps;
-  console.log(selectedDevCaps);
+  //console.log(selectedDevCaps);
 
   //$scope.projects = projects;
   $scope.devices = data.devices;

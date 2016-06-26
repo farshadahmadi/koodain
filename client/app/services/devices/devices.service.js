@@ -252,17 +252,18 @@ angular.module('koodainApp')
     }
 
     function addMockDevicesTo(devs) {
-      return $q(function(resolve, reject){
-        randomDevices().then(function(rand){
+      //return $q(function(resolve, reject){
+        return randomDevices().then(function(rand){
          // console.log("1");
          // console.log(rand);
           for (var i in rand) {
             devs[i] = rand[i];
           }
-          resolve();
+          return devs;
+          //resolve();
           //resolve("2");
         });
-      });
+      //});
       /*var rand = randomDevices();
       for (var i in rand) {
         devs[i] = rand[i];
