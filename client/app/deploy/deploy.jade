@@ -49,21 +49,24 @@ div(ng-include='"components/navbar/navbar.html"')
               code(ng-repeat="cls in device.classes") {{cls}}
     .col-sm-8
       p
-        | Select devices compatible with project:
-        .btn-group(role="group")
-            button.btn.btn-default(ng-repeat="project in projects", ng-click="selectDevicesForProject(project)") {{project.name}}
+        | Select a proejct to find compatible target devices
+        ul.nya-bs-select(ng-model='selectedProject', title='select a project', data-live-search='true')
+          li(nya-bs-option='project in projects')
+            a 
+              {{project.name}}
+              span.glyphicon.glyphicon-ok.check-mark
       p
         | Or query devices:
         form.form-inline.queryform
           label(for="devicequery") Device:
-          input.form-control(id="devicequery", type="text", ng-model="devicequery", ng-model-options='{debounce: 200}')
+          input.form-control(id="devicequery", type="text", ng-model="devicequery", ng-model-options='{debounce: 200}', ng-change="deselectProject()")
           label(for="appquery") App:
           input.form-control(id="appquery", type="text", ng-model="appquery", ng-model-options='{debounce: 200}')
       #network
         vis-network(data="graphData", options="graphOptions", events="graphEvents", component="network")
       p
         .btn-group(role="group")
-          button.btn.btn-default(ng-click="reloadDevices()")
+          button.btn.btn-default(ng-click="loadDevices()")
             span.fa.fa-refresh
           button.btn.btn-default(ng-click="camera.fit()")
             span.fa.fa-arrows-alt  fit camera
@@ -85,8 +88,13 @@ script(type="text/ng-template", id="manageapps.html")
       .form-group
         label(for="selectproject") Deploy application
         |  
-        select.form-control(id="selectproject", ng-model="selectedProject")
-          option(ng-repeat="project in projects") {{project.name}}
+        ul.nya-bs-select(ng-model='selectedProject', title='select a project', data-live-search='true')
+          li(nya-bs-option='project in projects')
+            a 
+              {{project.name}}
+              span.glyphicon.glyphicon-ok.check-mark
+        //select.form-control(id="selectproject", ng-model="selectedProject")
+         // option(ng-repeat="project in projects") {{project.name}}
         |  
         label
           span(ng-if="devicequery") to all the devices matching the query

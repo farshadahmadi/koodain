@@ -20,7 +20,8 @@ angular.module('koodainApp', [
   'ui.ace',
   'rt.encodeuri',
   'nya.bootstrap.select'//,
-  //'SwaggerParser'
+  //'ui.select'//,
+  //'ngSanitize'
 ])
   //.constant('deviceManagerUrl', 'http://130.230.142.101:3001')
  .constant('deviceManagerUrl', 'http://localhost:3000')

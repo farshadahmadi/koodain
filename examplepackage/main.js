@@ -1,38 +1,20 @@
+module.exports = function(<%= project.name %>){
+var greeting = "";
 
-var Agent = require('./agent');
+<%= project.name %>.configureInterval(true, 3000);
 
-function MainClass(){
-    
-    var app = Agent();
-    
-    var greeting = "";
-    
-    app.configureInterval(true, 3000);
-    
-    app.initialize = function(startMain){
-        greeting = "World!";
-        startMain();
-    };
-    
-    app.main = function(restartMain) {
-        console.log("hello " + greeting);
-        restartMain();
-    };
-    
-    app.terminate = function(stopExecution){
-        console.log("See you " + greeting);
-        stopExecution("");
-    };
-    
-    return app;
+<%= project.name %>.initialize = function(initCompleted){
+    greeting = "World!";
+    initCompleted();
+};
+
+<%= project.name %>.task = function(taskCompleted) {
+    console.log("hello " + greeting);
+    taskCompleted();
+};
+
+<%= project.name %>.terminate = function(terminateCompleted){
+    console.log("See you " + greeting);
+    terminateCompleted();
+};
 }
-
-
-function createAgentObject() {
-  var obj = MainClass();
-  return obj;
-}
-
-// Do not change basepath
-var basePath = "/api";
-

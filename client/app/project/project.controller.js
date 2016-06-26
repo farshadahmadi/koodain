@@ -97,7 +97,7 @@ angular.module('koodainApp')
 
       for(var i = 0; i < $scope.selectedAppCaps.length; i++){
         if(workingApiNames.indexOf($scope.selectedAppCaps[i]) == -1){
-          apitocode.generate( deviceManagerUrl + "/apis/" + $scope.selectedAppCaps[i])
+          apitocode.generate($scope.project, deviceManagerUrl + "/apis/" + $scope.selectedAppCaps[i])
             .then(function(code){
               $scope.mainFile.content += code;
             })
@@ -116,12 +116,24 @@ angular.module('koodainApp')
       $scope.mainFile.content = apiParser.deleteDirtyApis(implementedApis, mainFileContent);
     }
 
+    // Files that are currently updated, to show a spinner on the view
+    $scope.updating = {};
+
+    function turnMainToModule(f){
+      var firstLine = "module.exports = function(" + $scope.project.name  +"){\n";
+      var lastLine = "\n}";
+      f.content = firstLine + f.content + lastLine;
+    }
+    
     // Watch modifications to the main.js file,
     // and save the file to the backend on every modification.
     $scope.$watch('mainFile.content', function() {
-      var f = $scope.mainFile;
+      var f = angular.copy($scope.mainFile);
+      //var f = $scope.mainFile;
       if (f) {
-        File.update({name: f.name}, f);
+        turnMainToModule(f);
+        var u = File.update({name: f.name}, f);
+        $scope.updating[f.name] = u.$promise.$$state;
       }
     });
 
@@ -130,7 +142,8 @@ angular.module('koodainApp')
     $scope.$watch('liquidiotJson.content', function() {
       var f = $scope.liquidiotJson;
       if (f) {
-        File.update({name: f.name}, f);
+        var u = File.update({name: f.name}, f);
+        $scope.updating[f.name] = u.$promise.$$state;
       }
     });
 
@@ -151,6 +164,17 @@ angular.module('koodainApp')
     if (mainJss.length > 0) {
       $scope.openFile(mainJss[0]);
       $scope.mainFile = mainJss[0];
+
+      var tree = esprima.parse($scope.mainFile.content, {comment:true, range:true, loc:true});
+      var lines = $scope.mainFile.content.split("\n");
+      console.log(lines);
+      var ss = tree.loc.start.line,
+          ee = tree.loc.end.line;
+      console.log(tree.loc.start.line + " : " + tree.loc.end.line);
+      lines.splice(ee -1, 1);
+      lines.splice(ss - 1, 1);
+      console.log(lines);
+      $scope.mainFile.content = lines.join("\n");
     }
 
     // Get the editor instance on ace load
@@ -161,8 +185,6 @@ angular.module('koodainApp')
       editor.setOptions({fontSize: '11pt'});
     };
 
-    // Files that are currently updated, to show a spinner on the view
-    $scope.updating = {};
 
     var File = $resource(projectUrl+'/files/:name', null, {
       update: {method: 'PUT' }
@@ -174,7 +196,8 @@ angular.module('koodainApp')
     // attribute in the view.
     $scope.$watch('activeFile.content', function() {
       var f = $scope.activeFile;
-      if (f) {
+      if (f.name == "package.json" || f.name == "agent.js") {
+        //console.log(f);
         var u = File.update({name: f.name}, f);
         $scope.updating[f.name] = u.$promise.$$state;
       }
@@ -208,14 +231,14 @@ angular.module('koodainApp')
   })
 
   .factory('apitocode', function($q){
-    var generate = function(apiUrl){
+    var generate = function(project, apiUrl){
       return $q(function(resolve, reject){
           SwaggerParser.validate(apiUrl)
             .then(function(api){
               var code = "\n/**\n * Application Interface: " + api.info.title + "\n */";
               for(var path in api.paths){
                 for(var method in api.paths[path]){
-                  code += generateApi(method, path);
+                  code += generateApi(project, method, path);
                 }
              }
               resolve(code + "// " + api.info.title + " - end\n");
@@ -226,8 +249,8 @@ angular.module('koodainApp')
       });
     };
 
-    var generateApi = function(method, path){
-      return "\napp." + method + "(basePath + \"" + path + "\", function(req, res){});\n"
+    var generateApi = function(project, method, path){
+      return "\n" + project.name + "." + method + "(basePath + \"" + path + "\", function(req, res){});\n"
     }
 
     return {

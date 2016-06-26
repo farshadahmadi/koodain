@@ -18,7 +18,7 @@ angular.module('koodainApp')
    *
    * See bottom of the file for the methods of this service.
    */
-  .service('DeviceManager', function ($http) {
+  .service('DeviceManager', function ($http, $resource, $q) {
 
     function matchesId(id, device) {
       return device.id == id;
@@ -213,14 +213,34 @@ angular.module('koodainApp')
       };
     }
 
-    function randomDevices() {
+    function randomDevices(){
+      return $q(function(resolve, reject){
+        $http({
+          method: 'GET',
+          url: '/api/visualdevices'
+        }).then(function(jsonDevs){
+          //console.log(jsonDevs.data);
+          var devsArr = jsonDevs.data;
+          var devices = {};
+          for (var i=0; i<devsArr.length; i++) {
+            // add coordination manually since it is not included in json file
+            devsArr[i].coords = {x:(i%10)*200, y:Math.floor(i/10)*200};
+            var d = devsArr[i];
+            devices[d.id] = d;
+          }
+          resolve(devices);
+        });
+      });
+    }
+
+    /*function randomDevices() {
       var devices = {};
       for (var i=0; i<N; i++) {
         var d = randomDevice();
         devices[d.id] = d;
-      }
+      }      
       return devices;
-    }
+    }*/
 
     function fetchApps(device) {
       $http({
@@ -232,11 +252,23 @@ angular.module('koodainApp')
     }
 
     function addMockDevicesTo(devs) {
-      var rand = randomDevices();
+      return $q(function(resolve, reject){
+        randomDevices().then(function(rand){
+         // console.log("1");
+         // console.log(rand);
+          for (var i in rand) {
+            devs[i] = rand[i];
+          }
+          resolve();
+          //resolve("2");
+        });
+      });
+      /*var rand = randomDevices();
       for (var i in rand) {
         devs[i] = rand[i];
       }
-      return devs;
+      //console.log(devs);
+      return devs;*/
     }
 
     /**

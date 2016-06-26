@@ -1,77 +1,78 @@
-function Agent(repeat, interval){
-    
-    var that = {};
+module.exports = function Agent(iotApp){
     
     // public functions that will be overriden by applications
-    that.main;
-    that.initialize;
-    that.terminate;
+    iotApp.task = function(){
+        throw new Error("task function should be defined.");
+    };
     
-    // private property
+    iotApp.initialize = function (initCompleted){
+        initCompleted();
+    };
+    
+    iotApp.terminate = function(terminateCompleted){
+        terminateCompleted();
+    };
+    
+    // private properties
     var timer = true;
+    var repeat = true;
+    var interval = 1000;
     
-    // public properties
-    that.repeat = repeat || true;
-    that.interval = interval || 1000;
-    
-    that.configureInterval = function(repeat, interval) {
-        that.repeat = repeat;
-        that.interval = interval;
+    // public functions that will be called by applications
+    iotApp.configureInterval = function(_repeat, _interval) {
+        repeat = _repeat;
+        interval = _interval;
     }
     
+    // private functions
     var createInterval = function(f, param, interval) {
         setTimeout( function() {f(param);}, interval );
     }
     
     var s = function() {
-        createInterval(that.main, function(restartMainMessage){
+        createInterval(iotApp.task, function(restartMainMessage){
             if(restartMainMessage){
                 console.log(restartMainMessage);
             }
             if(timer) {
                 s();
             } else {
-                that.terminate(function(stopExecutionMessage){
+                iotApp.terminate(function(stopExecutionMessage){
                     if(stopExecutionMessage){
                         console.log(stopExecutionMessage);
                     }
                 });
             }
-        }, that.interval);
+        }, interval);
     };
     
-    that.start = function() {
-      that.initialize(function(startMainMessage){
-          if(startMainMessage){
-              console.log(startMainMessage);
-          }
-              timer = true;
-              that.main(function(restartMainMessage){
-                  if(restartMainMessage){
-                      console.log(restartMainMessage);
-                  }
-                  console.log("app-started-without-error");
-                  if(that.repeat) {
-                      s();
-                  }
-              });
-      });
+    // public functions that will be called by runtime environemnt
+    iotApp.start = function() {
+        iotApp.initialize(function(startMainMessage){
+            if(startMainMessage){
+                console.log(startMainMessage);
+            }
+            timer = true;
+            iotApp.task(function(restartMainMessage){
+                if(restartMainMessage){
+                    console.log(restartMainMessage);
+                }
+                console.log("app-started-without-error");
+                if(repeat) {
+                    s();
+                }
+            });
+        });
     };
     
-    that.stop = function() {
+    iotApp.stop = function() {
         timer = false;
-        if(!that.repeat) {
-            that.terminate(function(stopExecutionMessage){
+        if(!repeat) {
+            iotApp.terminate(function(stopExecutionMessage){
                 if(stopExecutionMessage){
                     console.log(stopExecutionMessage);
                 }
             });
         }
     };
-        
-    return that;
 }
-
-module.exports = Agent;
-
-
