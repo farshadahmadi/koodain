@@ -355,8 +355,8 @@ angular.module('koodainApp')
 
       // if you want to remove visual devices,
       // comment this line and uncomment the next line
-      return deviceManager.addMockDevicesTo(allDevices);
-      //return Promise.resolve(allDevices);
+      //return deviceManager.addMockDevicesTo(allDevices);
+      return Promise.resolve(allDevices);
     }).then(function(devs){
       allDevices = devs;
       console.log(allDevices);
