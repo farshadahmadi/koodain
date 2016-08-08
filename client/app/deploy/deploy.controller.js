@@ -139,7 +139,7 @@ angular.module('koodainApp')
     var n = {
       id: id,
       label: device.name || id,
-      title: generateTooltip(device),
+      title: generateDeviceTooltip(device),
       x: device.coords.x,
       y: device.coords.y,
       group: groupForDevice()
@@ -147,7 +147,7 @@ angular.module('koodainApp')
     return n;
   }
 
-  var generateTooltip = function(device){
+  var generateDeviceTooltip = function(device){
 
     var tooltip = "<div class='panel panel-success' style='margin-bottom:0px'>"+
         "<div class='panel-heading'>"+
@@ -186,12 +186,57 @@ angular.module('koodainApp')
     return tooltip;
   }
 
+  var generateAppTooltip = function(app){
+
+    var apis = app.hasOwnProperty("applicationInterfaces") ? app.applicationInterfaces.join(", ") : "";
+    var status = app.hasOwnProperty("status") ? app.status : "";
+    var version = app.hasOwnProperty("version") ? app.version : "";
+    var description = app.hasOwnProperty("description") ? app.description : "";
+
+    var tooltip = "<div class='panel panel-success' style='margin-bottom:0px'>"+
+        "<div class='panel-heading'>"+
+          "<h3 class='panel-title'>application</h3>"+
+        "</div>"+
+        "<div class='panel-body' style='padding-top: 0px; padding-bottom: 0px'>"+
+          "<table class='table' style='border: none; margin-bottom:1px'>"+
+            "<tr>"+
+              "<td>id</td>"+
+              "<td>" + app.id + "</td>"+
+            "</tr>"+
+            "<tr>"+
+              "<td>name</td>"+
+              "<td>" + app.name + "</td>"+
+            "</tr>"+
+            "<tr>"+
+              "<td>interfaces</td>"+
+              "<td>" + apis + "</td>"+
+            "</tr>"+
+            "<tr>"+
+              "<td>status</td>"+
+              "<td>" + status + "</td>"+
+            "</tr>"+
+            "<tr>"+
+              "<td>version</td>"+
+              "<td>" + version + "</td>"+
+            "</tr>"+
+            "<tr>"+
+              "<td>description</td>"+
+              "<td>" + description +"</td>"+
+            "</tr>"+
+          "</table>"+
+        "</div>"+
+      "</div>";
+
+    return tooltip;
+  }
+
   /// Returns a Vis.js node for the app
   function nodeFromApp(app) {
     var n = {
       id: 'app:' + app.id,
       label: app.name,
       group: groupForApp(app),
+      title: generateAppTooltip(app),
       selectable: false
     };
     return n;
@@ -325,9 +370,9 @@ angular.module('koodainApp')
   function updateSelection() {
     var sel = deviceManager.filter(allDevices, $scope.devicequery, $scope.appquery);
     //console.log(sel);
-    if(sel.length > 0) {
+    //if(sel.length > 0) {
       findSelectedDevCaps(sel);
-    }
+    //}
     network.selectNodes(sel);
     select(sel);
   }
@@ -348,10 +393,10 @@ angular.module('koodainApp')
   function loadDevices() {
     deviceManager.queryDevices().then(function(devices) {
 
-      console.log(devices);
+      //console.log(devices);
 
       allDevices = deviceListAsObject(devices);
-      console.log(allDevices);
+      //console.log(allDevices);
 
       // if you want to remove visual devices,
       // comment this line and uncomment the next line
@@ -359,7 +404,7 @@ angular.module('koodainApp')
       //return Promise.resolve(allDevices);
     }).then(function(devs){
       allDevices = devs;
-      console.log(allDevices);
+      //console.log(allDevices);
       updateNodesAndEdges();
       //updateSelection();
       $scope.$apply();
@@ -407,6 +452,7 @@ angular.module('koodainApp')
       for (var i in allDevices) {
         var d = allDevices[i];
         var apps = d.apps;
+        //console.log(apps);
         if (apps) {
           nodesArray.push.apply(nodesArray, apps.map(nodeFromApp));
           //nodes.add(apps.map(nodeFromApp));
@@ -469,14 +515,10 @@ angular.module('koodainApp')
   // construct a comma-separated list of selected device id to be used as query.
   function selectClick(params) {
     // TODO: currently only devices can be selected, not apps...
-    var selDevices = params.nodes.filter(isDeviceNodeId);
-    //lastSelectedDevice = selDevices[selDevices.length - 1];
-    /*if(params.previousSelection){
-      var oldSelDevices = params.previousSelection.nodes.filter(isDeviceNodeId);
-      //findDeselectedDevice(selDevices, oldSelDevices);
-    }*/
+    //console.log("clicked");
     //console.log(params);
-    findAllSelectedDevCaps(params) 
+    var selDevices = params.nodes.filter(isDeviceNodeId);
+    //findSelectedDevCaps(selDevices); 
     $scope.deselectProject();
     $scope.devicequery = selDevices.map(function(id) { return '#'+id; }).join(',');
     $scope.$apply();  // Needed?
@@ -489,9 +531,10 @@ angular.module('koodainApp')
     //console.log(deselectedDevice);
   }
 
-  var allSelectedDevCaps = [];
+  // selected device capabilities : an array that represents device capabilities of selected devices
+  var selDevCaps = [];
 
-  function mergeTwoArrs(arr1, arr2){
+  /*function mergeTwoArrs(arr1, arr2){
     return arr1.concat(arr2.filter(function(element){
       return arr1.indexOf(element) == -1;
     }));
@@ -503,41 +546,12 @@ angular.module('koodainApp')
         arrs.splice(arrs.length - 1, 1);
     }
     return arrs[0];
-  }
+  }*/
 
   function findSelectedDevCaps(sel){
-    var selectedDevCaps = sel.map(function(devId){
+    selDevCaps = sel.map(function(devId){
       return allDevices[devId].classes;
     });
-    allSelectedDevCaps = mergeArrs(selectedDevCaps);
-    //console.log(selectedDevCaps);
-  }
-
-  function findAllSelectedDevCaps(params) {
-
-    var selDevices = params.nodes.filter(isDeviceNodeId);
-    if(selDevices.length == 0){
-      allSelectedDevCaps = [];
-    } else if(selDevices.length == 1){
-      allSelectedDevCaps = allDevices[selDevices[0]].classes;
-    } else if(params.previousSelection){
-    } else {
-      var selectedDevCaps = allDevices[selDevices[selDevices.length - 1]].classes;
-      allSelectedDevCaps = mergeTwoArrs(allSelectedDevCaps, selectedDevCaps);
-      //console.log(allSelectedDevCaps);
-      //allSelectedDevCaps = allSelectedDevCaps.concat(selectedDevCaps.filter(function(selectedDevCap){
-        //return allSelectedDevCaps.indexOf(selectedDevCap) == -1;
-      //}));
-    }
-
-    //console.log(allSelectedDevCaps);
-    //console.log(allDevices[lastSelectedDevice]);
-    /*var selectedDevCaps = allDevices[lastSelectedDevice] ? allDevices[lastSelectedDevice].classes : [];
-    //console.log(selectedDevCaps);
-    allSelectedDevCaps = allSelectedDevCaps.concat(selectedDevCaps.filter(function(selectedDevCap){
-      return allSelectedDevCaps.indexOf(selectedDevCap) == -1;
-    }));*/
-   // console.log(allSelectedDevCaps);
   }
 
   /*function addAppsNodes(){
@@ -577,7 +591,7 @@ angular.module('koodainApp')
             devicequery: $scope.devicequery,
             appquery: $scope.appquery,
             selectedProject: $scope.selectedProject,
-            allSelectedDevCaps: allSelectedDevCaps//,
+            selectedDeviceCapabilities: selDevCaps//,
             //liqjsons: Promise.all($scope.projects.map(getDevCapsPromise))
           }; 
         },
@@ -711,19 +725,29 @@ angular.module('koodainApp')
  */
 .controller('ManageAppsCtrl', function($scope, $resource, $http, $uibModalInstance, data, projects) {
 
-  //console.log(data.selectedProject);
-
-  var selectedDevCaps = data.allSelectedDevCaps;
-  //console.log(selectedDevCaps);
-
-  //$scope.projects = projects;
+  var selDevCaps = data.selectedDeviceCapabilities;
   $scope.devices = data.devices;
   $scope.devicequery = data.devicequery;
   $scope.appquery = data.appquery;
 
   // comparing two array, return true if equal, otherwise false
-  var isEqual = function(arr1, arr2){
+  /*var isEqual = function(arr1, arr2){
     return (arr1.length == arr2.length) && (arr1.every(function(element, index){ return element === arr2[index]; }));
+  }*/
+
+  // checks if one array is subset of another array
+  var isSubset = function(arr1, arr2){
+    return arr1.every(function(value){
+      return arr2.indexOf(value) >= 0;
+    });
+  }
+
+  // checks if device capabilities listed in the project (liquidiot.json file)
+  // is subset of capabilities of every selected device.
+  var isSubsetOfAll = function(dcs){
+    return selDevCaps.every(function(devCaps){
+      return isSubset(dcs, devCaps);
+    });
   }
 
   // selecting projects based on the selected device capabilities
@@ -731,18 +755,17 @@ angular.module('koodainApp')
     var json = JSON.parse(project.data.content);
     var dcs = json['deviceCapabilities'];
     // free-class means all devices, so we remove it from device capabilities.
-    // if array becomes empty we query all devices
+    // if array becomes empty 
     // otherwise we query the remaining devices
     var index = dcs.indexOf("free-class");
     if(index != -1){
       dcs.splice(index, 1);
     }
-    //console.log(project.name);
     if (!dcs || !dcs.length) {
-      // No deviceCapabilities, query everything *
+      // No deviceCapabilities, can be deployed to all devices
       return true;
     }
-    else if (isEqual(dcs, selectedDevCaps)){
+    else if (isSubsetOfAll(dcs)){
       return true;
     } else {
       return false;
@@ -754,12 +777,6 @@ angular.module('koodainApp')
       return project.name == data.selectedProject.name;
     })[0];
   }
-
-
-  //$scope.selectedProject = data.SelectedProject;
-  //console.log(data.selectedProject);
-  //console.log($scope.selectedProject);
-
 
   $scope.cancel = function() {
     $uibModalInstance.dismiss('cancel');
