@@ -1,0 +1,1 @@
+[{"id":"mock1","name":"mock1","classes":["canDoSomething","hasSomeProperty","mock","production"],"apps":[{"name":"measureTemperature","id":500001}],"location":"TF117"}]

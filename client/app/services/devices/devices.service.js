@@ -10,8 +10,19 @@
 'use strict';
 
 angular.module('koodainApp')
-  .service('queryDevices', function ($http) {
 
+  /**
+   * Service for querying devices from the device manager.
+   *
+   * This service does NOT store the list of devices.
+   *
+   * See bottom of the file for the methods of this service.
+   */
+  .service('DeviceManager', function ($http, $resource, $q) {
+
+    // list of IDs os selected devices and applications based on device query and app query
+    // in the form of :  {devId:[appID, appId], devId: [appId, appId]}
+    var selectedNodes = {};
 
     function matchesId(id, device) {
       return device.id == id;
@@ -31,7 +42,6 @@ angular.module('koodainApp')
       return true;
     }
 
-
     function matchesPseudo(pseudo, device) {
       if (pseudo.key === 'not') {
         // TODO: doesn't work for apps!
@@ -47,7 +57,6 @@ angular.module('koodainApp')
           return false;
         }
       }
-
       return true;
     }
 
@@ -102,7 +111,7 @@ angular.module('koodainApp')
       return false;
     }
 
-    function matchesAppQuery(device, query) {
+    function matchesAppQuery(device, query, devicequery) {
       if (typeof query === 'string') {
         query = Slick.parse(query);
       }
@@ -117,12 +126,19 @@ angular.module('koodainApp')
         return false;
       }
 
+      var flag = false;
       for (var i=0; i<apps.length; i++) {
         if (matchesApp(apps[i], query)) {
-          return true;
+          if(!devicequery && selectedNodes.devices.indexOf(device.id) == -1){
+            selectedNodes.devices.push(device.id);
+          }
+          selectedNodes.apps.push(apps[i].id);
+          flag = true;
+          //return true;
         }
       }
-      return false;
+      //return false;
+      return flag;
     }
 
     function matchesDeviceQuery(device, query) {
@@ -137,6 +153,7 @@ angular.module('koodainApp')
       var exprs = query.expressions;
       for (var i=0; i < exprs.length; i++) {
         if (matchesExpr(exprs[i], device)) {
+          selectedNodes.devices.push(device.id);
           return true;
         }
       }
@@ -147,20 +164,28 @@ angular.module('koodainApp')
       if (devicequery && !matchesDeviceQuery(device, devicequery)) {
         return false;
       }
-      if (appquery && !matchesAppQuery(device, appquery)) {
+      if (appquery && !matchesAppQuery(device, appquery, devicequery)) {
         return false;
       }
       return true;
     }
 
     function filter(devs, devicequery, appquery) {
+      selectedNodes = { devices: [], apps: [] };
+
       if (!devicequery && !appquery) {
-        return [];
+        return selectedNodes;
       }
 
-      return Object.keys(devs).filter(function(id) {
+      /*return  Object.keys(devs).filter(function(id) {
         return matches(devs[id], devicequery, appquery);
-      });
+      });*/
+
+      for(var devId in devs){
+        matches(devs[devId], devicequery, appquery);
+      }
+
+      return selectedNodes;
     }
 
     var N = 100;
@@ -208,14 +233,34 @@ angular.module('koodainApp')
       };
     }
 
-    function randomDevices() {
+    function randomDevices(){
+      return $q(function(resolve, reject){
+        $http({
+          method: 'GET',
+          url: '/api/visualdevices'
+        }).then(function(jsonDevs){
+          //console.log(jsonDevs.data);
+          var devsArr = jsonDevs.data;
+          var devices = {};
+          for (var i=0; i<devsArr.length; i++) {
+            // add coordination manually since it is not included in json file
+            devsArr[i].coords = {x:(i%10)*200, y:Math.floor(i/10)*200};
+            var d = devsArr[i];
+            devices[d.id] = d;
+          }
+          resolve(devices);
+        });
+      });
+    }
+
+    /*function randomDevices() {
       var devices = {};
       for (var i=0; i<N; i++) {
         var d = randomDevice();
         devices[d.id] = d;
-      }
+      }      
       return devices;
-    }
+    }*/
 
     function fetchApps(device) {
       $http({
@@ -226,24 +271,65 @@ angular.module('koodainApp')
       });
     }
 
-    var devices = {};
-
     function addMockDevicesTo(devs) {
-      var rand = randomDevices();
+      //return $q(function(resolve, reject){
+        return randomDevices().then(function(rand){
+         // console.log("1");
+         // console.log(rand);
+          for (var i in rand) {
+            devs[i] = rand[i];
+          }
+          return devs;
+          //resolve();
+          //resolve("2");
+        });
+      //});
+      /*var rand = randomDevices();
       for (var i in rand) {
         devs[i] = rand[i];
       }
-      return devs;
+      //console.log(devs);
+      return devs;*/
     }
 
-    function queryDevices(q) {
-      return devicelib.devices(q);
-    }
+    /**
+     * The service returns a function that takes a device manager URL as a parameter.
+     * The function returns an object with the methods documented below.
+     */
+    return function (deviceManagerUrl) {
+      var dm = devicelib(deviceManagerUrl);
+      function queryDevices(deviceQuery, appQuery) {
+        return dm.devices(deviceQuery, appQuery);
+      }
 
-    return {
-      queryDevices: queryDevices,
-      filter: filter,
-      addMockDevicesTo: addMockDevicesTo,
+      return {
+        /**
+         * Queries devices from the device manager.
+         *
+         * Takes 2 parameters: deviceQuery and appQuery.
+         * Both parameters are optional.
+         */
+        queryDevices: queryDevices,
+
+        /**
+         * Filters a list of devices based on query.
+         *
+         * This does NOT make a request to the device manager;
+         * the given list of devices is filtered locally.
+         *
+         * Takes 3 parameters:
+         * - list of devices
+         * - device query
+         * - app query
+         *
+         * Returns a list of devices that match the query/queries.
+         */
+        filter: filter,
+
+        /**
+         * Adds some mock devices to the device list given as parameter.
+         */
+        addMockDevicesTo: addMockDevicesTo,
+      };
     };
-
   });

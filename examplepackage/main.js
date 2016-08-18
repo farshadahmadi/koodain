@@ -1,38 +1,20 @@
+module.exports = function(<%= project.name %>){
+var greeting = "";
 
-var Agent = require('./agent');
+<%= project.name %>.configureInterval(true, 3000);
 
-//inherit from Agent
-function MainClass(){
-  Agent.call(this);
-}
+<%= project.name %>.initialize = function(initCompleted){
+    greeting = "World!";
+    initCompleted();
+};
 
-var counter = 0;
+<%= project.name %>.task = function(taskCompleted) {
+    console.log("hello " + greeting);
+    taskCompleted();
+};
 
-MainClass.prototype = Object.create(Agent.prototype);
-MainClass.prototype.constructor = MainClass;
-
-MainClass.prototype.preStopFunction = function(){
-}
-
-
-MainClass.prototype.mainFunction = function(callback) {
-  try {
-    //application specific part - start
-    console.log("helloOoOo!");
-    //application specific part - end
-    if(counter === 0) {
-      callback(null);
-    }
-    counter++;
-    //console.log("N: " + counter);
-  } catch(err) {
-    callback(err);
-  }
-}
-
-function createAgentObject() {
-  var obj = new MainClass();
-  obj.setWork(obj.mainFunction);
-  obj.setPreStopWork(obj.preStopFunction);
-  return obj;
+<%= project.name %>.terminate = function(terminateCompleted){
+    console.log("See you " + greeting);
+    terminateCompleted();
+};
 }
