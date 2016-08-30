@@ -266,6 +266,8 @@ angular.module('koodainApp')
   function deviceListAsObject(devs) {
     var obj = {};
     for (var i=0; i<devs.length; i++) {
+      // add id property to the device
+      devs[i].id = devs[i]._id;
       // add coordination manually since it is not included in json file
       devs[i].coords = {x:(i%10)*200, y:(Math.floor(i/10)+10)*200};
       var d = devs[i];
@@ -411,6 +413,11 @@ angular.module('koodainApp')
       return allDevices[id];
     });
 
+    /*$scope.selectedDevices = [];
+    selDevIds.forEach(function(id){
+      $scope.selectedDevices.push(allDevices[id]);
+    });*/
+
     //$scope.selectedDevices = selDevs;
    
     //var c = [];
@@ -444,7 +451,8 @@ angular.module('koodainApp')
 
     //console.log(selDevs);
     $scope.selectedDevices = selDevs;
-    /*console.log($scope.selectedDevices);*/
+    //$scope.$digest();
+    //console.log($scope.selectedDevices);
 
     $scope.camera.fit();
     $scope.camera.checkCrawling();
@@ -456,7 +464,148 @@ angular.module('koodainApp')
   // Select devices based on what's in device query + app query fields
   // This is called every time either of them changes
   function updateSelection() {
-    var selDevsAndApps = deviceManager.filter(allDevices, $scope.devicequery, $scope.appquery);
+
+    /*function p(query){
+      return deviceManager.queryDevicess(query).then(function(devices){
+        if(devices.length === 0)
+          throw new Error('no device with id ' + query);
+        else
+          return devices[0];
+      });//.catch(function(err){
+        //return err;
+      //});
+    }*/
+
+    var a = [];
+    var d = [];
+    var n = [];
+
+    /*if($scope.devicequery &&  $scope.devicequery.split(',').length > 1){
+      var devPromises = $scope.devicequery.split(',').filter(function(id){
+        return id ? true : false;
+      }).map(function(id){
+        return p(id);
+      });
+      Promise.all(devPromises).then(function(devs){
+        //console.log(devs);
+        if($scope.appquery){
+          var appIds = $scope.appquery.split(',');
+          //console.log(appIds);
+        
+          devs.forEach(function(dev){
+            //var flag = false;
+            d.push(dev._id);
+            if(dev.hasOwnProperty('apps')){
+              dev.apps.forEach(function(app){
+               if(appIds.indexOf('#' + app.id) != -1){
+                 //flag = true;
+                 a.push('app:' + app.id);
+                 //console.log(app.id);
+               }
+               //if(flag){
+               // d.push(dev._id);
+               //}
+              });
+            }
+          });
+          n = d.concat(a);
+          findSelectedDevCaps(d);
+          network.selectNodes(n);
+          select(d, a);
+        } else {
+          d = devs.map(function(dev){
+            return dev._id;
+          });
+          n = d;
+          findSelectedDevCaps(d);
+          network.selectNodes(n);
+          select(d, a);
+        }
+      }).catch(function(err){
+        //console.log(err);
+        Notification.error(err);
+        findSelectedDevCaps(d);
+        network.selectNodes(n);
+        select(d, a);
+      });
+
+      /*deviceManager.queryDevicess($scope.devicequery)
+        .then(function(devices){
+          console.log(devices);
+          devices.forEach(function(device){
+            d.push(device._id);
+            if(device.hasOwnProperty('matchedApps')){
+              var matchedAppIds = device.matchedApps.map(function(app){
+                return "app:" + app.id;
+              });
+              a.push.apply(a, matchedAppIds);
+            }
+          });
+          console.log(a);
+          console.log(d);
+          n = d.concat(a);
+          findSelectedDevCaps(d);
+
+          network.selectNodes(n);
+          
+          select(d, a);
+        }).catch(function(err){
+          console.log(err);
+          findSelectedDevCaps(d);
+          network.selectNodes(n);
+          select(d, a);
+        });
+    
+      console.log(devIds);
+    } else*/ 
+    var da = [];
+    if($scope.devicequery || $scope.appquery){
+      deviceManager.queryDevicess($scope.devicequery, $scope.appquery)
+        .then(function(devices){
+          //console.log(devices);
+          devices.forEach(function(device){
+            console.log(device);
+            d.push(device._id);
+            if(device.hasOwnProperty('matchedApps')){
+              if(!device.queried){
+                da.push('#' + device._id);
+              }
+              var matchedAppIds = device.matchedApps.map(function(app){
+                return "app:" + app.id;
+              });
+              a.push.apply(a, matchedAppIds);
+            }
+          });
+
+          console.log(da);
+          if(da.length > 0) {
+            if($scope.devicequery) {
+              $scope.devicequery = $scope.devicequery + ',' + da.join(',');
+            } else {
+              $scope.devicequery = da.join(',');
+            }
+          }
+          //$scope.devicequery = d.map(function(id) { return '#'+id; }).join(',');
+          //console.log(a);
+          //console.log(d);
+          n = d.concat(a);
+          findSelectedDevCaps(d);
+          network.selectNodes(n);
+          select(d, a);
+        }).catch(function(err){
+          //console.log(err);
+          findSelectedDevCaps(d);
+          network.selectNodes(n);
+          select(d, a);
+        });
+    } else {
+      findSelectedDevCaps(d);
+      network.selectNodes(n);
+      select(d, a);
+    }
+
+   /*var selDevsAndApps = deviceManager.filter(allDevices, $scope.devicequery, $scope.appquery);
+    //console.log(selDevsAndApps);
     // extracting IDs of selected devices
     var selDevices = selDevsAndApps.devices;
 
@@ -474,7 +623,7 @@ angular.module('koodainApp')
     var selNodes = selDevices.concat(selApps);
     network.selectNodes(selNodes);
     
-    select(selDevices, selApps);
+    select(selDevices, selApps);*/
   }
 
 
@@ -491,7 +640,7 @@ angular.module('koodainApp')
 
   // loadDevices
   function loadDevices() {
-    deviceManager.queryDevices().then(function(devices) {
+    return deviceManager.queryDevicess().then(function(devices) {
 
       //console.log(devices);
 
@@ -500,14 +649,16 @@ angular.module('koodainApp')
 
       // if you want to remove visual devices,
       // comment this line and uncomment the next line
-      return deviceManager.addMockDevicesTo(allDevices);
-      //return Promise.resolve(allDevices);
+      //return deviceManager.addMockDevicesTo(allDevices);
+      //return Promise.resolve(allDevices); // It is a good way to wrap a synchronous value as a promise
+      return allDevices; // a promise can return a synchroous value
     }).then(function(devs){
       allDevices = devs;
       //console.log(allDevices);
       updateNodesAndEdges();
       //updateSelection();
-      $scope.$apply();
+      //$scope.$apply();
+      return "done";
     });
   }
   
@@ -573,6 +724,9 @@ angular.module('koodainApp')
         nodes: nodes,
         edges: edges
       };
+      //$scope.$apply();
+      //console.log(nodesArray);
+      //console.log(edgesArray);
     }
 
 
@@ -602,7 +756,7 @@ angular.module('koodainApp')
 
   function isAppNodeId(nodeId) {
     // App node ids start with app:
-    return nodeId.slice(0,4) === 'app:';
+    return nodeId && nodeId.slice(0,4) === 'app:';
   }
 
   function isDeviceNodeId(nodeId) {
@@ -623,10 +777,29 @@ angular.module('koodainApp')
     //console.log(selApps);
     //findSelectedDevCaps(selDevices); 
     $scope.deselectProject();
-    //if($scope.devicequery /*&& $scope.appquerry*/){
+    var lastModifiedNodeId = null;
+    if(params.nodes.length === 0){
+      $scope.devicequery = "";
+      $scope.appquery = "";
+    } else if (params.hasOwnProperty('previousSelection')) {
+      lastModifiedNodeId = findDeselectedNode(params.nodes, params.previousSelection.nodes);
+      /*lastModifiedNodeId = params.previousSelection.nodes.filter(function(node){
+        return params.nodes.indexOf(node) === -1;
+      })[0];*/
+    } else {
+      lastModifiedNodeId = params.nodes[params.nodes.length - 1];
+    }
+    
+    if(isDeviceNodeId(lastModifiedNodeId)){
       $scope.devicequery = selDevices.map(function(id) { return '#'+id; }).join(',');
+    } else if(isAppNodeId(lastModifiedNodeId)){
+      $scope.appquery = selApps.map(function(id) { return '#'+id.slice(4,id.length); }).join(',');
+    }
+
+    //if($scope.devicequery /*&& $scope.appquerry*/){
+      //$scope.devicequery = selDevices.map(function(id) { return '#'+id; }).join(',');
     //}
-    $scope.appquery = selApps.map(function(id) { return '#'+id.slice(4,id.length); }).join(',');
+    //$scope.appquery = selApps.map(function(id) { return '#'+id.slice(4,id.length); }).join(',');
 
     //$scope.appquery = "";
     $scope.$apply();  // Needed?
@@ -636,10 +809,10 @@ angular.module('koodainApp')
     //$scope.$apply();  // Needed?
   }
 
-  function findDeselectedDevice(newSelection, oldSelection){
-    var deselectedDevice =  oldSelection.filter(function(device){
+  function findDeselectedNode(newSelection, oldSelection){
+    return oldSelection.filter(function(device){
       return newSelection.indexOf(device) == -1;
-    });
+    })[0];
     //console.log(deselectedDevice);
   }
 
@@ -709,6 +882,7 @@ angular.module('koodainApp')
         },
       }
     }).result.then(function(deployment) {
+      //console.log(deployment);
       $scope.deployments.push(deployment);
     });
   };
@@ -759,26 +933,31 @@ angular.module('koodainApp')
     }).then(function(response) {
       // This is a bit of quickndirty way to update app,
       // would be better to load it from the server for realz...
-      app.status = response.data.status;
+      //app.status = response.data.status;
+      loadDevices();
     }, function(error){
       Notification.error("Connection to the application was not succeccfull.");
     });
   };
 
   $scope.removeApp = function(device, app) {
+    //console.log(device);
     var url = device.url + '/app/' + app.id;
     return $http({
       url: devicePipeUrl(url),
       method: 'DELETE',
     }).then(function() {
-      var apps = device.apps;
-      for (var i=0; i<apps.length; i++) {
-        if(apps[i].id === app.id) {
-          apps.splice(i, 1);
-          loadDevices();
-          return;
-        }
-      }
+      //var apps = device.apps;
+      //for (var i=0; i<apps.length; i++) {
+        //if(apps[i].id === app.id) {
+          //apps.splice(i, 1);
+          loadDevices().then(function(){
+            loadDevices();
+          });
+          //$scope.$apply();
+          //return;
+        //}
+      //}
     }, function(error){
       Notification.error("Connection to the application was not succeccfull.");
     });
@@ -904,6 +1083,7 @@ angular.module('koodainApp')
       numApproxDevices: data.devices.length,
       n: $scope.allDevices || !$scope.numDevices ? 'all' : $scope.numDevices,
       removeOld: $scope.removeOld,
+      selectedDevices: data.devices
     };
     $uibModalInstance.close(deployment);
     //console.log(deployment);
@@ -938,6 +1118,20 @@ angular.module('koodainApp')
 
   // Returns a promise for executing the deployment object.
   function deployPromise(deployment) {
+    //var dm = devicelib(deviceManagerUrl);
+    //return dm.devices(deployment.devicequery, deployment.appquery).then(function(devices) {
+      //deployment.devices = devices;
+      // Promise.all succeeds iff all the promises succeed.
+      // TODO: what to do on (partially) unsuccessful deployment??!?!?!
+      return Promise.all(deployment.selectedDevices.map(function(d) {
+        return deployDevicePromise(d, deployment.project);
+      }));
+    //});
+  }
+
+  /*
+  // Returns a promise for executing the deployment object.
+  function deployPromise(deployment) {
     var dm = devicelib(deviceManagerUrl);
     return dm.devices(deployment.devicequery, deployment.appquery).then(function(devices) {
       deployment.devices = devices;
@@ -947,7 +1141,7 @@ angular.module('koodainApp')
         return deployDevicePromise(d, deployment.project);
       }));
     });
-  }
+  }*/
 
   $scope.deploy = function() {
     var deps = $scope.deployments;
