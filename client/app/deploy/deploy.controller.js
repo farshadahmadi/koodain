@@ -16,31 +16,10 @@ angular.module('koodainApp')
    */
   .controller('DeployCtrl', function ($scope, $http, $resource, $uibModal, Notification, VisDataSet, DeviceManager, deviceManagerUrl, $stateParams, $q) {
 
-
-  // Returns a promise for getting the device capabilities
-  // mentioned in liquidiot.json file of the the project
-  function getDevCapsPromise(project) {
-    //return $q(function(resolve, reject){
-      return $http({
-        method: 'GET',
-        url: '/api/projects/' + project.name + '/files/liquidiot.json'
-      }).then(function(res){
-        res.name = project.name;
-        //resolve(res);
-        return res;
-      });
-    //});
-  }
-
   var Project = $resource('/api/projects/:project');
-  //$scope.projects = Project.query();
   Project.query(function(projects){
     $scope.projects = projects;
-    //Promise.all($scope.projects.map(getDevCapsPromise)).then(function(v){
-      //console.log(v);
-    //});
   });
-
 
   $scope.deviceManagerUrl = deviceManagerUrl;
     
@@ -59,7 +38,6 @@ angular.module('koodainApp')
       },
       // comment the line below if you want to enable dragging
       fixed: true
-      //physics: false
     },
     'device:selected': {
       shape: 'icon',
@@ -69,7 +47,6 @@ angular.module('koodainApp')
         size: 85,
         color: 'purple'
       },
-      //physics: false
       // comment the line below if you want to enable dragging
       fixed: true
     },
@@ -93,58 +70,7 @@ angular.module('koodainApp')
     }
   };
 
-  /// Returns a Vis.js group based on app name
-  /// If the group doesn't exist, it's created in the visGroups object.
-  /*function createGroup(name) {
-    var codes = {
-      playSound: '\uf028',
-      measureTemperature: '\uf0e4',
-    };
-
-    //console.log(name);
-
-    if (!(name in codes)) {
-      //console.log(name);
-      name = 'default';
-      //console.log(name);
-    }
-
-    if (name in visGroups) {
-      //console.log(visGroups);
-      //console.log('yes');
-      return name;
-    }
-
-    //console.log(visGroups);
-
-    var code = codes[name];
-    if (!code) {
-      code = '\uf059';
-    }
-
-    visGroups[name] = {
-      shape: 'icon',
-      icon: {
-        face: 'FontAwesome',
-        code: code,
-        size: 50,
-        color: 'black',
-      }
-    };
-    visGroups[name+':selected'] = {
-      shape: 'icon',
-      icon: {
-        face: 'FontAwesome',
-        code: code,
-        size: 50,
-        color: 'purple',
-      }
-    };
-    return name;
-  }*/
-
   function groupForApp(app) {
-    //return createGroup(app.name);
     return 'app';
   }
 
@@ -166,6 +92,7 @@ angular.module('koodainApp')
     return n;
   }
 
+  // tool tip for a device
   var generateDeviceTooltip = function(device){
 
     var tooltip = "<div class='panel panel-success' style='margin-bottom:0px'>"+
@@ -205,6 +132,7 @@ angular.module('koodainApp')
     return tooltip;
   }
 
+  // tool tip for an app
   var generateAppTooltip = function(app){
 
     var apis = app.hasOwnProperty("applicationInterfaces") ? app.applicationInterfaces.join(", ") : "";
@@ -255,9 +183,7 @@ angular.module('koodainApp')
       id: 'app:' + app.id,
       label: app.name,
       group: groupForApp(),
-      //group: groupForApp(app),
       title: generateAppTooltip(app)//,
-      //selectable: false
     };
     return n;
   }
@@ -320,52 +246,10 @@ angular.module('koodainApp')
 
   };
 
- /* var focusedNodeIndex = -1;
-  $scope.camera = {
-    // Zooms out so all node fit on the canvas
-    fit : function(){
-      network.fit();
-    },
-    // Zooms out so all selected node fit on the canvas
-    fitOnSelectedNodes : function(){
-      if(selectedNodeIds.length == 1){
-        network.focus(selectedNodeIds[0], {scale:1});
-      } else {
-        network.fit({nodes: selectedNodeIds});
-      }
-    },
-    checkCrawling: function(){
-      if(selectedNodeIds.length > 1){
-        focusedNodeIndex = 0;
-        $scope.isCrawlingPossible = true;
-      } else {
-        focusedNodeIndex = -1;
-        $scope.isCrawlingPossible = false;
-      }
-    },
-    crawl : function(){
-      if(focusedNodeIndex >= 0 && focusedNodeIndex <= selectedNodeIds.length) {
-        if(focusedNodeIndex == selectedNodeIds.length){
-          Notification.info({message:"Crawling started again!", delay:1000});
-        }
-        focusedNodeIndex %= selectedNodeIds.length;
-        //console.log("focusedNodeId: " + focusedNodeIndex);
-        network.focus(selectedNodeIds[focusedNodeIndex], {scale:1});
-        focusedNodeIndex++; 
-      }
-    }
-
-  };*/
-
   $scope.filterSelApp = function(app){
-    //console.log(app);
-    //console.log(selAppIds);
-    //console.log($scope);
     if( $scope.hasOwnProperty('appquery') && $scope.appquery.length != 0 && selAppIds.indexOf("app:" + app.id) == -1){
-      //console.log('no');
       return false;
     }
-    //console.log('yes');
     return true;
   }
 
@@ -403,56 +287,11 @@ angular.module('koodainApp')
     selDevIds = devIds;
     selAppIds = appIds;
 
-    /*$scope.selectedDevices = selDevIds.map(function(id) {
-      return allDevices[id];
-    });*/
-
-    //console.log(selDevIds);
-
     var selDevs = selDevIds.map(function(id) {
       return allDevices[id];
     });
 
-    /*$scope.selectedDevices = [];
-    selDevIds.forEach(function(id){
-      $scope.selectedDevices.push(allDevices[id]);
-    });*/
-
-    //$scope.selectedDevices = selDevs;
-   
-    //var c = [];
-    /*var i =  selDevs.length;
-    var j;
-    console.log("before");
-    while(i--){
-      console.log("here: " + i);
-      console.log(selDevs[i].apps.length);
-      j = selDevs[i].apps.length;
-      //c = [];
-      while(j--){
-        console.log("there: " + j);
-        console.log(selDevs[i].apps[j]);
-        console.log(selAppIds);
-        if(selAppIds.indexOf("app:" + selDevs[i].apps[j].id) == -1){
-          console.log("no");
-          //console.log(j);
-          //c.push(j);
-          selDevs[i].apps.splice(j, 1);
-        } else {
-          console.log("yes");
-        }
-      }
-      /*for(var k = 0; k < c.length; k++){
-        console.log("ggggg: " + c[k]);
-        console.log(selDevs[i].apps[c[k]]);
-        //selDevs[i].apps.splice(c[k], 1);
-      }
-    }*/
-
-    //console.log(selDevs);
     $scope.selectedDevices = selDevs;
-    //$scope.$digest();
-    //console.log($scope.selectedDevices);
 
     $scope.camera.fit();
     $scope.camera.checkCrawling();
@@ -465,165 +304,56 @@ angular.module('koodainApp')
   // This is called every time either of them changes
   function updateSelection() {
 
-    /*function p(query){
-      return deviceManager.queryDevicess(query).then(function(devices){
-        if(devices.length === 0)
-          throw new Error('no device with id ' + query);
-        else
-          return devices[0];
-      });//.catch(function(err){
-        //return err;
-      //});
-    }*/
+    // list of ids of queried apps
+    var queriedApps = [];
+    // list of ids of queried devices
+    var queriedDevs = [];
+    // ids of all queried apps and devices
+    var queriedAppsAndDevs = [];
+    // ids of devices that are hosting queried apps (are the result of querying apps)
+    // and are not the result of querying devices. 
+    var noQueriedDevs = [];
 
-    var a = [];
-    var d = [];
-    var n = [];
-
-    /*if($scope.devicequery &&  $scope.devicequery.split(',').length > 1){
-      var devPromises = $scope.devicequery.split(',').filter(function(id){
-        return id ? true : false;
-      }).map(function(id){
-        return p(id);
-      });
-      Promise.all(devPromises).then(function(devs){
-        //console.log(devs);
-        if($scope.appquery){
-          var appIds = $scope.appquery.split(',');
-          //console.log(appIds);
-        
-          devs.forEach(function(dev){
-            //var flag = false;
-            d.push(dev._id);
-            if(dev.hasOwnProperty('apps')){
-              dev.apps.forEach(function(app){
-               if(appIds.indexOf('#' + app.id) != -1){
-                 //flag = true;
-                 a.push('app:' + app.id);
-                 //console.log(app.id);
-               }
-               //if(flag){
-               // d.push(dev._id);
-               //}
-              });
-            }
-          });
-          n = d.concat(a);
-          findSelectedDevCaps(d);
-          network.selectNodes(n);
-          select(d, a);
-        } else {
-          d = devs.map(function(dev){
-            return dev._id;
-          });
-          n = d;
-          findSelectedDevCaps(d);
-          network.selectNodes(n);
-          select(d, a);
-        }
-      }).catch(function(err){
-        //console.log(err);
-        Notification.error(err);
-        findSelectedDevCaps(d);
-        network.selectNodes(n);
-        select(d, a);
-      });
-
-      /*deviceManager.queryDevicess($scope.devicequery)
-        .then(function(devices){
-          console.log(devices);
-          devices.forEach(function(device){
-            d.push(device._id);
-            if(device.hasOwnProperty('matchedApps')){
-              var matchedAppIds = device.matchedApps.map(function(app){
-                return "app:" + app.id;
-              });
-              a.push.apply(a, matchedAppIds);
-            }
-          });
-          console.log(a);
-          console.log(d);
-          n = d.concat(a);
-          findSelectedDevCaps(d);
-
-          network.selectNodes(n);
-          
-          select(d, a);
-        }).catch(function(err){
-          console.log(err);
-          findSelectedDevCaps(d);
-          network.selectNodes(n);
-          select(d, a);
-        });
-    
-      console.log(devIds);
-    } else*/ 
-    var da = [];
+    // if there is any query to query apps or devices
     if($scope.devicequery || $scope.appquery){
+      // query apps OR devices
       deviceManager.queryDevicess($scope.devicequery, $scope.appquery)
         .then(function(devices){
-          //console.log(devices);
           devices.forEach(function(device){
-            console.log(device);
-            d.push(device._id);
+            queriedDevs.push(device._id);
             if(device.hasOwnProperty('matchedApps')){
-              if(!device.queried){
-                da.push('#' + device._id);
+              // the device which is hosting the queried apps
+              if(!device.isQueried){
+                noQueriedDevs.push('#' + device._id);
               }
               var matchedAppIds = device.matchedApps.map(function(app){
                 return "app:" + app.id;
               });
-              a.push.apply(a, matchedAppIds);
+              queriedApps.push.apply(queriedApps, matchedAppIds);
             }
           });
 
-          console.log(da);
-          if(da.length > 0) {
+          if(noQueriedDevs.length > 0) {
             if($scope.devicequery) {
-              $scope.devicequery = $scope.devicequery + ',' + da.join(',');
+              $scope.devicequery = $scope.devicequery + ',' + noQueriedDevs.join(',');
             } else {
-              $scope.devicequery = da.join(',');
+              $scope.devicequery = noQueriedDevs.join(',');
             }
           }
-          //$scope.devicequery = d.map(function(id) { return '#'+id; }).join(',');
-          //console.log(a);
-          //console.log(d);
-          n = d.concat(a);
-          findSelectedDevCaps(d);
-          network.selectNodes(n);
-          select(d, a);
+          queriedAppsAndDevs = queriedDevs.concat(queriedApps);
+          findSelectedDevCaps(queriedDevs);
+          network.selectNodes(queriedAppsAndDevs);
+          select(queriedDevs, queriedApps);
         }).catch(function(err){
-          //console.log(err);
-          findSelectedDevCaps(d);
-          network.selectNodes(n);
-          select(d, a);
+          findSelectedDevCaps(queriedDevs);
+          network.selectNodes(queriedAppsAndDevs);
+          select(queriedDevs, queriedApps);
         });
     } else {
-      findSelectedDevCaps(d);
-      network.selectNodes(n);
-      select(d, a);
+      findSelectedDevCaps(queriedDevs);
+      network.selectNodes(queriedAppsAndDevs);
+      select(queriedDevs, queriedApps);
     }
-
-   /*var selDevsAndApps = deviceManager.filter(allDevices, $scope.devicequery, $scope.appquery);
-    //console.log(selDevsAndApps);
-    // extracting IDs of selected devices
-    var selDevices = selDevsAndApps.devices;
-
-    // extracting IDs of selected apps
-    var selApps = selDevsAndApps.apps.map(function(id){
-      return "app:" + id;
-    });
-
-    //if(!$scope.devicequery){
-      //$scope.devicequery = selDevices.map(function(id) { return '#'+id; }).join(',');
-    //}
-
-    findSelectedDevCaps(selDevices);
-
-    var selNodes = selDevices.concat(selApps);
-    network.selectNodes(selNodes);
-    
-    select(selDevices, selApps);*/
   }
 
 
@@ -638,59 +368,23 @@ angular.module('koodainApp')
     deselectNode: selectClick
   };
 
-  // loadDevices
-  function loadDevices() {
+  $scope.loadDevices = function () {
     return deviceManager.queryDevicess().then(function(devices) {
-
-      //console.log(devices);
-
       allDevices = deviceListAsObject(devices);
-      //console.log(allDevices);
-
       // if you want to remove visual devices,
       // comment this line and uncomment the next line
       //return deviceManager.addMockDevicesTo(allDevices);
-      //return Promise.resolve(allDevices); // It is a good way to wrap a synchronous value as a promise
       return allDevices; // a promise can return a synchroous value
     }).then(function(devs){
       allDevices = devs;
-      //console.log(allDevices);
       updateNodesAndEdges();
-      //updateSelection();
       //$scope.$apply();
       return "done";
     });
   }
   
   // loading of the devices
-  loadDevices();
-  // Update Vis.js nodes and edges
-  // look at resetAllNodes() function here http://visjs.org/examples/network/data/datasets.html
-
-  /*function updateNodesAndEdges() {
-    nodes.clear();
-    edges.clear();
-
-    Object.keys(allDevices).forEach(function(id) {
-      nodes.add(nodeFromDevice(allDevices[id]));
-    });
-
-    for (var i in allDevices) {
-      var d = allDevices[i];
-      var apps = d.apps;
-      if (apps) {
-        nodes.add(apps.map(nodeFromApp));
-        /* jshint -W083 */
-        // Edge from each app to the device it's in
-        /*edges.add(apps.map(function(app) {
-          return {
-            from: 'app:' + app.id,
-            to: d.id,
-          };
-        }));
-      }
-    }
-  }*/
+  $scope.loadDevices();
 
   // Update Vis.js nodes and edges
   // look at setTheData() function http://visjs.org/examples/network/data/datasets.html
@@ -703,7 +397,6 @@ angular.module('koodainApp')
       for (var i in allDevices) {
         var d = allDevices[i];
         var apps = d.apps;
-        //console.log(apps);
         if (apps) {
           nodesArray.push.apply(nodesArray, apps.map(nodeFromApp));
           //nodes.add(apps.map(nodeFromApp));
@@ -724,13 +417,10 @@ angular.module('koodainApp')
         nodes: nodes,
         edges: edges
       };
-      //$scope.$apply();
-      //console.log(nodesArray);
-      //console.log(edgesArray);
     }
 
 
-  $scope.loadDevices = loadDevices;
+  //$scope.loadDevices = loadDevices;
 
   // Vis.js options
   // http://visjs.org/docs/network/#options
@@ -738,20 +428,7 @@ angular.module('koodainApp')
     groups: visGroups,
     interaction: {
       multiselect: true
-    }/*,
-    nodes: {
-      fixed:{
-        x: true,
-        y: true
-      }
-    }/*,
-    /*layout:{
-      //randomSeed: 1
-    //},
-    //physics: false
-    /*, nodes:{
-      physics: false
-    }*/
+    }
   };
 
   function isAppNodeId(nodeId) {
@@ -764,74 +441,48 @@ angular.module('koodainApp')
     return !isAppNodeId(nodeId);
   }
 
-  //var lastSelectedDevices = null;
   // When the user clicks on the Vis.js network,
   // construct a comma-separated list of selected device id to be used as query.
   function selectClick(params) {
-    // TODO: currently only devices can be selected, not apps...
-    //console.log("clicked");
-    //console.log(params);
+
     var selDevices = params.nodes.filter(isDeviceNodeId);
     var selApps = params.nodes.filter(isAppNodeId);
-    //console.log(selDevices);
-    //console.log(selApps);
-    //findSelectedDevCaps(selDevices); 
+
     $scope.deselectProject();
+
     var lastModifiedNodeId = null;
+    // if no node (either device or app) is selected
     if(params.nodes.length === 0){
       $scope.devicequery = "";
       $scope.appquery = "";
+    // if a node is deselected
     } else if (params.hasOwnProperty('previousSelection')) {
+      // find the deselected node
       lastModifiedNodeId = findDeselectedNode(params.nodes, params.previousSelection.nodes);
-      /*lastModifiedNodeId = params.previousSelection.nodes.filter(function(node){
-        return params.nodes.indexOf(node) === -1;
-      })[0];*/
     } else {
+      // find the selected node
       lastModifiedNodeId = params.nodes[params.nodes.length - 1];
     }
     
+    // if the selected or deselected node is a device, modify query of device
     if(isDeviceNodeId(lastModifiedNodeId)){
       $scope.devicequery = selDevices.map(function(id) { return '#'+id; }).join(',');
+    // if the selected or deselected node is an app, modify query of app
     } else if(isAppNodeId(lastModifiedNodeId)){
       $scope.appquery = selApps.map(function(id) { return '#'+id.slice(4,id.length); }).join(',');
     }
 
-    //if($scope.devicequery /*&& $scope.appquerry*/){
-      //$scope.devicequery = selDevices.map(function(id) { return '#'+id; }).join(',');
-    //}
-    //$scope.appquery = selApps.map(function(id) { return '#'+id.slice(4,id.length); }).join(',');
-
-    //$scope.appquery = "";
     $scope.$apply();  // Needed?
-
-    //$scope.devicequery = $scope.selectedDevices.map(function(dev) { return '#'+dev.id; }).join(',');
-    //console.log($scope.devicequery);
-    //$scope.$apply();  // Needed?
   }
-
+  
   function findDeselectedNode(newSelection, oldSelection){
     return oldSelection.filter(function(device){
       return newSelection.indexOf(device) == -1;
     })[0];
-    //console.log(deselectedDevice);
   }
 
   // selected device capabilities : an array that represents device capabilities of selected devices
   var selDevCaps = [];
-
-  /*function mergeTwoArrs(arr1, arr2){
-    return arr1.concat(arr2.filter(function(element){
-      return arr1.indexOf(element) == -1;
-    }));
-  }
-
-  function mergeArrs(arrs){
-    while(arrs.length != 1) {
-        arrs[arrs.length - 2] = mergeTwoArrs(arrs[arrs.length - 2], arrs[arrs.length - 1]);
-        arrs.splice(arrs.length - 1, 1);
-    }
-    return arrs[0];
-  }*/
 
   function findSelectedDevCaps(sel){
     selDevCaps = sel.map(function(devId){
@@ -839,22 +490,17 @@ angular.module('koodainApp')
     });
   }
 
-  /*function addAppsNodes(){
-    var dm = devicelib(deviceManagerUrl);
-    function addAppNodes(deployment){
-      dm.devices(deployment.devicequery, deployment.appquery).then(function(devices) {
-        //deployment.devices = devices;
-        devices.forEach(function(device){
-          device.apps.filter(function(app){
-            //app.id == 
-          });
-        });
-        console.log(devices);
-        console.log(deployment.project);
-      });
-    }
-    $scope.deployments.forEach(addAppNodes);
-  }*/
+  // Returns a promise for getting the device capabilities
+  // mentioned in liquidiot.json file of the the project
+  function getDevCapsPromise(project) {
+    return $http({
+      method: 'GET',
+      url: '/api/projects/' + project.name + '/files/liquidiot.json'
+    }).then(function(res){
+      res.name = project.name;
+      return res;
+    });
+  }
 
   // A list of "deployment objects".
   // Currently the staged deployment is only stored here in this controller;
@@ -867,7 +513,6 @@ angular.module('koodainApp')
       templateUrl: 'manageapps.html',
       resolve: {
         projects: function(){
-          //console.log($scope.projects);
           return Promise.all($scope.projects.map(getDevCapsPromise));
         },
         data: function() {
@@ -876,13 +521,11 @@ angular.module('koodainApp')
             devicequery: $scope.devicequery,
             appquery: $scope.appquery,
             selectedProject: $scope.selectedProject,
-            selectedDeviceCapabilities: selDevCaps//,
-            //liqjsons: Promise.all($scope.projects.map(getDevCapsPromise))
+            selectedDeviceCapabilities: selDevCaps
           }; 
         },
       }
     }).result.then(function(deployment) {
-      //console.log(deployment);
       $scope.deployments.push(deployment);
     });
   };
@@ -896,7 +539,7 @@ angular.module('koodainApp')
       }
     }).result.then(function() {
       $scope.deployments = [];
-      loadDevices();
+      $scope.loadDevices();
     });
   };
 
@@ -934,7 +577,7 @@ angular.module('koodainApp')
       // This is a bit of quickndirty way to update app,
       // would be better to load it from the server for realz...
       //app.status = response.data.status;
-      loadDevices();
+      $scope.loadDevices();
     }, function(error){
       Notification.error("Connection to the application was not succeccfull.");
     });
@@ -947,17 +590,10 @@ angular.module('koodainApp')
       url: devicePipeUrl(url),
       method: 'DELETE',
     }).then(function() {
-      //var apps = device.apps;
-      //for (var i=0; i<apps.length; i++) {
-        //if(apps[i].id === app.id) {
-          //apps.splice(i, 1);
-          loadDevices().then(function(){
-            loadDevices();
+          // do not now why loaddevices should be called two time to take effect !!!
+          $scope.loadDevices().then(function(){
+            $scope.loadDevices();
           });
-          //$scope.$apply();
-          //return;
-        //}
-      //}
     }, function(error){
       Notification.error("Connection to the application was not succeccfull.");
     });
@@ -1021,11 +657,6 @@ angular.module('koodainApp')
   $scope.devicequery = data.devicequery;
   $scope.appquery = data.appquery;
 
-  // comparing two array, return true if equal, otherwise false
-  /*var isEqual = function(arr1, arr2){
-    return (arr1.length == arr2.length) && (arr1.every(function(element, index){ return element === arr2[index]; }));
-  }*/
-
   // checks if one array is subset of another array
   var isSubset = function(arr1, arr2){
     return arr1.every(function(value){
@@ -1086,7 +717,6 @@ angular.module('koodainApp')
       selectedDevices: data.devices
     };
     $uibModalInstance.close(deployment);
-    //console.log(deployment);
   };
 })
 
@@ -1096,7 +726,6 @@ angular.module('koodainApp')
   .controller('VerifyDeploymentCtrl', function($scope, $http, $resource, $uibModalInstance, Notification, deployments, deviceManagerUrl) {
 
   $scope.deployments = deployments;
-  //console.log(deployments);
 
   $scope.cancel = function() {
     $uibModalInstance.dismiss('cancel');
@@ -1118,30 +747,12 @@ angular.module('koodainApp')
 
   // Returns a promise for executing the deployment object.
   function deployPromise(deployment) {
-    //var dm = devicelib(deviceManagerUrl);
-    //return dm.devices(deployment.devicequery, deployment.appquery).then(function(devices) {
-      //deployment.devices = devices;
-      // Promise.all succeeds iff all the promises succeed.
-      // TODO: what to do on (partially) unsuccessful deployment??!?!?!
-      return Promise.all(deployment.selectedDevices.map(function(d) {
-        return deployDevicePromise(d, deployment.project);
-      }));
-    //});
+    // Promise.all succeeds iff all the promises succeed.
+    // TODO: what to do on (partially) unsuccessful deployment??!?!?!
+    return Promise.all(deployment.selectedDevices.map(function(d) {
+      return deployDevicePromise(d, deployment.project);
+    }));
   }
-
-  /*
-  // Returns a promise for executing the deployment object.
-  function deployPromise(deployment) {
-    var dm = devicelib(deviceManagerUrl);
-    return dm.devices(deployment.devicequery, deployment.appquery).then(function(devices) {
-      deployment.devices = devices;
-      // Promise.all succeeds iff all the promises succeed.
-      // TODO: what to do on (partially) unsuccessful deployment??!?!?!
-      return Promise.all(devices.map(function(d) {
-        return deployDevicePromise(d, deployment.project);
-      }));
-    });
-  }*/
 
   $scope.deploy = function() {
     var deps = $scope.deployments;
