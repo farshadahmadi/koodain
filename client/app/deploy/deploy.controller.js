@@ -317,7 +317,7 @@ angular.module('koodainApp')
     // if there is any query to query apps or devices
     if($scope.devicequery || $scope.appquery){
       // query apps OR devices
-      deviceManager.queryDevicess($scope.devicequery, $scope.appquery)
+      deviceManager.queryDevicess($scope.devicequery, $scope.appquery, 'or')
         .then(function(devices){
           devices.forEach(function(device){
             queriedDevs.push(device._id);
