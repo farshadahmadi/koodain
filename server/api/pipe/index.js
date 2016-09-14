@@ -22,8 +22,12 @@ router.all('*', function(req, res) {
     url: url,
     body: req.body,
     json: true,
-  });
-  req2.pipe(res);
+  })
+  .on('error', function(err){
+    res.status(404).send(err.toString());
+  })
+  .pipe(res);
+  //req2.pipe(res);
 });
 
 module.exports = router;
