@@ -250,7 +250,7 @@ angular.module('koodainApp')
     };
 
     var generateApi = function(project, method, path){
-      return "\n" + project.name + "." + method + "(\"" + path + "\", function(req, res){});\n"
+      return "\n" + project.name + ".internal.router." + method + "(\"" + path + "\", function(req, res){});\n"
     }
 
     return {

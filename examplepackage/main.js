@@ -1,20 +1,19 @@
 module.exports = function(<%= project.name %>){
-var greeting = "";
 
-<%= project.name %>.configureInterval(true, 3000);
+<%= project.name %>.internal.configureInterval(true, 3000);
 
-<%= project.name %>.initialize = function(initCompleted){
-    greeting = "World!";
+<%= project.name %>.internal.initialize = function(initCompleted){
+    <%= project.name %>.guyName = "World!";
     initCompleted();
 };
 
-<%= project.name %>.task = function(taskCompleted) {
-    console.log("hello " + greeting);
+<%= project.name %>.internal.task = function(taskCompleted) {
+    console.log("hello " + <%= project.name %>.guyName);
     taskCompleted();
 };
 
-<%= project.name %>.terminate = function(terminateCompleted){
-    console.log("See you " + greeting);
+<%= project.name %>.internal.terminate = function(terminateCompleted){
+    console.log("See you " + <%= project.name %>.guyName);
     terminateCompleted();
 };
 }
