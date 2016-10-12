@@ -1,15 +1,15 @@
 module.exports = function Agent(iotApp){
     
     // public functions that will be overriden by applications
-    iotApp.task = function(){
+    iotApp.$task = function(){
         throw new Error("task function should be defined.");
     };
     
-    iotApp.initialize = function (initCompleted){
+    iotApp.$initialize = function (initCompleted){
         initCompleted();
     };
     
-    iotApp.terminate = function(terminateCompleted){
+    iotApp.$terminate = function(terminateCompleted){
         terminateCompleted();
     };
     
@@ -19,7 +19,7 @@ module.exports = function Agent(iotApp){
     var interval = 1000;
     
     // public functions that will be called by applications
-    iotApp.configureInterval = function(_repeat, _interval) {
+    iotApp.$configureInterval = function(_repeat, _interval) {
         repeat = _repeat;
         interval = _interval;
     }
@@ -30,14 +30,14 @@ module.exports = function Agent(iotApp){
     }
     
     var s = function() {
-        createInterval(iotApp.task, function(restartMainMessage){
+        createInterval(iotApp.$task, function(restartMainMessage){
             if(restartMainMessage){
                 console.log(restartMainMessage);
             }
             if(timer) {
                 s();
             } else {
-                iotApp.terminate(function(stopExecutionMessage){
+                iotApp.$terminate(function(stopExecutionMessage){
                     if(stopExecutionMessage){
                         console.log(stopExecutionMessage);
                     }
@@ -48,12 +48,12 @@ module.exports = function Agent(iotApp){
     
     // public functions that will be called by runtime environemnt
     iotApp.start = function() {
-        iotApp.initialize(function(startMainMessage){
+        iotApp.$initialize(function(startMainMessage){
             if(startMainMessage){
                 console.log(startMainMessage);
             }
             timer = true;
-            iotApp.task(function(restartMainMessage){
+            iotApp.$task(function(restartMainMessage){
                 if(restartMainMessage){
                     console.log(restartMainMessage);
                 }
@@ -68,7 +68,7 @@ module.exports = function Agent(iotApp){
     iotApp.stop = function() {
         timer = false;
         if(!repeat) {
-            iotApp.terminate(function(stopExecutionMessage){
+            iotApp.$terminate(function(stopExecutionMessage){
                 if(stopExecutionMessage){
                     console.log(stopExecutionMessage);
                 }

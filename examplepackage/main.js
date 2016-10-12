@@ -1,19 +1,18 @@
-module.exports = function(<%= project.name %>){
+module.exports = function($app, $router, $request){
+$app.$configureInterval(true, 3000);
 
-<%= project.name %>.internal.configureInterval(true, 3000);
-
-<%= project.name %>.internal.initialize = function(initCompleted){
-    <%= project.name %>.guyName = "World!";
+$app.$initialize = function(initCompleted){
+    $app.guyName = "World!";
     initCompleted();
 };
 
-<%= project.name %>.internal.task = function(taskCompleted) {
-    console.log("hello " + <%= project.name %>.guyName);
+$app.$task = function(taskCompleted) {
+    console.log("hello " + $app.guyName);
     taskCompleted();
 };
 
-<%= project.name %>.internal.terminate = function(terminateCompleted){
-    console.log("See you " + <%= project.name %>.guyName);
+$app.$terminate = function(terminateCompleted){
+    console.log("See you " + $app.guyName);
     terminateCompleted();
 };
 }

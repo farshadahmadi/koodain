@@ -120,7 +120,8 @@ angular.module('koodainApp')
     $scope.updating = {};
 
     function turnMainToModule(f){
-      var firstLine = "module.exports = function(" + $scope.project.name  +"){\n";
+      //var firstLine = "module.exports = function(" + $scope.project.name  +"){\n";
+      var firstLine = "module.exports = function($app, $router, $request){\n";
       var lastLine = "\n}";
       f.content = firstLine + f.content + lastLine;
     }
@@ -250,7 +251,8 @@ angular.module('koodainApp')
     };
 
     var generateApi = function(project, method, path){
-      return "\n" + project.name + ".internal.router." + method + "(\"" + path + "\", function(req, res){});\n"
+      return "\n" + "$router." + method + "(\"" + path + "\", function(req, res){});\n"
+      //return "\n" + project.name + ".internal.router." + method + "(\"" + path + "\", function(req, res){});\n"
     }
 
     return {
