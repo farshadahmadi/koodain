@@ -113,18 +113,30 @@ angular.module('koodainApp')
               "<td>capabilities</td>"+
               "<td>" + device.classes.join(", ") + "</td>"+
             "</tr>"+
-            "<tr>"+
+            "<!-- tr>"+
               "<td>location</td>"+
               "<td>" + device.location + "</td>"+
-            "</tr>"+
+            "</tr -->"+
             "<tr>"+
               "<td>url</td>"+
               "<td>" + device.url + "</td>"+
             "</tr>"+
             "<tr>"+
+              "<td>coordinates</td>"+
+              "<td>" + device.location.latitude + "," + device.location.longitude + "</td>"+
+            "</tr>"+
+            "<tr>"+
+              "<td>postal address</td>"+
+              "<td>" + device.location.streetAddress + "," + device.location.addressLocality + "</td>"+
+            "</tr>"+
+            "<tr>"+
+              "<td>location tag</td>"+
+              "<td>" + device.location.tag + "</td>"+
+            "</tr>"+
+            "<!-- tr>"+
               "<td>coordination</td>"+
               "<td>" + device.coords.x + "," + device.coords.y + "</td>"+
-            "</tr>"+
+            "</tr -->"+
           "</table>"+
         "</div>"+
       "</div>";
