@@ -809,7 +809,7 @@ angular.module('koodainApp')
         method: 'GET',
         url: devicePipeUrl(url),
       }).then(function(response) {
-        $scope.log = response.data;
+        $scope.log = response.data.message;
       },function(error){
         $scope.cancel();
         Notification.error("Connection to the application was not successful.");
