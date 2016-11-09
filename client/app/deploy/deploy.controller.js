@@ -592,6 +592,7 @@ angular.module('koodainApp')
       $scope.loadDevices();
     }, function(error){
       Notification.error("Connection to the application was not succeccfull.");
+      $scope.loadDevices();
     });
   };
 

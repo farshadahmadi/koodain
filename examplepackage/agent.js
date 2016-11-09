@@ -1,4 +1,4 @@
-module.exports = function Agent(iotApp){
+module.exports = function Agent(iotApp, emitter){
     
     // public functions that will be overriden by applications
     iotApp.$task = function(){
@@ -58,6 +58,9 @@ module.exports = function Agent(iotApp){
                     console.log(restartMainMessage);
                 }
                 console.log("app-started-without-error");
+                if(emitter){
+                  emitter.emit('started');
+                }
                 if(repeat) {
                     s();
                 }

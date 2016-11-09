@@ -1,4 +1,4 @@
-module.exports = function($app, $router, $request){
+module.exports = function($app, $router, $request, console){
 $app.$configureInterval(true, 3000);
 
 $app.$initialize = function(initCompleted){

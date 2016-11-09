@@ -121,7 +121,7 @@ angular.module('koodainApp')
 
     function turnMainToModule(f){
       //var firstLine = "module.exports = function(" + $scope.project.name  +"){\n";
-      var firstLine = "module.exports = function($app, $router, $request){\n";
+      var firstLine = "module.exports = function($app, $router, $request, console){\n";
       var lastLine = "\n}";
       f.content = firstLine + f.content + lastLine;
     }
