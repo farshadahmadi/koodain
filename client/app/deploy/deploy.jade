@@ -114,7 +114,7 @@ script(type="text/ng-template", id="manageapps.html")
 // Verify deployment modal dialog
 script(type="text/ng-template", id="verifydeployment.html")
   .modal-header
-    button(type="button", class="close", ng-click="cancel()") &times;
+    button(type="button", class="close", ng-click="deployed ? done() : cancel()") &times;
     h4.modal-title Deploy
       span(ng-if="deploying")
         |  
@@ -137,15 +137,28 @@ script(type="text/ng-template", id="verifydeployment.html")
         ul
           li(ng-if="deployment.removeOld")
             | Remove earlier versions of the app
+        pre
+          | {{deployment.result}}
   .modal-footer
-    button.btn.btn-default
-      i.fa.fa-save
-      | 
-      | Save for later
-    button.btn.btn-primary(ng-click="deploy()")
-      i.fa.fa-paper-plane
-      | 
-      | Deploy
+    p(ng-if="!deployed && !deploying")
+      button.btn.btn-default
+        i.fa.fa-save
+        | 
+        | Save for later
+      button.btn.btn-primary(ng-click="deploy()")
+        i.fa.fa-paper-plane
+        | 
+        | Deploy
+    p(ng-if="deploying")
+      button.btn.btn-danger(ng-click="cancel()")
+        i.fa.fa-paper-plane
+        | 
+        | Cancel
+    p(ng-if="deployed")
+      button.btn.btn-success(ng-click="done()")
+        i.fa.fa-paper-plane
+        | 
+        | OK
 
 // Application log modal dialog
 script(type="text/ng-template", id="applog.html")

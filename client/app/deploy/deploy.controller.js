@@ -539,6 +539,7 @@ angular.module('koodainApp')
       }
     }).result.then(function(deployment) {
       $scope.deployments.push(deployment);
+      console.log($scope.deployments);
     });
   };
 
@@ -716,6 +717,7 @@ angular.module('koodainApp')
   $scope.cancel = function() {
     $uibModalInstance.dismiss('cancel');
   };
+
   $scope.done = function() {
     // Construct a "deployment object"
     // TODO: we could have various tasks to be done on deployment,
@@ -739,22 +741,34 @@ angular.module('koodainApp')
   .controller('VerifyDeploymentCtrl', function($scope, $http, $resource, $uibModalInstance, Notification, deployments, deviceManagerUrl) {
 
   $scope.deployments = deployments;
+  $scope.deploying = false;
+  $scope.deployed = false;
 
   $scope.cancel = function() {
     $uibModalInstance.dismiss('cancel');
   };
+
   $scope.done = function() {
     $uibModalInstance.close();
   };
 
   // Returns a promise for deploying the project to the device.
-  function deployDevicePromise(device, projectName) {
+  function deployDevicePromise(device, deployment) {
+    //$scope.deployResult = "";
     var url = device.url;
-    Notification.info('Deploying ' + projectName + ' to ' + url);
+    Notification.info('Deploying ' + deployment.project + ' to ' + url);
     return $http({
       method: 'POST',
-      url: '/api/projects/' +projectName + '/package',
+      url: '/api/projects/' + deployment.project + '/package',
       data: {deviceUrl: url},
+    }).then(function(res){
+      var result = "Deploying to device with id " + device.id + " was successfull\n";
+      deployment.result += result;
+      return res;
+    }).catch(function(err){
+      var result = "Deploying to device with id " + device.id + " was NOT successfull\n";
+      deployment.result += result;
+      return err;
     });
   }
 
@@ -762,8 +776,9 @@ angular.module('koodainApp')
   function deployPromise(deployment) {
     // Promise.all succeeds iff all the promises succeed.
     // TODO: what to do on (partially) unsuccessful deployment??!?!?!
+    deployment.result = "";
     return Promise.all(deployment.selectedDevices.map(function(d) {
-      return deployDevicePromise(d, deployment.project);
+      return deployDevicePromise(d, deployment);
     }));
   }
 
@@ -775,20 +790,24 @@ angular.module('koodainApp')
 
     $scope.deploying = true;
 
-    Promise.all(deps.map(deployPromise)).then(function() {
-      delete $scope.deploying;
-      Notification.success('Deployment successful!');
-      $uibModalInstance.close();
-    },
-    function(err) {
-      // At least one of the deployment tasks failed.
-      // TODO: what to do on (partially) unsuccessful deployment??!?!?!
-      delete $scope.deploying;
-      Notification.error('Deployment failed!');
-      $uibModalInstance.dismiss('cancel');
-    });
+    Promise.all(deps.map(deployPromise))
+      .then(function(deployResults) {
+        console.log(deployResults);
+        $scope.deploying = false;
+        $scope.deployed = true;
+        Notification.success('Deployment successful!');
+        //$uibModalInstance.close();
+      }).catch(function(err) {
+        // At least one of the deployment tasks failed.
+        // TODO: what to do on (partially) unsuccessful deployment??!?!?!
+        $scope.deploying = false;
+        $scope.deployed = true;
+        Notification.error('Deployment failed!');
+        $uibModalInstance.dismiss('cancel');
+      });
   };
 })
+
 /**
  * Controller for showing application log.
  */
