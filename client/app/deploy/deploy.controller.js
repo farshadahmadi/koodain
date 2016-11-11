@@ -743,6 +743,7 @@ angular.module('koodainApp')
   $scope.deployments = deployments;
   $scope.deploying = false;
   $scope.deployed = false;
+  $scope.deployResults = { successes: [], failures: []};
 
   $scope.cancel = function() {
     $uibModalInstance.dismiss('cancel');
@@ -764,10 +765,12 @@ angular.module('koodainApp')
     }).then(function(res){
       var result = "Deploying to device with id " + device.id + " was successfull\n";
       deployment.result += result;
+      $scope.deployResults.successes.push(res);
       return res;
     }).catch(function(err){
       var result = "Deploying to device with id " + device.id + " was NOT successfull\n";
       deployment.result += result;
+      $scope.deployResults.failures.push(err);
       return err;
     });
   }
@@ -795,7 +798,11 @@ angular.module('koodainApp')
         console.log(deployResults);
         $scope.deploying = false;
         $scope.deployed = true;
-        Notification.success('Deployment successful!');
+        if($scope.deployResults.failures.length != 0){
+          Notification.warning('Some deployments were not successfull');
+        } else {
+          Notification.success('All Deployments were sucessfull!');
+        }
         //$uibModalInstance.close();
       }).catch(function(err) {
         // At least one of the deployment tasks failed.
