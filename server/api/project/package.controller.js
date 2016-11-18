@@ -100,8 +100,20 @@ function sendPackage(pkgBuffer, url) {
   return rp.post({url: url, formData: formData});
 }
 
+function putPackage(pkgBuffer, url) {
+  var formData = {
+    'filekey': {
+      value: pkgBuffer,
+      options: {
+        filename: 'package.tgz',
+        knownLength: pkgBuffer.length,
+      }
+    }
+  };
+  return rp.put({url: url, formData: formData});
+}
 // Create package, i.e. deploy to device.
-exports.create = function(req, res) {
+/*exports.create = function(req, res) {
   var url = req.body.deviceUrl + '/app';
   Project.findOne({name: req.params.project}).then(function(project) {
     if (!project) throw 404;
@@ -113,5 +125,38 @@ exports.create = function(req, res) {
   }).then(function(pkgBuffer) {
     res.status(201).json();
   }).then(null, errorHandler(res));
+};*/
+
+// Create package
+function create(name) {
+  return Project.findOne({name: name}).then(function(project) {
+    if (!project) throw 404;
+    return createPackage(project);
+  }).then(function(pkgFilename) {
+    return fsp.readFileAsync(pkgFilename);
+  });
 };
 
+// deploy to device.
+exports.deploy = function(req, res) {
+  var name = req.params.project;
+  var url = req.body.deviceUrl + '/app';
+  create(name)
+    .then(function(pkgBuffer) {
+    return sendPackage(pkgBuffer, url);
+  }).then(function(pkgBuffer) {
+    res.status(201).json();
+  }).then(null, errorHandler(res));
+};
+
+// deploy to device.
+exports.update = function(req, res) {
+  var name = req.params.project;
+  var url = req.body.deviceUrl + '/app/' + req.body.appId;
+  create(name)
+    .then(function(pkgBuffer) {
+    return sendPackage(pkgBuffer, url);
+  }).then(function(pkgBuffer) {
+    res.status(201).json();
+  }).then(null, errorHandler(res));
+};

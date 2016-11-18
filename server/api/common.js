@@ -20,7 +20,7 @@ function errorHandler(res) {
       res.status(500).json({error: "Request error"});
     }
     else {
-      //console.log(err);
+      console.log(err);
       res.status(500).json({"error": "server error"});
     }
   };

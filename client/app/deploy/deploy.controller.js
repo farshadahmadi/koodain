@@ -268,7 +268,7 @@ angular.module('koodainApp')
   var selDevIds = [];
   var selAppIds = [];
 
-  function select(devIds, appIds) {
+  function select(devIds, appIds, selectedDevs4Update) {
 
     nodes.update(selDevIds.map(function(id) {
       return {
@@ -303,7 +303,12 @@ angular.module('koodainApp')
       return allDevices[id];
     });
 
+    // list of devices: queried devices (queried directly by devicequery) 
+    // + devices that host queried apps (queried by appquerry)
     $scope.selectedDevices = selDevs;
+
+    // list of devices: devices that host queried apps (queried by appquerry)
+    $scope.selectedDevs4Update = selectedDevs4Update;
 
     $scope.camera.fit();
     $scope.camera.checkCrawling();
@@ -318,23 +323,37 @@ angular.module('koodainApp')
 
     // list of ids of queried apps
     var queriedApps = [];
-    // list of ids of queried devices
-    var queriedDevs = [];
+    // list of ids of queried devices + devices that host queried apps
+    var queriedDevIDs4Deploy = [];
+    // list of ids of devices that host queried apps (apps that are results of appquery)
+    var queriedDevIDs4Update = [];
     // ids of all queried apps and devices
     var queriedAppsAndDevs = [];
     // ids of devices that are hosting queried apps (are the result of querying apps)
     // and are not the result of querying devices. 
     var noQueriedDevs = [];
 
+    // list of devices that includes queried apps (queried by appquery)
+    // Queried apps are lsited in matchedApps property of each device.
+    var queriedDevs4Update = [];
+
     // if there is any query to query apps or devices
     if($scope.devicequery || $scope.appquery){
       // query apps OR devices
       deviceManager.queryDevicess($scope.devicequery, $scope.appquery, 'or')
         .then(function(devices){
+          console.log(devices);
           devices.forEach(function(device){
-            queriedDevs.push(device._id);
-            if(device.hasOwnProperty('matchedApps')){
-              // the device which is hosting the queried apps
+            queriedDevIDs4Deploy.push(device._id);
+            /*if(!device.isQueried){
+              noQueriedDevs.push('#' + device._id);
+            }*/
+            if(device.hasOwnProperty('matchedApps') /*&& device.matchedApps.length > 0*/){
+              if(device.matchedApps.length > 0){
+                queriedDevIDs4Update.push(device._id);
+                queriedDevs4Update.push(device);
+              }
+              // the device which is hosting the queried apps and not queried directly by devicequery
               if(!device.isQueried){
                 noQueriedDevs.push('#' + device._id);
               }
@@ -352,19 +371,22 @@ angular.module('koodainApp')
               $scope.devicequery = noQueriedDevs.join(',');
             }
           }
-          queriedAppsAndDevs = queriedDevs.concat(queriedApps);
-          findSelectedDevCaps(queriedDevs);
+          queriedAppsAndDevs = queriedDevIDs4Deploy.concat(queriedApps);
+          findSelectedDevCaps4Deployment(queriedDevIDs4Deploy);
+          findSelectedDevCaps4Update(queriedDevIDs4Update);
           network.selectNodes(queriedAppsAndDevs);
-          select(queriedDevs, queriedApps);
+          select(queriedDevIDs4Deploy, queriedApps, queriedDevs4Update);
         }).catch(function(err){
-          findSelectedDevCaps(queriedDevs);
+          findSelectedDevCaps4Deployment(queriedDevIDs4Deploy);
+          findSelectedDevCaps4Update(queriedDevIDs4Update);
           network.selectNodes(queriedAppsAndDevs);
-          select(queriedDevs, queriedApps);
+          select(queriedDevIDs4Deploy, queriedApps, queriedDevs4Update);
         });
     } else {
-      findSelectedDevCaps(queriedDevs);
+      findSelectedDevCaps4Deployment(queriedDevIDs4Deploy);
+      findSelectedDevCaps4Update(queriedDevIDs4Update);
       network.selectNodes(queriedAppsAndDevs);
-      select(queriedDevs, queriedApps);
+      select(queriedDevIDs4Deploy, queriedApps, queriedDevs4Update);
     }
   }
 
@@ -493,11 +515,24 @@ angular.module('koodainApp')
     })[0];
   }
 
-  // selected device capabilities : an array that represents device capabilities of selected devices
-  var selDevCaps = [];
+  // selected device capabilities : an array that represents device capabilities of all selected devices
+  // here selected devices means the devices that are queried directly by devicequery 
+  // + devices that hosts apps that are the results of appquery
+  var selDevCaps4Deployment = [];
 
-  function findSelectedDevCaps(sel){
-    selDevCaps = sel.map(function(devId){
+  function findSelectedDevCaps4Deployment(sel){
+    selDevCaps4Deployment = sel.map(function(devId){
+      return allDevices[devId].classes;
+    });
+  }
+
+
+  // selected device capabilities : an array that represents device capabilities of selected devices
+  // here selected devices means the devices that hosts apps queried by appquery
+  var selDevCaps4Update = [];
+
+  function findSelectedDevCaps4Update(sel){
+    selDevCaps4Update = sel.map(function(devId){
       return allDevices[devId].classes;
     });
   }
@@ -519,10 +554,10 @@ angular.module('koodainApp')
   // they are lost on page reload...
   $scope.deployments = [];
 
-  $scope.openManageAppsModal = function() {
+  $scope.openManageDeployAppsModal = function() {
     $uibModal.open({
-      controller: 'ManageAppsCtrl',
-      templateUrl: 'manageapps.html',
+      controller: 'ManageDeployAppsCtrl',
+      templateUrl: 'managedeployapps.html',
       resolve: {
         projects: function(){
           return Promise.all($scope.projects.map(getDevCapsPromise));
@@ -533,13 +568,39 @@ angular.module('koodainApp')
             devicequery: $scope.devicequery,
             appquery: $scope.appquery,
             selectedProject: $scope.selectedProject,
-            selectedDeviceCapabilities: selDevCaps
+            selectedDeviceCapabilities: selDevCaps4Deployment
           }; 
         },
       }
     }).result.then(function(deployment) {
       $scope.deployments.push(deployment);
       console.log($scope.deployments);
+    });
+  };
+  
+  $scope.updates = [];
+
+  $scope.openManageUpdateAppsModal = function() {
+    $uibModal.open({
+      controller: 'ManageUpdateAppsCtrl',
+      templateUrl: 'manageupdateapps.html',
+      resolve: {
+        projects: function(){
+          return Promise.all($scope.projects.map(getDevCapsPromise));
+        },
+        data: function() {
+          return {
+            devices: $scope.selectedDevs4Update,
+            devicequery: $scope.devicequery,
+            appquery: $scope.appquery,
+            selectedProject: $scope.selectedProject,
+            selectedDeviceCapabilities: selDevCaps4Update
+          }; 
+        },
+      }
+    }).result.then(function(update) {
+      $scope.updates.push(update);
+      console.log($scope.updates);
     });
   };
 
@@ -556,10 +617,28 @@ angular.module('koodainApp')
     });
   };
 
+
+  $scope.verifyUpdate = function() {
+    $uibModal.open({
+      controller: 'VerifyUpdateCtrl',
+      templateUrl: 'verifyupdate.html',
+      resolve: {
+        updates: function() { return $scope.updates; },
+      }
+    }).result.then(function() {
+      $scope.updates = [];
+      $scope.loadDevices();
+    });
+  };
+
   $scope.discardDeployment = function() {
     $scope.deployments = [];
   };
 
+
+  $scope.discardUpdate = function() {
+    $scope.updates = [];
+  };
 
   $scope.openLogModal = function(device, app) {
     $uibModal.open({
@@ -579,6 +658,38 @@ angular.module('koodainApp')
   function devicePipeUrl(url) {
     return '/api/pipe/'  + url;
   }
+
+
+  $scope.updateApp = function(device, app) {
+    //var url = device.url + '/app/' + app.id + "/rollback";
+    console.log(app.name);
+    return $http({
+      method: 'PUT',
+      url: '/api/projects/' + app.name.slice(10) + '/package',
+      data: {deviceUrl: device.url, appId: app.id}
+    }).then(function(res){
+      $scope.loadDevices();
+    }).catch(function(err){
+      Notification.error("Connection to the application was not succeccfull.");
+      $scope.loadDevices();
+    });
+  };
+
+  $scope.rollbackApp = function(device, app, status) {
+    var url = device.url + '/app/' + app.id + "/rollback";
+    return $http({
+      url: devicePipeUrl(url),
+      method: 'POST'
+    }).then(function(response) {
+      // This is a bit of quickndirty way to update app,
+      // would be better to load it from the server for realz...
+      //app.status = response.data.status;
+      $scope.loadDevices();
+    }, function(error){
+      Notification.error("Connection to the application was not succeccfull.");
+      $scope.loadDevices();
+    });
+  };
 
   $scope.setAppStatus = function(device, app, status) {
     var url = device.url + '/app/' + app.id;
@@ -621,8 +732,15 @@ angular.module('koodainApp')
   $scope.deselectProject();
 
   $scope.$watch('selectedProject', function(){
+    //$scope.selectAppsForProject();
     $scope.selectDevicesForProject();
   });
+
+  /*$scope.selectAppsForProject = function(){
+    if($scope.selectedProject){
+      $scope.appquery = "[name=liquidiot-" + $scope.selectedProject.name + "]";
+    }
+  }*/
 
   $scope.selectDevicesForProject = function() {
     if($scope.selectedProject){
@@ -656,6 +774,7 @@ angular.module('koodainApp')
     Project.get({project:$stateParams.project}, function(project){
       $scope.selectedProject = project;
       $scope.selectDevicesForProject();
+      //$scope.selectAppsForProject();
     });
   }
 
@@ -664,7 +783,7 @@ angular.module('koodainApp')
 /**
  * Controller for managing (deploying) apps modal dialog.
  */
-.controller('ManageAppsCtrl', function($scope, $resource, $http, $uibModalInstance, data, projects) {
+.controller('ManageDeployAppsCtrl', function($scope, $resource, $http, $uibModalInstance, data, projects) {
 
   var selDevCaps = data.selectedDeviceCapabilities;
   $scope.devices = data.devices;
@@ -736,6 +855,80 @@ angular.module('koodainApp')
 })
 
 /**
+ * Controller for managing (deploying) apps modal dialog.
+ */
+.controller('ManageUpdateAppsCtrl', function($scope, $resource, $http, $uibModalInstance, data, projects) {
+
+  var selDevCaps = data.selectedDeviceCapabilities;
+  $scope.devices = data.devices;
+  $scope.devicequery = data.devicequery;
+  $scope.appquery = data.appquery;
+
+  // checks if one array is subset of another array
+  var isSubset = function(arr1, arr2){
+    return arr1.every(function(value){
+      return arr2.indexOf(value) >= 0;
+    });
+  }
+
+  // checks if device capabilities listed in the project (liquidiot.json file)
+  // is subset of capabilities of every selected device.
+  var isSubsetOfAll = function(dcs){
+    return selDevCaps.every(function(devCaps){
+      return isSubset(dcs, devCaps);
+    });
+  }
+
+  // selecting projects based on the selected device capabilities
+  $scope.projects = projects.filter(function(project){
+    var json = JSON.parse(project.data.content);
+    var dcs = json['deviceCapabilities'];
+    // free-class means all devices, so we remove it from device capabilities.
+    // if array becomes empty 
+    // otherwise we query the remaining devices
+    var index = dcs.indexOf("free-class");
+    if(index != -1){
+      dcs.splice(index, 1);
+    }
+    if (!dcs || !dcs.length) {
+      // No deviceCapabilities, can be deployed to all devices
+      return true;
+    }
+    else if (isSubsetOfAll(dcs)){
+      return true;
+    } else {
+      return false;
+    }
+  });
+
+  if(data.selectedProject){
+    $scope.selectedProject = $scope.projects.filter(function(project){
+      return project.name == data.selectedProject.name;
+    })[0];
+  }
+
+  $scope.cancel = function() {
+    $uibModalInstance.dismiss('cancel');
+  };
+
+  $scope.done = function() {
+    // Construct a "deployment object"
+    // TODO: we could have various tasks to be done on deployment,
+    // currently the only kind of task is to deploy app.
+    var update = {
+      devicequery: data.devicequery,
+      appquery: data.appquery,
+      project: $scope.selectedProject.name,
+      numApproxDevices: data.devices.length,
+      n: $scope.allDevices || !$scope.numDevices ? 'all' : $scope.numDevices,
+      removeOld: $scope.removeOld,
+      selectedDevices: data.devices
+    };
+    $uibModalInstance.close(update);
+  };
+})
+
+/**
  * Controller for the verify deployment modal dialog.
  */
   .controller('VerifyDeploymentCtrl', function($scope, $http, $resource, $uibModalInstance, Notification, deployments, deviceManagerUrl) {
@@ -743,7 +936,6 @@ angular.module('koodainApp')
   $scope.deployments = deployments;
   $scope.deploying = false;
   $scope.deployed = false;
-  $scope.deployResults = { successes: [], failures: []};
 
   $scope.cancel = function() {
     $uibModalInstance.dismiss('cancel');
@@ -765,12 +957,10 @@ angular.module('koodainApp')
     }).then(function(res){
       var result = "Deploying to device with id " + device.id + " was successfull\n";
       deployment.result += result;
-      $scope.deployResults.successes.push(res);
       return res;
     }).catch(function(err){
       var result = "Deploying to device with id " + device.id + " was NOT successfull\n";
       deployment.result += result;
-      $scope.deployResults.failures.push(err);
       return err;
     });
   }
@@ -798,11 +988,7 @@ angular.module('koodainApp')
         console.log(deployResults);
         $scope.deploying = false;
         $scope.deployed = true;
-        if($scope.deployResults.failures.length != 0){
-          Notification.warning('Some deployments were not successfull');
-        } else {
-          Notification.success('All Deployments were sucessfull!');
-        }
+        Notification.success('Deployment successful!');
         //$uibModalInstance.close();
       }).catch(function(err) {
         // At least one of the deployment tasks failed.
@@ -812,6 +998,83 @@ angular.module('koodainApp')
         Notification.error('Deployment failed!');
         $uibModalInstance.dismiss('cancel');
       });
+  };
+})
+
+
+/**
+ * Controller for the verify deployment modal dialog.
+ */
+  .controller('VerifyUpdateCtrl', function($scope, $http, $resource, $uibModalInstance, Notification, updates, deviceManagerUrl) {
+
+  $scope.updates = updates;
+  $scope.updating = false;
+  $scope.updated = false;
+
+  $scope.cancel = function() {
+    $uibModalInstance.dismiss('cancel');
+  };
+
+  $scope.done = function() {
+    $uibModalInstance.close();
+  };
+
+  function updateAppPromise(device, app, update){
+    var devUrl = device.url;
+    var appId = app.id;
+    Notification.info('Updating app ' + app.id + "in device " + device._id);
+    return $http({
+      method: 'PUT',
+      url: '/api/projects/' + update.project + '/package',
+      data: {deviceUrl: devUrl, appId: appId}
+    }).then(function(res){
+      var result = "Updating app with id " + app.id + " was successfull\n";
+      update.result += result;
+      return res;
+    }).catch(function(err){
+      var result = "Updating app with id " + app.id + " was NOT successfull\n";
+      update.result += result;
+      return err;
+    });
+  }
+
+  function updateAppsPromise(device, update){
+    //update.result += "Updates' report in device with ID " + device._id + " :\n";
+    return Promise.all(device.matchedApps.map(function(app){
+      return updateAppPromise(device, app, update);
+    }));
+  }
+
+  function updatePromise(update){
+    update.result = "";
+    return Promise.all(update.selectedDevices.map(function(device){
+      return updateAppsPromise(device, update);
+    }));
+  }
+
+  $scope.update = function() {
+    var ups = $scope.updates;
+    if (!ups.length) {
+      return;
+    }
+
+    $scope.updating = true;
+
+    Promise.all(ups.map(updatePromise))
+      .then(function(updateResults) {
+        console.log(updateResults);
+        $scope.updating = false;
+        $scope.updated = true;
+        Notification.success('Updates were successful!');
+        //$uibModalInstance.close();
+      })/*.catch(function(err) {
+        // At least one of the deployment tasks failed.
+        // TODO: what to do on (partially) unsuccessful deployment??!?!?!
+        $scope.deploying = false;
+        $scope.deployed = true;
+        Notification.error('Deployment failed!');
+        $uibModalInstance.dismiss('cancel');
+      });*/
   };
 })
 

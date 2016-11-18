@@ -13,13 +13,23 @@ div(ng-include='"components/navbar/navbar.html"')
     button.btn.btn-default(ng-click="discardDeployment()") Discard
     |  
     button.btn.btn-primary(ng-click="verifyDeployment()") Verify
+  .jumbotron(ng-if="updates.length", style="text-align:center; padding:24px;")
+    | You have staged updates changes
+    br 
+    button.btn.btn-default(ng-click="discardUpdate()") Discard
+    |  
+    button.btn.btn-primary(ng-click="verifyUpdate()") Verify
   .row
     .col-sm-4
       p {{selectedDevices.length}} devices selected
-      p
-        .btn-group(role="group")
-            button.btn.btn-default(ng-disabled="!selectedDevices.length", ng-click="openManageAppsModal()") Deploy Apps
-
+      .row
+        .col-sm-6
+          .btn-group(role="group")
+            button.btn.btn-default(ng-disabled="!selectedDevices.length", ng-click="openManageDeployAppsModal()") Deploy Apps
+        .col-sm-6
+          .btn-group(role="group")
+            button.btn.btn-default(ng-disabled="!selectedDevs4Update.length", ng-click="openManageUpdateAppsModal()") Update Apps
+      br
       ul.list-group(ng-init="shownIndex = -1")
         li.list-group-item(ng-repeat="device in selectedDevices", ng-click="$parent.shownIndex = $index")
           i.fa {{device.code}} 
@@ -42,6 +52,10 @@ div(ng-include='"components/navbar/navbar.html"')
                       i.fa.fa-play
                     button.btn.btn-primary(ng-if="app.status==='running'", ng-click="setAppStatus(device, app, 'paused')")
                       i.fa.fa-pause
+                    button.btn.btn-warning(ng-if="app.canRollback", ng-click="rollbackApp(device, app)")
+                      i.fa.fa-rotate-left
+                    button.btn.btn-success(ng-click="updateApp(device, app)")
+                      i.fa.fa-rotate-right
                     button.btn.btn-danger(ng-click="removeApp(device, app)")
                       i.fa.fa-trash
           div
@@ -82,7 +96,7 @@ div(ng-include='"components/navbar/navbar.html"')
 div(ng-include='"components/footer/footer.html"')
 
 // App management (deployment) modal dialog
-script(type="text/ng-template", id="manageapps.html")
+script(type="text/ng-template", id="managedeployapps.html")
   .modal-header
     button(type="button", class="close", ng-click="cancel()") &times;
     h4.modal-title Deploy Applications
@@ -104,6 +118,36 @@ script(type="text/ng-template", id="manageapps.html")
             code  {{devicequery}}
           span(ng-if="!devicequery") to all the devices
           span(ng-if="appquery")  with an app matching
+            code {{appquery}}
+          | . 
+        small  (Approx. {{devices.length}} such devices.)
+
+    .modal-footer
+      button.btn.btn-default(ng-disabled="!selectedProject", ng-click="done()") Stage deployment
+
+// App management (deployment) modal dialog
+script(type="text/ng-template", id="manageupdateapps.html")
+  .modal-header
+    button(type="button", class="close", ng-click="cancel()") &times;
+    h4.modal-title Update Applications
+  .modal-body
+    form.form(name="form")
+      .form-group
+        label(for="selectproject") Update application
+        |  
+        ul.nya-bs-select(ng-model='selectedProject', title='select a project', data-live-search='true')
+          li(nya-bs-option='project in projects')
+            a 
+              {{project.name}}
+              span.glyphicon.glyphicon-ok.check-mark
+        //select.form-control(id="selectproject", ng-model="selectedProject")
+         // option(ng-repeat="project in projects") {{project.name}}
+        |  
+        label
+          //span(ng-if="devicequery") to all the devices matching the query
+            //code  {{devicequery}}
+          //span(ng-if="!devicequery") to all the devices
+          span(ng-if="appquery")  to all apps with an app matching
             code {{appquery}}
           | . 
         small  (Approx. {{devices.length}} such devices.)
@@ -155,6 +199,55 @@ script(type="text/ng-template", id="verifydeployment.html")
         | 
         | Cancel
     p(ng-if="deployed")
+      button.btn.btn-success(ng-click="done()")
+        i.fa.fa-paper-plane
+        | 
+        | OK
+
+// Verify deployment modal dialog
+script(type="text/ng-template", id="verifyupdate.html")
+  .modal-header
+    button(type="button", class="close", ng-click="updated ? done() : cancel()") &times;
+    h4.modal-title Deploy
+      span(ng-if="updating")
+        |  
+        i.fa.fa-spinner.fa-spin
+  .modal-body
+    ul.list-group
+      li.list-group-item(ng-repeat="update in updates")
+        | Update the latest version of 
+        strong {{update.project}}
+        |  to
+        |  
+        span(ng-if="update.n==='all'") all the 
+        span(ng-if="update.n!=='all'") {{update.n}}
+        |  devices matching 
+        strong
+          code {{update.devicequery}}
+          |  - 
+          code {{update.appquery}}
+        |  (approx. {{update.numApproxDevices}} such devices)
+        ul
+          li(ng-if="update.removeOld")
+            | Remove earlier versions of the app
+        pre
+          | {{update.result}}
+  .modal-footer
+    p(ng-if="!updated && !updating")
+      button.btn.btn-default
+        i.fa.fa-save
+        | 
+        | Save for later
+      button.btn.btn-primary(ng-click="update()")
+        i.fa.fa-paper-plane
+        | 
+        | Deploy
+    p(ng-if="updating")
+      button.btn.btn-danger(ng-click="cancel()")
+        i.fa.fa-paper-plane
+        | 
+        | Cancel
+    p(ng-if="updated")
       button.btn.btn-success(ng-click="done()")
         i.fa.fa-paper-plane
         | 

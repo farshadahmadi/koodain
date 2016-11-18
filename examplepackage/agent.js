@@ -41,6 +41,7 @@ module.exports = function Agent(iotApp, emitter){
                     if(stopExecutionMessage){
                         console.log(stopExecutionMessage);
                     }
+                    emitter.emit('paused');
                 });
             }
         }, interval);
@@ -75,6 +76,7 @@ module.exports = function Agent(iotApp, emitter){
                 if(stopExecutionMessage){
                     console.log(stopExecutionMessage);
                 }
+                emitter.emit('paused');
             });
         }
     };
