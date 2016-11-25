@@ -144,9 +144,10 @@ exports.deploy = function(req, res) {
   create(name)
     .then(function(pkgBuffer) {
     return sendPackage(pkgBuffer, url);
-  }).then(function(pkgBuffer) {
-    res.status(201).json();
-  }).then(null, errorHandler(res));
+  }).then(function(response) {
+    //console.log(response);
+    res.status(200).json(response);
+  }).catch(errorHandler(res));//.then(null, errorHandler(res));
 };
 
 // deploy to device.

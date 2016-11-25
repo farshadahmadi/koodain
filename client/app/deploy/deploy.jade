@@ -30,6 +30,24 @@ div(ng-include='"components/navbar/navbar.html"')
           .btn-group(role="group")
             button.btn.btn-default(ng-disabled="!selectedDevs4Update.length", ng-click="openManageUpdateAppsModal()") Update Apps
       br
+      div(ng-if="deploying") 
+        p Last deployment progress status:
+        uib-progress(max="numDeps")
+          uib-bar(value="numSuccessDeps", type="success")
+            span(ng-hide="numSuccessDeps==0")
+              {{numSuccessDeps}}
+          uib-bar(value="numFailDeps", type="danger")
+            span(ng-hide="numFailDeps==0")
+              {{numFailDeps}}
+      div(ng-if="updating") 
+        p Last update progress status:
+        uib-progress(max="numUps")
+          uib-bar(value="numSuccessUps", type="success")
+            span(ng-hide="numSuccessUps==0")
+              {{numSuccessUps}}
+          uib-bar(value="numFailUps", type="danger")
+            span(ng-hide="numFailUps==0")
+              {{numFailUps}}
       ul.list-group(ng-init="shownIndex = -1")
         li.list-group-item(ng-repeat="device in selectedDevices", ng-click="$parent.shownIndex = $index")
           i.fa {{device.code}} 
@@ -43,7 +61,7 @@ div(ng-include='"components/navbar/navbar.html"')
                 |  
                 a(ng-href="{{deviceManagerUrl}}/devices/{{device.id}}/apps/{{app.id}}/api", target="_blank") API
                 br
-                .btn-group(role="group")
+                .btn-group(ng-if="app.status !=='installed'", role="group")
                     a.btn.btn-default(ng-if="app.name.indexOf('liquidiot-')===0", ng-href="/project/{{app.name.slice(10)}}")
                       i.fa.fa-edit
                     button.btn.btn-default(ng-click="openLogModal(device, app)")
@@ -58,6 +76,8 @@ div(ng-include='"components/navbar/navbar.html"')
                       i.fa.fa-rotate-right
                     button.btn.btn-danger(ng-click="removeApp(device, app)")
                       i.fa.fa-trash
+                i(ng-if="app.status ==='installed'", style="color: red").fa.fa-spinner.fa-pulse.fa-2x.fa-fw
+                span(ng-if="app.status ==='installed'", style="color: red") Trying to run the application
           div
             small
               code(ng-repeat="cls in device.classes") {{cls}}
@@ -153,7 +173,7 @@ script(type="text/ng-template", id="manageupdateapps.html")
         small  (Approx. {{devices.length}} such devices.)
 
     .modal-footer
-      button.btn.btn-default(ng-disabled="!selectedProject", ng-click="done()") Stage deployment
+      button.btn.btn-default(ng-disabled="!selectedProject", ng-click="done()") Stage update
       
 // Verify deployment modal dialog
 script(type="text/ng-template", id="verifydeployment.html")
@@ -208,7 +228,7 @@ script(type="text/ng-template", id="verifydeployment.html")
 script(type="text/ng-template", id="verifyupdate.html")
   .modal-header
     button(type="button", class="close", ng-click="updated ? done() : cancel()") &times;
-    h4.modal-title Deploy
+    h4.modal-title Update
       span(ng-if="updating")
         |  
         i.fa.fa-spinner.fa-spin
@@ -217,16 +237,18 @@ script(type="text/ng-template", id="verifyupdate.html")
       li.list-group-item(ng-repeat="update in updates")
         | Update the latest version of 
         strong {{update.project}}
-        |  to
-        |  
-        span(ng-if="update.n==='all'") all the 
-        span(ng-if="update.n!=='all'") {{update.n}}
-        |  devices matching 
+        |  to all the apps matching
         strong
-          code {{update.devicequery}}
-          |  - 
           code {{update.appquery}}
-        |  (approx. {{update.numApproxDevices}} such devices)
+        //|  
+        //span(ng-if="update.n==='all'") all the 
+        //span(ng-if="update.n!=='all'") {{update.n}}
+        //|  devices matching 
+        //strong
+        //  code {{update.devicequery}}
+        //  |  - 
+        //  code {{update.appquery}}
+        //|  (approx. {{update.numApproxDevices}} such devices)
         ul
           li(ng-if="update.removeOld")
             | Remove earlier versions of the app
@@ -241,7 +263,7 @@ script(type="text/ng-template", id="verifyupdate.html")
       button.btn.btn-primary(ng-click="update()")
         i.fa.fa-paper-plane
         | 
-        | Deploy
+        | Update
     p(ng-if="updating")
       button.btn.btn-danger(ng-click="cancel()")
         i.fa.fa-paper-plane
