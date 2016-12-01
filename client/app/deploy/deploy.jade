@@ -95,10 +95,10 @@ div(ng-include='"components/navbar/navbar.html"')
         form
           .form-group
             label(for="devicequery") Device:
-            input.form-control(id="devicequery", type="text", ng-model="devicequery", ng-model-options='{debounce: 200}', ng-change="deselectProject()")
+            input.form-control(id="devicequery", type="text", ng-model="deviceQuery", ng-model-options='{debounce: 200}', ng-change="deselectProject()")
           .form-group
             label(for="appquery") App:
-            input.form-control(id="appquery", type="text", ng-model="appquery", ng-model-options='{debounce: 200}', ng-change="deselectProject()")
+            input.form-control(id="appquery", type="text", ng-model="applicationQuery", ng-model-options='{debounce: 200}', ng-change="deselectProject()")
       #network
         vis-network(data="graphData", options="graphOptions", events="graphEvents", component="network")
       p

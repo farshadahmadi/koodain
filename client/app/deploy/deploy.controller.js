@@ -298,7 +298,7 @@ angular.module('koodainApp')
   };
 
   $scope.filterSelApp = function(app){
-    if( $scope.hasOwnProperty('appquery') && $scope.appquery.length != 0 && selAppIds.indexOf("app:" + app.id) == -1){
+    if( $scope.hasOwnProperty('appQuery') && $scope.appQuery.length != 0 && selAppIds.indexOf("app:" + app.id) == -1){
       return false;
     }
     return true;
@@ -369,6 +369,30 @@ angular.module('koodainApp')
     $scope.camera.checkCrawling();
   }
 
+
+  $scope.deviceQuery = "";
+  $scope.applicationQuery = "";
+
+  // deviceQuerry is bound to user input (device textbox in the UI).
+  // Whenever user changes it, it will change the internal devQuery.
+  // This way user inputs (for querying devices) will influence the visualizatiion tool to select devices,
+  // but selecting nodes manually on the visualization tool will not influence (change) the user input.
+  $scope.$watch("deviceQuery", function(newValue, oldValue){
+    $scope.devQuery = $scope.deviceQuery;
+    $scope.appQuery = $scope.applicationQuery;
+  });
+  
+  // applicationQuerry is bound to user input (app textbox in the UI).
+  // Whenever user changes it, it will change the internal appQuery.
+  // This way user inputs (for querying application) will influence the visualizatiion tool to select apps,
+  // but selecting nodes manually on the visualization tool will not influence (change) the user input.
+  $scope.$watch("applicationQuery", function(newValue, oldValue){
+    console.log("deviceQuery: " + $scope.deviceQuery);
+    console.log("applicationQuery: " + $scope.applicationQuery);
+    $scope.devQuery = $scope.deviceQuery;
+    $scope.appQuery = $scope.applicationQuery;
+  });
+
   // The Vis.js network object, assigned on Vis.js onload event
   var network;
 
@@ -396,10 +420,20 @@ angular.module('koodainApp')
     // Queried apps are lsited in matchedApps property of each device.
     var queriedDevs4Update = [];
 
+    var appQuery = $scope.appQuery;
+    var devQuery = $scope.devQuery;
+
     // if there is any query to query apps or devices
-    if($scope.devicequery || $scope.appquery){
+    //if($scope.devicequery || $scope.appquery){
+      //console.log("appQuery: " + $scope.appquery);
+    if(devQuery || appQuery){
+      //console.log("appQuery: " + $scope.appquery);
+      //console.log("deviceQuery: " + $scope.devicequery);
+      console.log("appQuery: " + appQuery);
+      console.log("deviceQuery: " + devQuery);
       // query apps OR devices
-      deviceManager.queryDevicess($scope.devicequery, $scope.appquery, 'or')
+      //deviceManager.queryDevicess($scope.devicequery, $scope.appquery, 'or')
+      deviceManager.queryDevicess(devQuery, appQuery, 'or')
         .then(function(devices){
           console.log(devices);
           devices.forEach(function(device){
@@ -426,13 +460,22 @@ angular.module('koodainApp')
             }
           });
 
-          if(noQueriedDevs.length > 0) {
+          /*if(noQueriedDevs.length > 0) {
             if($scope.devicequery) {
               $scope.devicequery = $scope.devicequery + ',' + noQueriedDevs.join(',');
               console.log("in noquerried devs:");
               console.log($scope.devicequery);
             } else {
               $scope.devicequery = noQueriedDevs.join(',');
+            }
+          }*/
+          if(noQueriedDevs.length > 0) {
+            if(devQuery) {
+              $scope.devQuery = devQuery + ',' + noQueriedDevs.join(',');
+              console.log("in noquerried devs:");
+              console.log($scope.devQuery);
+            } else {
+              $scope.devQuery = noQueriedDevs.join(',');
             }
           }
           queriedAppsAndDevs = queriedDevIDs4Deploy.concat(queriedAppIds);
@@ -454,17 +497,17 @@ angular.module('koodainApp')
     }
   }
 
-  $scope.$watch('devicequery',function(p){
-    console.log(p);
+  $scope.$watch('devQuery',function(newValue, oldValue){
+    console.log(newValue);
     console.log("device query changed");
-    if(network) {
+    if(network /*&& newValue != oldValue*/) {
       updateSelection();
     }
   });
-  $scope.$watch('appquery',function(p){
-    console.log(p);
+  $scope.$watch('appQuery',function(newValue, oldValue){
+    console.log(newValue);
     console.log("app query changed");
-    if(network){
+    if(network /*&& newValue != oldValue*/){
       updateSelection();
     }
   });
@@ -584,13 +627,19 @@ angular.module('koodainApp')
     var lastModifiedNodeId = null;
     // if no node (either device or app) is selected
     if(params.nodes.length === 0){
-      $scope.devicequery = "";
-      $scope.appquery = "";
-    // if a node is deselected
-    } else if (params.hasOwnProperty('previousSelection')) {
-      // find the deselected node
-      lastModifiedNodeId = findDeselectedNode(params.nodes, params.previousSelection.nodes);
-      console.log("lastModifiedNodeId: " + lastModifiedNodeId);
+      $scope.devQuery = "";
+      $scope.appQuery = "";
+    // if a node is deselected or a new node (either app or device) is selected without holding the ctrl key
+   } else if (params.hasOwnProperty('previousSelection')) {
+      // a new node (either app or device) is selected without holding the ctrl key
+      console.log(params.event.changedPointers[0].ctrlKey);
+      if(!params.event.changedPointers[0].ctrlKey){
+        lastModifiedNodeId = params.nodes[0];
+      } else {
+        // find the deselected node
+        lastModifiedNodeId = findDeselectedNode(params.nodes, params.previousSelection.nodes);
+        console.log("lastModifiedNodeId: " + lastModifiedNodeId);
+      }
     } else {
       // find the selected node
       lastModifiedNodeId = params.nodes[params.nodes.length - 1];
@@ -598,11 +647,17 @@ angular.module('koodainApp')
     
     // if the selected or deselected node is a device, modify query of device
     if(isDeviceNodeId(lastModifiedNodeId)){
-      $scope.devicequery = selDevices.map(function(id) { return '#'+id; }).join(',');
+      if(!params.event.changedPointers[0].ctrlKey){
+        $scope.appQuery = "";
+      }
+      $scope.devQuery = selDevices.map(function(id) { return '#'+id; }).join(',');
     // if the selected or deselected node is an app, modify query of app
     } else if(isAppNodeId(lastModifiedNodeId)){
+      if(!params.event.changedPointers[0].ctrlKey){
+        $scope.devQuery = "";
+      }
       console.log("inside appquery");
-      $scope.appquery = selApps.map(function(id) { return '#'+id.slice(4,id.length); }).join(',');
+      $scope.appQuery = selApps.map(function(id) { return '#'+id.slice(4,id.length); }).join(',');
     }
 
     $scope.$apply();  // Needed?
@@ -665,8 +720,8 @@ angular.module('koodainApp')
         data: function() {
           return {
             devices: $scope.selectedDevices,
-            devicequery: $scope.devicequery,
-            appquery: $scope.appquery,
+            devicequery: $scope.devQuery,
+            appquery: $scope.appQuery,
             selectedProject: $scope.selectedProject,
             selectedDeviceCapabilities: selDevCaps4Deployment
           }; 
@@ -694,8 +749,8 @@ angular.module('koodainApp')
           return {
             selApps: selApps,
             devices: $scope.selectedDevs4Update,
-            devicequery: $scope.devicequery,
-            appquery: $scope.appquery,
+            devicequery: $scope.devQuery,
+            appquery: $scope.appQuery,
             selectedProject: $scope.selectedProject,
             selectedDeviceCapabilities: selDevCaps4Update
           }; 
@@ -854,7 +909,7 @@ angular.module('koodainApp')
   function updateAppPromise(device, app, update){
     var devUrl = device.url;
     var appId = app.id;
-    Notification.info('Updating app ' + app.id + "in device " + device._id);
+    //Notification.info('Updating app ' + app.id + "in device " + device._id);
     return $http({
       method: 'PUT',
       url: '/api/projects/' + update.project + '/package',
@@ -1086,10 +1141,10 @@ angular.module('koodainApp')
         console.log("changing devicequery in 1048");
         if (!dcs || !dcs.length) {
           // No deviceCapabilities, query everything *
-          $scope.devicequery = '*';
+          $scope.devQuery = '*';
         }
         else {
-          $scope.devicequery = '.' + dcs.join('.');
+          $scope.devQuery = '.' + dcs.join('.');
         }
       });
     };
