@@ -178,11 +178,8 @@ script(type="text/ng-template", id="manageupdateapps.html")
 // Verify deployment modal dialog
 script(type="text/ng-template", id="verifydeployment.html")
   .modal-header
-    button(type="button", class="close", ng-click="deployed ? done() : cancel()") &times;
+    button(type="button", class="close", ng-click="cancel()") &times;
     h4.modal-title Deploy
-      span(ng-if="deploying")
-        |  
-        i.fa.fa-spinner.fa-spin
   .modal-body
     ul.list-group
       li.list-group-item(ng-repeat="deployment in deployments")
@@ -201,10 +198,8 @@ script(type="text/ng-template", id="verifydeployment.html")
         ul
           li(ng-if="deployment.removeOld")
             | Remove earlier versions of the app
-        pre
-          | {{deployment.result}}
   .modal-footer
-    p(ng-if="!deployed && !deploying")
+    p
       button.btn.btn-default
         i.fa.fa-save
         | 
@@ -213,25 +208,12 @@ script(type="text/ng-template", id="verifydeployment.html")
         i.fa.fa-paper-plane
         | 
         | Deploy
-    p(ng-if="deploying")
-      button.btn.btn-danger(ng-click="cancel()")
-        i.fa.fa-paper-plane
-        | 
-        | Cancel
-    p(ng-if="deployed")
-      button.btn.btn-success(ng-click="done()")
-        i.fa.fa-paper-plane
-        | 
-        | OK
 
 // Verify deployment modal dialog
 script(type="text/ng-template", id="verifyupdate.html")
   .modal-header
-    button(type="button", class="close", ng-click="updated ? done() : cancel()") &times;
+    button(type="button", class="close", ng-click="cancel()") &times;
     h4.modal-title Update
-      span(ng-if="updating")
-        |  
-        i.fa.fa-spinner.fa-spin
   .modal-body
     ul.list-group
       li.list-group-item(ng-repeat="update in updates")
@@ -240,22 +222,11 @@ script(type="text/ng-template", id="verifyupdate.html")
         |  to all the apps matching
         strong
           code {{update.appquery}}
-        //|  
-        //span(ng-if="update.n==='all'") all the 
-        //span(ng-if="update.n!=='all'") {{update.n}}
-        //|  devices matching 
-        //strong
-        //  code {{update.devicequery}}
-        //  |  - 
-        //  code {{update.appquery}}
-        //|  (approx. {{update.numApproxDevices}} such devices)
         ul
           li(ng-if="update.removeOld")
             | Remove earlier versions of the app
-        pre
-          | {{update.result}}
   .modal-footer
-    p(ng-if="!updated && !updating")
+    p
       button.btn.btn-default
         i.fa.fa-save
         | 
@@ -264,16 +235,6 @@ script(type="text/ng-template", id="verifyupdate.html")
         i.fa.fa-paper-plane
         | 
         | Update
-    p(ng-if="updating")
-      button.btn.btn-danger(ng-click="cancel()")
-        i.fa.fa-paper-plane
-        | 
-        | Cancel
-    p(ng-if="updated")
-      button.btn.btn-success(ng-click="done()")
-        i.fa.fa-paper-plane
-        | 
-        | OK
 
 // Application log modal dialog
 script(type="text/ng-template", id="applog.html")
