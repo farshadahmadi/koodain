@@ -137,7 +137,7 @@ function create(name) {
   });
 };
 
-// deploy to device.
+// deploy to a device.
 exports.deploy = function(req, res) {
   var name = req.params.project;
   var url = req.body.deviceUrl + '/app';
@@ -150,7 +150,7 @@ exports.deploy = function(req, res) {
   }).catch(errorHandler(res));//.then(null, errorHandler(res));
 };
 
-// deploy to device.
+// update an app in a device.
 exports.update = function(req, res) {
   var name = req.params.project;
   var url = req.body.deviceUrl + '/app/' + req.body.appId;

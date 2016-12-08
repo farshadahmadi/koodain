@@ -17,11 +17,14 @@ function errorHandler(res) {
     }
     else if (err.name === 'RequestError') {
       console.log(err);
-      res.status(500).json({error: "Request error"});
+      res.status(500).json(err);
+      //res.status(500).json({error: "Request error"});
     }
-    else {
+    else if(err.name === 'StatusCodeError') {
       console.log(err);
-      res.status(500).json({"error": "server error"});
+      res.status(err.statusCode).json(err);
+    } else {
+      res.status(500).json({error: 'Uknown Error'});
     }
   };
 }

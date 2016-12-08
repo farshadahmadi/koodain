@@ -22,65 +22,76 @@ div(ng-include='"components/navbar/navbar.html"')
   .row
     .col-sm-4
       p {{selectedDevices.length}} devices selected
-      .row
-        .col-sm-6
-          .btn-group(role="group")
-            button.btn.btn-default(ng-disabled="!selectedDevices.length", ng-click="openManageDeployAppsModal()") Deploy Apps
-        .col-sm-6
-          .btn-group(role="group")
-            button.btn.btn-default(ng-disabled="!selectedDevs4Update.length", ng-click="openManageUpdateAppsModal()") Update Apps
-      br
-      div(ng-if="deploying") 
-        p Last deployment progress status:
-        uib-progress(max="numDeps")
-          uib-bar(value="numSuccessDeps", type="success")
-            span(ng-hide="numSuccessDeps==0")
-              {{numSuccessDeps}}
-          uib-bar(value="numFailDeps", type="danger")
-            span(ng-hide="numFailDeps==0")
-              {{numFailDeps}}
-      div(ng-if="updating") 
-        p Last update progress status:
-        uib-progress(max="numUps")
-          uib-bar(value="numSuccessUps", type="success")
-            span(ng-hide="numSuccessUps==0")
-              {{numSuccessUps}}
-          uib-bar(value="numFailUps", type="danger")
-            span(ng-hide="numFailUps==0")
-              {{numFailUps}}
-      ul.list-group(ng-init="shownIndex = -1")
-        li.list-group-item(ng-repeat="device in selectedDevices", ng-click="$parent.shownIndex = $index")
-          i.fa {{device.code}} 
-          |  
-          strong {{device.id}}
-          div
-            ul.appinfo
-              li(ng-repeat="app in device.apps | filter:filterSelApp")
-                strong {{app.name}} {{app.version}}
-                |  {{app.status}}
-                |  
-                a(ng-href="{{deviceManagerUrl}}/devices/{{device.id}}/apps/{{app.id}}/api", target="_blank") API
-                br
-                .btn-group(ng-if="app.status !=='installed'", role="group")
-                    a.btn.btn-default(ng-if="app.name.indexOf('liquidiot-')===0", ng-href="/project/{{app.name.slice(10)}}")
-                      i.fa.fa-edit
-                    button.btn.btn-default(ng-click="openLogModal(device, app)")
-                      i.fa.fa-list
-                    button.btn.btn-primary(ng-if="app.status==='paused'", ng-click="setAppStatus(device, app, 'running')")
-                      i.fa.fa-play
-                    button.btn.btn-primary(ng-if="app.status==='running'", ng-click="setAppStatus(device, app, 'paused')")
-                      i.fa.fa-pause
-                    button.btn.btn-warning(ng-if="app.canRollback", ng-click="rollbackApp(device, app)")
-                      i.fa.fa-rotate-left
-                    button.btn.btn-success(ng-click="updateApp(device, app)")
-                      i.fa.fa-rotate-right
-                    button.btn.btn-danger(ng-click="removeApp(device, app)")
-                      i.fa.fa-trash
-                i(ng-if="app.status ==='installed'", style="color: red").fa.fa-spinner.fa-pulse.fa-2x.fa-fw
-                span(ng-if="app.status ==='installed'", style="color: red") Trying to run the application
-          div
-            small
-              code(ng-repeat="cls in device.classes") {{cls}}
+      p
+        button.btn.btn-default(ng-disabled="!selectedDevices.length", ng-click="openManageDeployAppsModal()")
+          | Deploy Apps
+        button.btn.btn-default.navbar-right(ng-disabled="!selectedDevs4Update.length", ng-click="openManageUpdateAppsModal()")
+          | Update Apps
+      p
+        div(ng-if="deploying") 
+          p Last deployment progress status:
+          uib-progress(max="numDeps")
+            uib-bar(value="numSuccessDeps", type="success")
+              span(ng-hide="numSuccessDeps==0")
+                {{numSuccessDeps}}
+            uib-bar(value="numFailDeps", type="danger")
+              span(ng-hide="numFailDeps==0")
+                {{numFailDeps}}
+        div(ng-if="updating") 
+          p Last update progress status:
+          uib-progress(max="numUps")
+            uib-bar(value="numSuccessUps", type="success")
+              span(ng-hide="numSuccessUps==0")
+                {{numSuccessUps}}
+            uib-bar(value="numFailUps", type="danger")
+              span(ng-hide="numFailUps==0")
+                {{numFailUps}}
+        div(ng-if="deleting") 
+          p Last delete progress status:
+          uib-progress(max="numDels")
+            uib-bar(value="numSuccessDels", type="success")
+              span(ng-hide="numSuccessDels==0")
+                {{numSuccessDels}}
+            uib-bar(value="numFailDels", type="danger")
+              span(ng-hide="numFailDels==0")
+                {{numFailDels}}
+      p
+        button.btn.btn-danger(ng-if="selectedDevs4Update.length > 0", ng-click="removeApps()")
+          i.fa.fa-trash  Delete all apps
+      p
+        ul.list-group(ng-init="shownIndex = -1")
+          li.list-group-item(ng-repeat="device in selectedDevices", ng-click="$parent.shownIndex = $index")
+            i.fa {{device.code}} 
+            |  
+            strong {{device.id}}
+            div
+              ul.appinfo
+                li(ng-repeat="app in device.apps | filter:filterSelApp")
+                  strong {{app.name}} {{app.version}}
+                  |  {{app.status}}
+                  |  
+                  a(ng-href="{{deviceManagerUrl}}/devices/{{device.id}}/apps/{{app.id}}/api", target="_blank") API
+                  br
+                  .btn-group(ng-if="app.status !=='installed'", role="group")
+                      a.btn.btn-default(ng-if="app.name.indexOf('liquidiot-')===0", ng-href="/project/{{app.name.slice(10)}}")
+                        i.fa.fa-edit
+                      button.btn.btn-default(ng-click="openLogModal(device, app)")
+                        i.fa.fa-list
+                      button.btn.btn-primary(ng-if="app.status==='paused'", ng-click="setAppStatus(device, app, 'running')")
+                        i.fa.fa-play
+                      button.btn.btn-primary(ng-if="app.status==='running'", ng-click="setAppStatus(device, app, 'paused')")
+                        i.fa.fa-pause
+                      button.btn.btn-warning(ng-if="app.canRollback", ng-click="rollbackApp(device, app)")
+                        i.fa.fa-rotate-left
+                      button.btn.btn-success(ng-click="updateApp(device, app)")
+                        i.fa.fa-rotate-right
+                      button.btn.btn-danger(ng-click="removeApp(device, app)")
+                        i.fa.fa-trash
+                  i(ng-if="app.status ==='installed'", style="color: red").fa.fa-spinner.fa-pulse.fa-2x.fa-fw
+                  span(ng-if="app.status ==='installed'", style="color: red") Trying to run the application
+            div
+              small
+                code(ng-repeat="cls in device.classes") {{cls}}
     .col-sm-8
       p
         | Select a proejct to find compatible target devices

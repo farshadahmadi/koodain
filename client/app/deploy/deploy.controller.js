@@ -32,52 +32,65 @@ angular.module('koodainApp')
   // Groups for Vis.js network
   // http://visjs.org/docs/network/groups.html
   var visGroups = {
-    device: {
+    'device:active': {
       shape: 'icon',
       icon: {
         face: 'FontAwesome',
         code: '\uf233',
         size: 50,
-        color: 'gray'
+        color: 'green'
       },
       // comment the line below if you want to enable dragging
       fixed: true
     },
-    'device:selected': {
+    'device:passive': {
       shape: 'icon',
       icon: {
         face: 'FontAwesome',
         code: '\uf233',
-        size: 85,
-        color: 'purple'
+        size: 50,
+        color: 'red'
       },
       // comment the line below if you want to enable dragging
       fixed: true
     },
-    /*app:{
+    'device:active:selected': {
       shape: 'icon',
       icon: {
         face: 'FontAwesome',
-        code: '\uf059',
-        size: 50,
-        color: 'black'
-      }
-    },*/
-    'app:selected':{
-      shape: 'icon',
-      icon: {
-        face: 'FontAwesome',
-        code: '\uf059',
+        code: '\uf233',
         size: 70,
-        color: 'yellow'
-      }
+        color: 'green'
+      },
+      // comment the line below if you want to enable dragging
+      fixed: true
+    },
+    'device:passive:selected': {
+      shape: 'icon',
+      icon: {
+        face: 'FontAwesome',
+        code: '\uf233',
+        size: 70,
+        color: 'red'
+      },
+      // comment the line below if you want to enable dragging
+      fixed: true
     },
     'app:installed':{
       shape: 'icon',
       icon: {
         face: 'FontAwesome',
-        code: '\uf059',
-        size: 50,
+        code: '\uf085',
+        size: 65,
+        color: 'blue'
+      }
+    },
+    'app:installed:selected':{
+      shape: 'icon',
+      icon: {
+        face: 'FontAwesome',
+        code: '\uf085',
+        size: 65,
         color: 'blue'
       }
     },
@@ -85,8 +98,17 @@ angular.module('koodainApp')
       shape: 'icon',
       icon: {
         face: 'FontAwesome',
-        code: '\uf059',
-        size: 50,
+        code: '\uf085',
+        size: 40,
+        color: 'green'
+      }
+    },
+    'app:running:selected':{
+      shape: 'icon',
+      icon: {
+        face: 'FontAwesome',
+        code: '\uf085',
+        size: 65,
         color: 'green'
       }
     },
@@ -94,8 +116,17 @@ angular.module('koodainApp')
       shape: 'icon',
       icon: {
         face: 'FontAwesome',
-        code: '\uf059',
-        size: 50,
+        code: '\uf085',
+        size: 40,
+        color: 'red'
+      }
+    },
+    'app:crashed:selected':{
+      shape: 'icon',
+      icon: {
+        face: 'FontAwesome',
+        code: '\uf085',
+        size: 65,
         color: 'red'
       }
     },
@@ -103,24 +134,36 @@ angular.module('koodainApp')
       shape: 'icon',
       icon: {
         face: 'FontAwesome',
-        code: '\uf059',
-        size: 50,
+        code: '\uf085',
+        size: 40,
+        color: 'green'
+      }
+    },
+    'app:paused:selected':{
+      shape: 'icon',
+      icon: {
+        face: 'FontAwesome',
+        code: '\uf085',
+        size: 65,
         color: 'green'
       }
     }
   };
 
   // returns approperiate group for the app node
-  function groupForApp(app) {
-    if(app) {
-      return 'app:' + app.status;
+  function groupForApp(app, isSelected) {
+    if(isSelected) {
+      return 'app:' + app.status + ':selected';
     }
-    return 'app';
+    return 'app:' + app.status;
   }
 
   // returns approperiate group for the devie node
-  function groupForDevice() {
-    return 'device';
+  function groupForDevice(device, isSelected) {
+    if(isSelected) {
+      return 'device:' + device.status + ':selected';
+    }
+    return 'device:' + device.status;
   }
 
   /// Returns a Vis.js node for the device
@@ -132,7 +175,7 @@ angular.module('koodainApp')
       title: generateDeviceTooltip(device),
       x: device.coords.x,
       y: device.coords.y,
-      group: groupForDevice()
+      group: groupForDevice(device)
     };
     return n;
   }
@@ -319,6 +362,8 @@ angular.module('koodainApp')
   // list of currently CURRENTLY selected apps
   var selApps = [];
 
+  var allApps = [];
+
   /**
    * shows selected device and app nodes on the visualization tool.
    * @param {devIds} list of IDs of NEW selected devices
@@ -339,12 +384,13 @@ angular.module('koodainApp')
     nodes.update(devIds.map(function(id) {
       return {
         id: id,
-        group: groupForDevice(allDevices[id]) + ':selected'
+        group: groupForDevice(allDevices[id], true) // + ':selected'
       };
     }));
 
     // makes all currently selected app nodes deselected on the visualization tool
-    nodes.update(selApps.map(function(app) {
+    //nodes.update(selApps.map(function(app) {
+    nodes.update(allApps.map(function(app) {
       return {
         id: "app:" + app.id,
         group: groupForApp(app)
@@ -354,7 +400,8 @@ angular.module('koodainApp')
     nodes.update(queriedApps.map(function(app) {
         return {
           id: "app:" + app.id,
-          group: groupForApp() + ':selected'
+          //group: groupForApp() + ':selected'
+          group: groupForApp(app, true)
         };
       })
     );
@@ -540,13 +587,31 @@ angular.module('koodainApp')
       return "done";
     });
   }
-  
+ 
+  var timer;
+
+  function loadDevicesIntervally(interval){
+    
+    // loading of the devices
+    $scope.loadDevices();
+    
+    if(timer){
+      clearInterval(timer);
+    }
+    timer = setInterval(function(){
+      $scope.loadDevices();
+    },
+    interval);
+  }
+
   // loading of the devices
-  $scope.loadDevices();
+  loadDevicesIntervally(60000);
+  
 
   // Update Vis.js nodes and edges
   // look at setTheData() function http://visjs.org/examples/network/data/datasets.html
   function updateNodesAndEdges() {
+      var localAllApps = [];
       var edgesArray = [];
       var nodesArray = Object.keys(allDevices).map(function(id) {
         return nodeFromDevice(allDevices[id]);
@@ -559,6 +624,7 @@ angular.module('koodainApp')
         console.log(apps);
         if (apps && apps.length > 0) {
           nodesArray.push.apply(nodesArray, apps.map(nodeFromApp));
+          localAllApps.push.apply(localAllApps, apps);
           //nodes.add(apps.map(nodeFromApp));
           /* jshint -W083 */
           // Edge from each app to the device it's in
@@ -578,7 +644,8 @@ angular.module('koodainApp')
         nodes: nodes,
         edges: edges
       };
-    }
+      allApps = localAllApps;
+  }
 
 
   //$scope.loadDevices = loadDevices;
@@ -796,6 +863,9 @@ angular.module('koodainApp')
     .catch(function(err){
       // increases number of failed deployments
       $scope.numFailDeps++;
+      /*if (err.data.name === 'RequestError'){
+        console.log('Device is not reachable!');
+      }*/
       return err;
     });
   }
@@ -810,9 +880,7 @@ angular.module('koodainApp')
   $scope.deploy = function() {
 
     // updates the visualization tool every some seconds.
-    var timer = setInterval(function(){
-      $scope.loadDevices();
-    }, 3000);
+    loadDevicesIntervally(3000);
 
     // deep copy the deployment projects.
     var deps = angular.copy($scope.deployments);
@@ -837,7 +905,7 @@ angular.module('koodainApp')
         console.log(deployResults);
         //$scope.deployed = true;
         Notification.info('Deployment process completed');
-        clearInterval(timer);
+        loadDevicesIntervally(60000);
         $scope.loadDevices();
       }).catch(function(err) {
         // Actually this section will never get executed, since deployDevicePromise will return 
@@ -901,9 +969,7 @@ angular.module('koodainApp')
   // updates
   $scope.update = function() {
     
-    var timer = setInterval(function(){
-      $scope.loadDevices();
-    }, 3000);
+    loadDevicesIntervally(3000);
     
     var ups = angular.copy($scope.updates);
     $scope.updates = [];
@@ -923,7 +989,7 @@ angular.module('koodainApp')
       .then(function(updateResults) {
         console.log(updateResults);
         Notification.info('Update process completed');
-        clearInterval(timer);
+        loadDevicesIntervally(60000);
         $scope.loadDevices();
       });
   };
@@ -1014,15 +1080,18 @@ angular.module('koodainApp')
     });
   };
 
+  ///////// <start> ---- This section is for deleting apps 
+
   $scope.removeApp = function(device, app) {
     var url = device.url + '/app/' + app.id;
     return $http({
       url: devicePipeUrl(url),
       method: 'DELETE',
     })
-    .then(function() {
+    .then(function(res) {
       // remove the app from the list of selected Apps.
       selApps.splice(selApps.indexOf(app), 1);
+      // remove the app ID from the list of selected App IDs.
       selAppIds.splice(selAppIds.indexOf(app.id), 1);
       $scope.loadDevices();
     })
@@ -1030,6 +1099,60 @@ angular.module('koodainApp')
       Notification.error("Connection to the application was not succeccfull.");
     });
   };
+
+  ///////// <start> ---- This section is for deleting apps 
+  
+  function removeAppPromise(device, app) {
+    var url = device.url + '/app/' + app.id;
+    return $http({
+      url: devicePipeUrl(url),
+      method: 'DELETE',
+    })
+    .then(function(res) {
+      // remove the app from the list of selected Apps.
+      selApps.splice(selApps.indexOf(app), 1);
+      // remove the app ID from the list of selected App IDs.
+      selAppIds.splice(selAppIds.indexOf(app.id), 1);
+      $scope.numSuccessDels++;
+      return res;
+    })
+    .catch(function(error){
+      $scope.numFailDels++;
+      return error;
+    });
+  };
+
+  $scope.deleting = false;
+  
+  function removeAppsPromise(device){
+    return Promise.all(device.matchedApps.map(function(app){
+      return removeAppPromise(device, app);
+    }));
+  }
+
+  $scope.removeApps = function(){
+    
+    loadDevicesIntervally(3000);
+
+    $scope.numDels = selApps.length;
+    $scope.numSuccessDels = 0;
+    $scope.numFailDels = 0;
+
+    $scope.deleting = true;
+
+    Notification.info('Delete process started');
+    Promise.all($scope.selectedDevs4Update.map(function(device){
+      return removeAppsPromise(device);
+    }))
+    .then(function(delResults){
+      console.log(delResults);
+      Notification.info('Delete process completed');
+      loadDevicesIntervally(60000);
+      $scope.loadDevices();
+    });
+  }
+
+  ///////// <end> ---- This section was for deleting apps 
 
   $scope.deselectProject = function(){
     // model for project select list
