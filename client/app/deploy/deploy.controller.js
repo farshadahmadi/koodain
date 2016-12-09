@@ -1056,7 +1056,7 @@ angular.module('koodainApp')
     });
   };
 
-  ///////// <start> ---- This section is for deleting apps 
+  ///////// <start> ---- This section is for deleting app 
 
   $scope.removeApp = function(device, app) {
     var url = device.url + '/app/' + app.id;
@@ -1078,7 +1078,49 @@ angular.module('koodainApp')
 
   ///////// <start> ---- This section is for deleting apps 
   
-  function removeAppPromise(device, app) {
+  $scope.deleting = false;
+  
+  $scope.removeApps = function () {
+    
+    loadDevicesIntervally(3000);
+
+    $scope.numDels = selApps.length;
+    $scope.numSuccessDels = 0;
+    $scope.numFailDels = 0;
+
+    $scope.deleting = true;
+
+    Notification.info('Delete process started');
+  
+    console.log($scope.selectedDevs4Update);
+
+    $http({
+      method: 'DELETE',
+      url: '/api/projects/delete',
+      data: {devices: $scope.selectedDevs4Update},
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8'
+      }
+    })
+    .then(function(res){
+      console.log(res);
+      // number of successful eployments
+      $scope.numSuccessDels = res.data.numberOfSuccess;
+      // number of failed deployments
+      $scope.numFailDels = res.data.numberOfFailure;
+      Notification.info('Delete process completed');
+      loadDevicesIntervally(60000);
+      $scope.loadDevices();
+    })
+    .catch(function(err){
+      console.log(err);
+      Notification.error('Delete process encountered some problems!');
+      loadDevicesIntervally(60000);
+      $scope.loadDevices();
+    });
+  }
+
+  /*function removeAppPromise(device, app) {
     var url = device.url + '/app/' + app.id;
     return $http({
       url: devicePipeUrl(url),
@@ -1106,7 +1148,7 @@ angular.module('koodainApp')
     }));
   }
 
-  $scope.removeApps = function(){
+  $scope.removeAppss = function(){
     
     loadDevicesIntervally(3000);
 
@@ -1126,7 +1168,7 @@ angular.module('koodainApp')
       loadDevicesIntervally(60000);
       $scope.loadDevices();
     });
-  }
+  }*/
 
   ///////// <end> ---- This section was for deleting apps 
 

@@ -100,6 +100,7 @@ function sendPackage(pkgBuffer, url) {
   return rp.post({url: url, formData: formData});
 }
 
+
 function putPackage(pkgBuffer, url) {
   var formData = {
     'filekey': {
@@ -138,28 +139,6 @@ function create(name) {
 };
 ////////////////////////////////////////////////////////////////////
   
-  /*function deployPromise(deps) {
-    var url = device.url;
-    return $http({
-      method: 'POST',
-      url: '/api/projects/' + deployment.project + '/package',
-      data: {deviceUrl: url},
-    })
-    .then(function(res){
-      // increases number of successfull deployments
-      console.log(device.id);
-      $scope.numSuccessDeps++;
-      return res;
-    })
-    .catch(function(err){
-      // increases number of failed deployments
-      $scope.numFailDeps++;
-      //if (err.data.name === 'RequestError'){
-        //console.log('Device is not reachable!');
-      //}
-      return err;
-    });*/
-
   // Returns a promise for executing the deployment object.
   function deployPromise(deployment) {
     
@@ -192,40 +171,6 @@ function create(name) {
       });
   }
 
-  /*function deploy () {
-
-    loadDevicesIntervally(3000);
-
-    // deep copy the deployment projects.
-    var deps = angular.copy($scope.deployments);
-    $scope.deployments = [];
-    if (!deps.length) {
-      return;
-    }
-
-    // total number of deployments
-    $scope.numDeps = numDeployments;
-    // number of successful eployments
-    $scope.numSuccessDeps = 0;
-    // number of failed deployments
-    $scope.numFailDeps = 0;
-
-    numDeployments = 0;
-    $scope.deploying = true;
-
-    Notification.info('Deployment process started');
-    Promise.all(deps.map(deployPromise))
-      .then(function(deployResults) {
-        console.log(deployResults);
-        //$scope.deployed = true;
-        Notification.info('Deployment process completed');
-        loadDevicesIntervally(60000);
-        $scope.loadDevices();
-      }).catch(function(err) {
-        // Actually this section will never get executed, since deployDevicePromise will return 
-        // the error (not throw it) if one deployment fails. 
-      });
-  };*/
 // deploy to a device.
 exports.deploys = function(req, res) {
 
@@ -255,6 +200,51 @@ exports.deploys = function(req, res) {
       res.status(200).json(finalResult);
     })
     .catch(errorHandler(res));
+};
+////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+  
+function deleteApp(device, app) {
+  var url = device.url + '/app/' + app.id;
+  return rp({
+    url: url,
+    method: 'DELETE'
+  });
+}
+
+// deploy to a device.
+exports.removeApp = function(req, res) {
+
+  var hostDevs = req.body.devices;
+  // number of successful deployments
+  var numSuccessDels = 0;
+  // number of failed deployments
+  var numFailDels = 0;
+
+  Promise.all(hostDevs.map(function(device){
+    return Promise.all(device.matchedApps.map(function(app) {
+      return deleteApp(device, app)
+        .then(function(res){
+          numSuccessDels++;
+          return res;
+        })
+        .catch(function(err){
+          numFailDels++;
+          return err;
+        });
+    }));
+  }))
+  .then(function(deleteResults){
+    var finalResult = {
+      numberOfSuccess: numSuccessDels,
+      numberOfFailure: numFailDels,
+      result: deleteResults
+    };
+
+    res.status(200).json(finalResult);
+  })
+  .catch(errorHandler(res));
 };
 ////////////////////////////////////////////////////////////////////
 // deploy to a device.
