@@ -136,16 +136,138 @@ function create(name) {
     return fsp.readFileAsync(pkgFilename);
   });
 };
+////////////////////////////////////////////////////////////////////
+  
+  /*function deployPromise(deps) {
+    var url = device.url;
+    return $http({
+      method: 'POST',
+      url: '/api/projects/' + deployment.project + '/package',
+      data: {deviceUrl: url},
+    })
+    .then(function(res){
+      // increases number of successfull deployments
+      console.log(device.id);
+      $scope.numSuccessDeps++;
+      return res;
+    })
+    .catch(function(err){
+      // increases number of failed deployments
+      $scope.numFailDeps++;
+      //if (err.data.name === 'RequestError'){
+        //console.log('Device is not reachable!');
+      //}
+      return err;
+    });*/
 
+  // Returns a promise for executing the deployment object.
+  function deployPromise(deployment) {
+    
+    // number of successful deployments
+    var numSuccessDeps = 0;
+    // number of failed deployments
+    var numFailDeps = 0;
+
+    var name = deployment.project;
+    return create(name)
+      .then(function(pkgBuffer) {
+        return Promise.all(deployment.selectedDevices.map(function(device) {
+          return sendPackage(pkgBuffer, device.url + '/app')
+            .then(function(res){
+              numSuccessDeps++;
+              return res;
+            })
+            .catch(function(err){
+              numFailDeps++;
+              return err;
+            });
+        }))
+        .then(function(res){
+          return {
+            numberOfSuccess: numSuccessDeps,
+            numberOfFailure: numFailDeps,
+            result: res
+          };
+        });
+      });
+  }
+
+  /*function deploy () {
+
+    loadDevicesIntervally(3000);
+
+    // deep copy the deployment projects.
+    var deps = angular.copy($scope.deployments);
+    $scope.deployments = [];
+    if (!deps.length) {
+      return;
+    }
+
+    // total number of deployments
+    $scope.numDeps = numDeployments;
+    // number of successful eployments
+    $scope.numSuccessDeps = 0;
+    // number of failed deployments
+    $scope.numFailDeps = 0;
+
+    numDeployments = 0;
+    $scope.deploying = true;
+
+    Notification.info('Deployment process started');
+    Promise.all(deps.map(deployPromise))
+      .then(function(deployResults) {
+        console.log(deployResults);
+        //$scope.deployed = true;
+        Notification.info('Deployment process completed');
+        loadDevicesIntervally(60000);
+        $scope.loadDevices();
+      }).catch(function(err) {
+        // Actually this section will never get executed, since deployDevicePromise will return 
+        // the error (not throw it) if one deployment fails. 
+      });
+  };*/
+// deploy to a device.
+exports.deploys = function(req, res) {
+
+  var deps = req.body.deployments;
+
+  Promise.all(deps.map(deployPromise))
+    .then(function(deployResults){
+      // total number of successful deployments
+      var numSuccessDeps = 0;
+      // total number of failed deployments
+      var numFailDeps = 0;
+      // total deployment responses
+      var results = [];
+
+      deployResults.forEach(function(res){
+        numSuccessDeps += res.numberOfSuccess;
+        numFailDeps += res.numberOfFailure;
+        results = results.concat(res.result);
+      });
+
+      var finalResult = {
+        numberOfSuccess: numSuccessDeps,
+        numberOfFailure: numFailDeps,
+        result: results
+      };
+
+      res.status(200).json(finalResult);
+    })
+    .catch(errorHandler(res));
+};
+////////////////////////////////////////////////////////////////////
 // deploy to a device.
 exports.deploy = function(req, res) {
   var name = req.params.project;
   var url = req.body.deviceUrl + '/app';
+  console.log('received: ' + url);
   create(name)
     .then(function(pkgBuffer) {
     return sendPackage(pkgBuffer, url);
   }).then(function(response) {
     //console.log(response);
+    console.log('sent back: ' + url);
     res.status(200).json(response);
   }).catch(errorHandler(res));//.then(null, errorHandler(res));
 };

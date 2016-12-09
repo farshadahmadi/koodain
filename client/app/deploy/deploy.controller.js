@@ -446,8 +446,8 @@ angular.module('koodainApp')
   // This way user inputs (for querying application) will influence the visualizatiion tool to select apps,
   // but selecting nodes manually on the visualization tool will not influence (change) the user input.
   $scope.$watch("applicationQuery", function(newValue, oldValue){
-    console.log("deviceQuery: " + $scope.deviceQuery);
-    console.log("applicationQuery: " + $scope.applicationQuery);
+    //console.log("deviceQuery: " + $scope.deviceQuery);
+    //console.log("applicationQuery: " + $scope.applicationQuery);
     $scope.devQuery = $scope.deviceQuery;
     $scope.appQuery = $scope.applicationQuery;
   });
@@ -459,7 +459,7 @@ angular.module('koodainApp')
   // This is called every time either of them changes
   function updateSelection() {
 
-    console.log('updateSelection');
+   // console.log('updateSelection');
 
     // list of queried apps
     var queriedApps = [];
@@ -483,13 +483,13 @@ angular.module('koodainApp')
 
     // if there is any query to query apps or devices
     if(devQuery || appQuery){
-      console.log("appQuery: " + appQuery);
-      console.log("deviceQuery: " + devQuery);
+      //console.log("appQuery: " + appQuery);
+      //console.log("deviceQuery: " + devQuery);
       // query apps OR devices
       deviceManager.queryDevicess(devQuery, appQuery, 'or')
         .then(function(devices){
 
-          console.log(devices);
+          //console.log(devices);
           devices.forEach(function(device){
             queriedDevIDs4Deploy.push(device._id);
 
@@ -515,8 +515,8 @@ angular.module('koodainApp')
           if(noQueriedDevIds.length > 0) {
             if(devQuery) {
               $scope.devQuery = devQuery + ',' + noQueriedDevIds.join(',');
-              console.log("in noquerried devs:");
-              console.log($scope.devQuery);
+              //console.log("in noquerried devs:");
+              //console.log($scope.devQuery);
             } else {
               $scope.devQuery = noQueriedDevIds.join(',');
             }
@@ -543,8 +543,8 @@ angular.module('koodainApp')
 
   // Whenever device query changes, update selection.
   $scope.$watch('devQuery',function(newValue, oldValue){
-    console.log(newValue);
-    console.log("device query changed");
+    //console.log(newValue);
+    //console.log("device query changed");
     if(network) {
       updateSelection();
     }
@@ -552,8 +552,8 @@ angular.module('koodainApp')
 
   // Whenever app query changes, update selection.
   $scope.$watch('appQuery',function(newValue, oldValue){
-    console.log(newValue);
-    console.log("app query changed");
+    //console.log(newValue);
+    //console.log("app query changed");
     if(network){
       updateSelection();
     }
@@ -562,7 +562,7 @@ angular.module('koodainApp')
   // Vis.js events
   $scope.graphEvents = {
     onload: function(_network) {
-      console.log('onload graph events');
+      //console.log('onload graph events');
       network = _network;
       updateSelection();
     },
@@ -572,16 +572,15 @@ angular.module('koodainApp')
 
   $scope.loadDevices = function () {
     return deviceManager.queryDevicess().then(function(devices) {
-      //console.log(JSON.stringify(devices));
       var devs = deviceListAsObject(devices);
       // if you want to remove visual devices,
       // comment this line and uncomment the next line
       //return deviceManager.addMockDevicesTo(allDevices);
       return devs; // a promise can return a synchroous value
     }).then(function(devs){
-      console.log("before changing allDevices");
+      //console.log("before changing allDevices");
       allDevices = devs;
-      console.log("after changing allDevices");
+      //console.log("after changing allDevices");
       updateNodesAndEdges();
       //$scope.$apply();
       return "done";
@@ -620,8 +619,6 @@ angular.module('koodainApp')
       for (var i in allDevices) {
         var d = allDevices[i];
         var apps = d.apps;
-        console.log("deleted devices' apps:");
-        console.log(apps);
         if (apps && apps.length > 0) {
           nodesArray.push.apply(nodesArray, apps.map(nodeFromApp));
           localAllApps.push.apply(localAllApps, apps);
@@ -639,7 +636,6 @@ angular.module('koodainApp')
       }
       nodes = new VisDataSet(nodesArray);
       edges = new VisDataSet(edgesArray);
-      console.log("call onload");
       $scope.graphData = {
         nodes: nodes,
         edges: edges
@@ -673,8 +669,8 @@ angular.module('koodainApp')
   // construct a comma-separated list of selected device id to be used as query.
   function selectClick(params) {
 
-    console.log("selectClick is called");
-    console.log(params);
+    //console.log("selectClick is called");
+    //console.log(params);
 
     var selDevices = params.nodes.filter(isDeviceNodeId);
     var selApps = params.nodes.filter(isAppNodeId);
@@ -688,7 +684,7 @@ angular.module('koodainApp')
       $scope.appQuery = "";
     // if a node is deselected or a new node (either app or device) is selected without holding the ctrl key
     } else if (params.hasOwnProperty('previousSelection')) {
-      console.log(params.event.changedPointers[0].ctrlKey);
+      //console.log(params.event.changedPointers[0].ctrlKey);
       // if a new node (either app or device) is selected without holding the ctrl key
       if(!params.event.changedPointers[0].ctrlKey){
        lastModifiedNodeId = params.nodes[0];
@@ -696,7 +692,7 @@ angular.module('koodainApp')
       } else {
         // find the deselected node.
         lastModifiedNodeId = findDeselectedNode(params.nodes, params.previousSelection.nodes);
-        console.log("lastModifiedNodeId: " + lastModifiedNodeId);
+        //console.log("lastModifiedNodeId: " + lastModifiedNodeId);
       }
     // if a new node is selected
     } else {
@@ -719,7 +715,7 @@ angular.module('koodainApp')
         // all currently selected devices should be deselected
         $scope.devQuery = "";
       }
-      console.log("inside appquery");
+      //console.log("inside appquery");
       $scope.appQuery = selApps.map(function(id) { return '#'+id.slice(4,id.length); }).join(',');
     }
 
@@ -794,7 +790,7 @@ angular.module('koodainApp')
     }).result.then(function(deployment) {
       $scope.deployments.push(deployment);
       numDeployments += deployment.numApproxDevices;
-      console.log($scope.deployments);
+      //console.log($scope.deployments);
     });
   };
   
@@ -826,7 +822,7 @@ angular.module('koodainApp')
     }).result.then(function(update) {
       $scope.updates.push(update);
       numUpdates += update.numApproxApps;
-      console.log($scope.updates);
+      //console.log($scope.updates);
     });
   };
 
@@ -845,40 +841,9 @@ angular.module('koodainApp')
   };
 
   $scope.deploying = false;
-  //$scope.deployed = false;
-
-  // Returns a promise for deploying the project to the device.
-  function deployDevicePromise(device, deployment) {
-    var url = device.url;
-    return $http({
-      method: 'POST',
-      url: '/api/projects/' + deployment.project + '/package',
-      data: {deviceUrl: url},
-    })
-    .then(function(res){
-      // increases number of successfull deployments
-      $scope.numSuccessDeps++;
-      return res;
-    })
-    .catch(function(err){
-      // increases number of failed deployments
-      $scope.numFailDeps++;
-      /*if (err.data.name === 'RequestError'){
-        console.log('Device is not reachable!');
-      }*/
-      return err;
-    });
-  }
-
-  // Returns a promise for executing the deployment object.
-  function deployPromise(deployment) {
-    return Promise.all(deployment.selectedDevices.map(function(d) {
-      return deployDevicePromise(d, deployment);
-    }));
-  }
-
-  $scope.deploy = function() {
-
+  
+  $scope.deploy = function () {
+    
     // updates the visualization tool every some seconds.
     loadDevicesIntervally(3000);
 
@@ -888,7 +853,7 @@ angular.module('koodainApp')
     if (!deps.length) {
       return;
     }
-
+    
     // total number of deployments
     $scope.numDeps = numDeployments;
     // number of successful eployments
@@ -900,18 +865,29 @@ angular.module('koodainApp')
     $scope.deploying = true;
 
     Notification.info('Deployment process started');
-    Promise.all(deps.map(deployPromise))
-      .then(function(deployResults) {
-        console.log(deployResults);
-        //$scope.deployed = true;
-        Notification.info('Deployment process completed');
-        loadDevicesIntervally(60000);
-        $scope.loadDevices();
-      }).catch(function(err) {
-        // Actually this section will never get executed, since deployDevicePromise will return 
-        // the error (not throw it) if one deployment fails. 
-      });
-  };
+    
+    $http({
+      method: 'POST',
+      url: '/api/projects/deploy',
+      data: {deployments: deps},
+    })
+    .then(function(res){
+      console.log(res);
+      // number of successful eployments
+      $scope.numSuccessDeps = res.data.numberOfSuccess;
+      // number of failed deployments
+      $scope.numFailDeps = res.data.numberOfFailure;
+      Notification.info('Deployment process completed');
+      loadDevicesIntervally(60000);
+      $scope.loadDevices();
+    })
+    .catch(function(err){
+      console.log(err);
+      Notification.danger('Deployment process encountered some problems!');
+      loadDevicesIntervally(60000);
+      $scope.loadDevices();
+    });
+  }
 
 ////////////////// End of Deployment process mechanism
 
@@ -1182,7 +1158,6 @@ angular.module('koodainApp')
         if(index != -1){
           dcs.splice(index, 1);
         }
-        console.log("changing devicequery in 1048");
         if (!dcs || !dcs.length) {
           // No deviceCapabilities, query everything *
           $scope.devQuery = '*';

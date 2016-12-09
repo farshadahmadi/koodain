@@ -31,4 +31,6 @@ router.delete('/:project/files/:file(*)', fileCtrl.destroy);
 router.post('/:project/package', packageCtrl.deploy);
 router.put('/:project/package', packageCtrl.update);
 
+router.post('/deploy', packageCtrl.deploys);
+
 module.exports = router;
