@@ -459,7 +459,7 @@ angular.module('koodainApp')
   // This is called every time either of them changes
   function updateSelection() {
 
-   // console.log('updateSelection');
+    console.log('updateSelection');
 
     // list of queried apps
     var queriedApps = [];
@@ -562,7 +562,6 @@ angular.module('koodainApp')
   // Vis.js events
   $scope.graphEvents = {
     onload: function(_network) {
-      //console.log('onload graph events');
       network = _network;
       updateSelection();
     },
@@ -1094,10 +1093,19 @@ angular.module('koodainApp')
   
     console.log($scope.selectedDevs4Update);
 
+    var devs = $scope.selectedDevs4Update.map(function(dev){
+      var apps = dev.matchedApps.map(function(app){
+        return {id: app.id};
+      });
+      return {url: dev.url, matchedApps: apps};
+    });
+
+    console.log(devs);
+
     $http({
       method: 'DELETE',
       url: '/api/projects/delete',
-      data: {devices: $scope.selectedDevs4Update},
+      data: {devices: devs},
       headers: {
         'Content-Type': 'application/json;charset=utf-8'
       }
