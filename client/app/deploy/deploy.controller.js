@@ -559,11 +559,17 @@ angular.module('koodainApp')
     }
   });
 
+  var img = new Image();
+  img.src = "http://www.tut.fi/imago/map/Map-2016-11_2000px.png";
+  
   // Vis.js events
   $scope.graphEvents = {
     onload: function(_network) {
       network = _network;
       updateSelection();
+    },    
+    beforeDrawing: function(ctx){
+      ctx.drawImage(img, 0, 2000);
     },
     selectNode: selectClick,
     deselectNode: selectClick
