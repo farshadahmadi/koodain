@@ -560,7 +560,8 @@ angular.module('koodainApp')
   });
 
   var img = new Image();
-  img.src = "http://www.tut.fi/imago/map/Map-2016-11_2000px.png";
+  //img.src = "http://www.tut.fi/imago/map/Map-2016-11_2000px.png";
+  img.src = "/images/Department.png";
   
   // Vis.js events
   $scope.graphEvents = {
