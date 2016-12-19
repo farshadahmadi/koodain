@@ -290,12 +290,15 @@ angular.module('koodainApp')
 
   // Convert the list to an object with device.id as key
   function deviceListAsObject(devs) {
+    var xys = [{x: 220, y: 200},{x: 390, y: 200},{x: 220, y: 350},{x: 390, y: 350},{x: 220, y: 490},{x: 390, y: 490},{x: 220, y: 630},{x: 390, y: 630},{x: 220, y: 770},{x: 390, y: 770},{x: 220, y: 890},{x: 390, y: 890},{x: 220, y: 1030},{x: 390, y: 1030},{x: 220, y: 1170},{x: 390, y: 1170},{x: 220, y: 1310},{x: 390, y: 1310},{x: 1700, y:2300}];
+    //var xys = [{x: 220, y: 200},{x: 590, y: 200},{x: 220, y: 350},{x: 220, y: 490},{x: 590, y: 490},{x: 220, y: 630},{x: 590, y: 630},{x: 220, y: 770},{x: 590, y: 770},{x: 220, y: 890},{x: 590, y: 890},{x: 220, y: 1030},{x: 590, y: 1030},{x: 220, y: 1170},{x: 590, y: 1170},{x: 220, y: 1310},{x: 590, y: 1310},{x: 1700, y:2300}];
     var obj = {};
     for (var i=0; i<devs.length; i++) {
       // add id property to the device
       devs[i].id = devs[i]._id;
       // add coordination manually since it is not included in json file
-      devs[i].coords = {x:(i%10)*200, y:(Math.floor(i/10)+10)*200};
+      //devs[i].coords = {x:(i%10)*200, y:(Math.floor(i/10))*200};
+      devs[i].coords = xys[i];
       var d = devs[i];
       obj[d.id] = d;
     }
@@ -560,8 +563,10 @@ angular.module('koodainApp')
   });
 
   var img = new Image();
+  //img.style = "width: 200%; height: 200%;";
   //img.src = "http://www.tut.fi/imago/map/Map-2016-11_2000px.png";
   img.src = "/images/Department.png";
+  //img.src = "/images/dept.JPG";
   
   // Vis.js events
   $scope.graphEvents = {
@@ -570,7 +575,12 @@ angular.module('koodainApp')
       updateSelection();
     },    
     beforeDrawing: function(ctx){
-      ctx.drawImage(img, 0, 2000);
+      ctx.save();
+      ctx.translate(-500, -140);
+      ctx.rotate(19 * Math.PI/180);
+      ctx.drawImage(img, 150, -400, 3222, 2291);
+      ctx.restore();
+      //ctx.drawImage(img, 0, -140, 3222, 2291);
     },
     selectNode: selectClick,
     deselectNode: selectClick
