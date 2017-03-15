@@ -9,21 +9,17 @@ module.exports = {
             undefined,
 
   // Server port
-  port:     process.env.OPENSHIFT_NODEJS_PORT ||
-            process.env.PORT ||
+  port:     process.env.PORT ||
             8081,
 
   // MongoDB connection options
   mongo: {
-    uri:    process.env.MONGOLAB_URI ||
-            process.env.MONGOHQ_URL ||
-            process.env.OPENSHIFT_MONGODB_DB_URL+process.env.OPENSHIFT_APP_NAME ||
+    uri:    process.env.MONGO_DB_URL ||
             'mongodb://localhost/koodain-dev'
   },
 
   git: {
-    projects: '/home/ubuntu/idiotgit-dev'
-  },
-
-
+    projects: process.env.WORKSPACE ||
+              '/home/ubuntu/idiotgit-dev'
+  }
 };
