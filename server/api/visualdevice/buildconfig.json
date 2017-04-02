@@ -1,0 +1,62 @@
+{
+  "kind": "BuildConfig",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "<%= project.name %>",
+    "namespace": "node-mongo2",
+    "labels": {
+      "app": "<%= project.name %>"
+    }
+  },
+  "spec": {
+    "triggers": [
+      {
+        "type": "GitHub",
+        "github": {
+          "secret": "4321"
+        }
+      },
+      {
+        "type": "Generic",
+        "generic": {
+          "secret": "1234"
+        }
+      },
+      {
+        "type": "ConfigChange"
+      },
+      {
+        "type": "ImageChange"
+      }
+    ],
+    "runPolicy": "Serial",
+    "source": {
+      "type": "Git",
+      "git": {
+        "uri": "<%= project.git.url %>",
+        "ref": "<%= project.git.ref %>"
+      }
+    },
+    "strategy": {
+      "type": "Source",
+      "sourceStrategy": {
+        "from": {
+          "kind": "ImageStreamTag",
+          "namespace": "openshift",
+          "name": "nodejs:4"
+        }
+      }
+    },
+    "output": {
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "<%= project.name %>:latest"
+      }
+    },
+    "resources": {},
+    "postCommit": {}
+  },
+  "status": {
+    "lastVersion": 0
+  }
+}

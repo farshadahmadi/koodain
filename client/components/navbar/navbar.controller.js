@@ -21,7 +21,12 @@ angular.module('koodainApp')
     {
       'title': 'APIs',
       'link': '/api-descr'
-    }];
+    },
+    {
+      'title': 'Hosts',
+      'link': '/hosts'
+    }
+    ];
 
     $scope.isCollapsed = true;
     $scope.isLoggedIn = Auth.isLoggedIn;

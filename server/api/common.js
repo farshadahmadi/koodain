@@ -24,6 +24,7 @@ function errorHandler(res) {
       console.log(err);
       res.status(err.statusCode).json(err);
     } else {
+      console.log(err.toString());
       res.status(500).json({error: 'Uknown Error'});
     }
   };

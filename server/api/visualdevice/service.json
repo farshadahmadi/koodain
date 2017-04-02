@@ -1,0 +1,31 @@
+{
+  "kind": "Service",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "<%= project.name %>",
+    "namespace": "node-mongo2",
+    "labels": {
+      "app": "<%= project.name %>"
+    }
+  },
+  "spec": {
+    "ports": [
+      {
+        "name": "8080-tcp",
+        "protocol": "TCP",
+        "port": 8080,
+        "targetPort": 8080
+      }
+    ],
+    "selector": {
+      "app": "<%= project.name %>",
+      "deploymentconfig": "<%= project.name %>"
+    },
+    "clusterIP": null,
+    "type": "ClusterIP",
+    "sessionAffinity": "None"
+  },
+  "status": {
+    "loadBalancer": {}
+  }
+}

@@ -189,19 +189,19 @@ angular.module('koodainApp')
         "</div>"+
         "<div class='panel-body' style='padding-top: 0px; padding-bottom: 0px'>"+
           "<table class='table' style='border: none; margin-bottom:1px'>"+
-            "<tr>"+
+            "<!-- tr>"+
               "<td>id</td>"+
               "<td>" + device.id + "</td>"+
             "</tr>"+
-            "<tr>"+
+            "<tr -->"+
               "<td>name</td>"+
               "<td>" + device.name + "</td>"+
             "</tr>"+
-            "<tr>"+
+            "<!-- tr>"+
               "<td>capabilities</td>"+
               "<td>" + device.classes.join(", ") + "</td>"+
             "</tr>"+
-            "<!-- tr>"+
+            "<tr>"+
               "<td>location</td>"+
               "<td>" + device.location + "</td>"+
             "</tr -->"+
@@ -209,7 +209,7 @@ angular.module('koodainApp')
               "<td>url</td>"+
               "<td>" + device.url + "</td>"+
             "</tr>"+
-            "<tr>"+
+            "<!-- tr>"+
               "<td>coordinates</td>"+
               "<td>" + device.location.latitude + "," + device.location.longitude + "</td>"+
             "</tr>"+
@@ -220,7 +220,7 @@ angular.module('koodainApp')
             "<tr>"+
               "<td>location tag</td>"+
               "<td>" + device.location.tag + "</td>"+
-            "</tr>"+
+            "</tr -->"+
             "<!-- tr>"+
               "<td>coordination</td>"+
               "<td>" + device.coords.x + "," + device.coords.y + "</td>"+
@@ -561,11 +561,8 @@ angular.module('koodainApp')
     }
   });
 
-  var img = new Image();
-  //img.style = "width: 200%; height: 200%;";
-  //img.src = "http://www.tut.fi/imago/map/Map-2016-11_2000px.png";
-  img.src = "/images/Department.png";
-  //img.src = "/images/dept.JPG";
+  //var img = new Image();
+  //img.src = "/images/Department.png";
   
   // Vis.js events
   $scope.graphEvents = {
@@ -573,14 +570,14 @@ angular.module('koodainApp')
       network = _network;
       updateSelection();
     },    
-    beforeDrawing: function(ctx){
+    /*beforeDrawing: function(ctx){
       ctx.save();
       ctx.translate(-500, -140);
       ctx.rotate(19 * Math.PI/180);
       ctx.drawImage(img, 150, -400, 3222, 2291);
+      ctx.drawImage(img, 0, 0, 200, 200);
       ctx.restore();
-      //ctx.drawImage(img, 0, -140, 3222, 2291);
-    },
+    },*/
     selectNode: selectClick,
     deselectNode: selectClick
   };

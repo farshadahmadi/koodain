@@ -12,5 +12,5 @@ module.exports = {
           projects: '/home/liquid-iot/Desktop/workspace'
     },
   
-  seedDB: false
+  seedDB: true
 };
