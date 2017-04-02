@@ -461,7 +461,7 @@ angular.module('koodainApp')
   // This is called every time either of them changes
   function updateSelection() {
 
-    console.log('updateSelection');
+    //console.log('updateSelection');
 
     // list of queried apps
     var queriedApps = [];
@@ -887,6 +887,7 @@ angular.module('koodainApp')
       data: {deployments: deps},
     })
     .then(function(res){
+      console.log('deploy request');
       console.log(res);
       // number of successful eployments
       $scope.numSuccessDeps = res.data.numberOfSuccess;
@@ -898,7 +899,7 @@ angular.module('koodainApp')
     })
     .catch(function(err){
       console.log(err);
-      Notification.danger('Deployment process encountered some problems!');
+      Notification.error('Deployment process encountered some problems!');
       loadDevicesIntervally(60000);
       $scope.loadDevices();
     });

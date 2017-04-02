@@ -85,8 +85,8 @@ div(ng-include='"components/navbar/navbar.html"')
                         i.fa.fa-rotate-left
                       button.btn.btn-success(ng-click="updateApp(device, app)")
                         i.fa.fa-rotate-right
-                      button.btn.btn-danger(ng-click="removeApp(device, app)")
-                        i.fa.fa-trash
+                    button.btn.btn-danger(ng-click="removeApp(device, app)")
+                      i.fa.fa-trash
                   i(ng-if="app.status ==='installed'", style="color: red").fa.fa-spinner.fa-pulse.fa-2x.fa-fw
                   span(ng-if="app.status ==='installed'", style="color: red") Trying to run the application
             div
