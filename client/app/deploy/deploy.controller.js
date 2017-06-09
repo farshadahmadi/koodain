@@ -840,6 +840,18 @@ angular.module('koodainApp')
 
 ////////////////// Start of  Deployment process mechanism
 
+  $scope.manageQuery = function() {
+    $uibModal.open({
+      controller: 'ManageQueryCtrl',
+      templateUrl: 'managequery.html',
+      resolve: {
+        deviceManager: function() { return deviceManager; },
+      }
+    }).result.then(function() {
+      //$scope.deploy();
+    });
+  };
+
   $scope.verifyDeployment = function() {
     $uibModal.open({
       controller: 'VerifyDeploymentCtrl',
@@ -1456,5 +1468,51 @@ angular.module('koodainApp')
         Notification.error("Connection to the application was not successful.");
       });
     }, 2000);
-  });
+  })
 
+/**
+ * Controller for the verify deployment modal dialog.
+ */
+.controller('ManageQueryCtrl', function($scope, $http, $resource, $uibModalInstance, Notification, deviceManager, deviceManagerUrl) {
+
+  $scope.queries = [];
+
+  $scope.addQuery = function(){
+    var query = {
+      resultType: "devs",
+      resultName: "S" + $scope.queries.length,
+      result: null,
+      deviceQuery: "",
+      appQuery: "",
+      operationType: "and"
+    }
+
+    query.sendQuery = function(){
+      deviceManager.newQuery(query)
+        .then(function(result){
+          console.log(result);
+          query.result = result;
+        })
+        .catch(function(err){
+          console.log(err);
+          query.result = null;
+        });
+    }
+
+    $scope.queries.push(query);
+  }
+
+  $scope.addQuery();
+
+  $scope.cancel = function() {
+    $uibModalInstance.dismiss('cancel');
+  };
+
+  $scope.done = function() {
+    $uibModalInstance.close();
+  };
+
+  $scope.deploy = function() {
+    $scope.done();
+  };
+});

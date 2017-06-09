@@ -309,6 +309,24 @@ angular.module('koodainApp')
        return res.data; 
       });
     } 
+    
+    function newQuery(options){
+
+      /*if(deviceQuery === undefined && appQuery === undefined){
+        console.log("yes");
+      }
+
+      console.log(deviceQuery);
+      console.log(appQuery);*/
+
+      return $http({
+        method: 'GET',
+        url: deviceManagerUrl + "/newquery",
+        params: {device: options.deviceQuery, app: options.appQuery, operation: options.operationType, resulttype: options.resultType}
+      }).then(function(res) {
+       return res.data; 
+      });
+    } 
 
     /**
      * The service returns a function that takes a device manager URL as a parameter.
@@ -321,6 +339,7 @@ angular.module('koodainApp')
       }
 
       return {
+        newQuery: newQuery,
         queryDevicess : queryDevicess,
         /**
          * Queries devices from the device manager.

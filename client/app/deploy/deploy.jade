@@ -110,6 +110,9 @@ div(ng-include='"components/navbar/navbar.html"')
           .form-group
             label(for="appquery") App:
             input.form-control(id="appquery", type="text", ng-model="applicationQuery", ng-model-options='{debounce: 200}', ng-change="deselectProject()")
+          .form-group
+            button.btn.btn-default(ng-click="manageQuery()")
+              i.fa.fa-list
       #network
         vis-network(data="graphData", options="graphOptions", events="graphEvents", component="network")
       p
@@ -125,6 +128,51 @@ div(ng-include='"components/navbar/navbar.html"')
 
 
 div(ng-include='"components/footer/footer.html"')
+
+// App management (deployment) modal dialog
+script(type="text/ng-template", id="managequery.html")
+  .modal-header
+    button(type="button", class="close", ng-click="cancel()") &times;
+    h4.modal-title Query ApplicationsDevices
+  .modal-body
+    table.table
+      thead
+        tr
+          th Results of Query
+          th 
+          th Device query
+          th 
+          th Application Query
+        tr(ng-repeat="query in queries")
+          td
+            form
+              .radio
+                label Devices
+                  input(type="radio", name="resulttype", value="devs", ng-model="query.resultType", ng-change="query.sendQuery()")
+              .radio
+                label Applications
+                  input(type="radio", name="resulttype", value="apps", ng-model="query.resultType", ng-change="query.sendQuery()")
+          td {{query.resultName}}
+          td
+            form
+              .form-group
+                input.form-control(type="text", id="devquery", ng-model="query.deviceQuery", ng-change="query.sendQuery()")
+          td
+            form
+              .radio
+                label and
+                  input(type="radio", name="operationtype", value="and", ng-model="query.operationType", ng-change="query.sendQuery()")
+              .radio
+                label or
+                  input(type="radio", name="operationtype", value="or", ng-model="query.operationType", ng-change="query.sendQuery()")
+          td
+            form
+              .form-group
+                input.form-control(type="text", id="appquery", ng-model="query.appQuery", ng-change="query.sendQuery()")
+    tt {{queries | json}}
+    button.btn.btn-default(ng-click="addQuery()") Add Query
+  .modal-footer
+    button.btn.btn-default(ng-click="done()") Stage deployment
 
 // App management (deployment) modal dialog
 script(type="text/ng-template", id="managedeployapps.html")
