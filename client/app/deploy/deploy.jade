@@ -93,17 +93,30 @@ div(ng-include='"components/navbar/navbar.html"')
               small
                 code(ng-repeat="cls in device.classes") {{cls}}
     .col-sm-8
-      p
-        | Select a proejct to find compatible target devices
-        ul.nya-bs-select(ng-model='selectedProject', title='select a project', data-live-search='true')
-          li(nya-bs-option='project in projects')
-            a 
-              {{project.name}}
-              span.glyphicon.glyphicon-ok.check-mark
-      p
-        | Or query devices:
-        //form.form-inline.queryform
-        form
+      .row
+        p
+          | Select a proejct to find compatible target devices
+          ul.nya-bs-select(ng-model='selectedProject', title='select a project', data-live-search='true')
+            li(nya-bs-option='project in projects')
+              a 
+                {{project.name}}
+                span.glyphicon.glyphicon-ok.check-mark
+      .row
+        p
+          | Or query devices:
+          //form.form-inline.queryform
+      .row
+        .col-sm-6
+          form
+            .form-group
+              label(for="queryStr") query:
+              textarea.form-control(rows="10", id="queryStr", ng-model="deviceQuery", ng-model-options='{debounce: 200}')
+        .col-sm-6
+          form
+            .form-group
+              label(for="result") result:
+              textarea.form-control(rows="10", id="result", ng-model="resultQuery", ng-model-options='{debounce: 200}')
+        //form
           .form-group
             label(for="devicequery") Device:
             input.form-control(id="devicequery", type="text", ng-model="deviceQuery", ng-model-options='{debounce: 200}', ng-change="deselectProject()")

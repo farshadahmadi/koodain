@@ -301,11 +301,16 @@ angular.module('koodainApp')
       console.log(deviceQuery);
       console.log(appQuery);*/
 
+      if(!deviceQuery){
+        deviceQuery = 'FOR device IN devices RETURN device';
+      }
+
       return $http({
         method: 'GET',
         url: deviceManagerUrl,
         params: {device: deviceQuery, app: appQuery, operation: operation}
       }).then(function(res) {
+        console.log(res);
        return res.data; 
       });
     } 
