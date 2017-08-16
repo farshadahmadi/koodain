@@ -22,83 +22,102 @@ div(ng-include='"components/navbar/navbar.html"')
   .row
     .col-sm-4
       p {{selectedDevices.length}} devices selected
+      p
+        button.btn.btn-default(ng-disabled="!selectedDevices.length", ng-click="openManageDeployAppsModal()")
+          | Deploy Apps
+        button.btn.btn-default.navbar-right(ng-disabled="!selAppIds.length", ng-click="openManageUpdateAppsModal()")
+          | Update Apps
+      p
+        div(ng-if="deploying") 
+          p Last deployment progress status:
+          uib-progress(max="numDeps")
+            uib-bar(value="numSuccessDeps", type="success")
+              span(ng-hide="numSuccessDeps==0")
+                {{numSuccessDeps}}
+            uib-bar(value="numFailDeps", type="danger")
+              span(ng-hide="numFailDeps==0")
+                {{numFailDeps}}
+        div(ng-if="updating") 
+          p Last update progress status:
+          uib-progress(max="numUps")
+            uib-bar(value="numSuccessUps", type="success")
+              span(ng-hide="numSuccessUps==0")
+                {{numSuccessUps}}
+            uib-bar(value="numFailUps", type="danger")
+              span(ng-hide="numFailUps==0")
+                {{numFailUps}}
+        div(ng-if="deleting") 
+          p Last delete progress status:
+          uib-progress(max="numDels")
+            uib-bar(value="numSuccessDels", type="success")
+              span(ng-hide="numSuccessDels==0")
+                {{numSuccessDels}}
+            uib-bar(value="numFailDels", type="danger")
+              span(ng-hide="numFailDels==0")
+                {{numFailDels}}
+      p
+        button.btn.btn-danger(ng-if="selAppIds.length", ng-click="removeApps()")
+          i.fa.fa-trash  Delete all apps
+      p
+        ul.list-group(ng-init="shownIndex = -1")
+          li.list-group-item(ng-repeat="device in selectedDevices", ng-click="$parent.shownIndex = $index")
+            i.fa {{device.code}} 
+            |  
+            //strong {{device.id}}
+            strong {{device._key}}
+            div
+              ul.appinfo
+                //li(ng-repeat="app in device.apps | filter:filterSelApp")
+                li(ng-repeat="app in device.apps")
+                  strong {{app.name}} {{app.version}}
+                  |  {{app.status}}
+                  |  
+                  a(ng-href="{{deviceManagerUrl}}/devices/{{device.id}}/apps/{{app.id}}/api", target="_blank") API
+                  br
+                  .btn-group(ng-if="app.status !=='installed'", role="group")
+                      a.btn.btn-default(ng-if="app.name.indexOf('liquidiot-')===0", ng-href="/project/{{app.name.slice(10)}}")
+                        i.fa.fa-edit
+                      button.btn.btn-default(ng-click="openLogModal(device, app)")
+                        i.fa.fa-list
+                      button.btn.btn-primary(ng-if="app.status==='paused'", ng-click="setAppStatus(device, app, 'running')")
+                        i.fa.fa-play
+                      button.btn.btn-primary(ng-if="app.status==='running'", ng-click="setAppStatus(device, app, 'paused')")
+                        i.fa.fa-pause
+                      button.btn.btn-warning(ng-if="app.canRollback", ng-click="rollbackApp(device, app)")
+                        i.fa.fa-rotate-left
+                      button.btn.btn-success(ng-click="updateApp(device, app)")
+                        i.fa.fa-rotate-right
+                      button.btn.btn-danger(ng-click="removeApp(device, app)")
+                        i.fa.fa-trash
+                  i(ng-if="app.status ==='installed'", style="color: red").fa.fa-spinner.fa-pulse.fa-2x.fa-fw
+                  span(ng-if="app.status ==='installed'", style="color: red") Trying to run the application
+            div
+              small
+                code(ng-repeat="cls in device.classes") {{cls}}
+    .col-sm-8
+      .row
+        p
+          | Select a proejct to find compatible target devices
+          ul.nya-bs-select(ng-model='selectedProject', title='select a project', data-live-search='true')
+            li(nya-bs-option='project in projects')
+              a 
+                {{project.name}}
+                span.glyphicon.glyphicon-ok.check-mark
+      .row
+        p
+          | Or query devices:
+          //form.form-inline.queryform
       .row
         .col-sm-6
-          .btn-group(role="group")
-            button.btn.btn-default(ng-disabled="!selectedDevices.length", ng-click="openManageDeployAppsModal()") Deploy Apps
+          form
+            .form-group
+              label(for="queryStr") query:
+              textarea.form-control(rows="10", id="queryStr", ng-model="query", ng-model-options='{debounce: 200}')
         .col-sm-6
-          .btn-group(role="group")
-            button.btn.btn-default(ng-disabled="!selectedDevs4Update.length", ng-click="openManageUpdateAppsModal()") Update Apps
-      br
-      div(ng-if="deploying") 
-        p Last deployment progress status:
-        uib-progress(max="numDeps")
-          uib-bar(value="numSuccessDeps", type="success")
-            span(ng-hide="numSuccessDeps==0")
-              {{numSuccessDeps}}
-          uib-bar(value="numFailDeps", type="danger")
-            span(ng-hide="numFailDeps==0")
-              {{numFailDeps}}
-      div(ng-if="updating") 
-        p Last update progress status:
-        uib-progress(max="numUps")
-          uib-bar(value="numSuccessUps", type="success")
-            span(ng-hide="numSuccessUps==0")
-              {{numSuccessUps}}
-          uib-bar(value="numFailUps", type="danger")
-            span(ng-hide="numFailUps==0")
-              {{numFailUps}}
-      ul.list-group(ng-init="shownIndex = -1")
-        li.list-group-item(ng-repeat="device in selectedDevices", ng-click="$parent.shownIndex = $index")
-          i.fa {{device.code}} 
-          |  
-          strong {{device.id}}
-          div
-            ul.appinfo
-              li(ng-repeat="app in device.apps | filter:filterSelApp")
-                strong {{app.name}} {{app.version}}
-                |  {{app.status}}
-                |  
-                a(ng-href="{{deviceManagerUrl}}/devices/{{device.id}}/apps/{{app.id}}/api", target="_blank") API
-                br
-                .btn-group(ng-if="app.status !=='installed'", role="group")
-                    a.btn.btn-default(ng-if="app.name.indexOf('liquidiot-')===0", ng-href="/project/{{app.name.slice(10)}}")
-                      i.fa.fa-edit
-                    button.btn.btn-default(ng-click="openLogModal(device, app)")
-                      i.fa.fa-list
-                    button.btn.btn-primary(ng-if="app.status==='paused'", ng-click="setAppStatus(device, app, 'running')")
-                      i.fa.fa-play
-                    button.btn.btn-primary(ng-if="app.status==='running'", ng-click="setAppStatus(device, app, 'paused')")
-                      i.fa.fa-pause
-                    button.btn.btn-warning(ng-if="app.canRollback", ng-click="rollbackApp(device, app)")
-                      i.fa.fa-rotate-left
-                    button.btn.btn-success(ng-click="updateApp(device, app)")
-                      i.fa.fa-rotate-right
-                    button.btn.btn-danger(ng-click="removeApp(device, app)")
-                      i.fa.fa-trash
-                i(ng-if="app.status ==='installed'", style="color: red").fa.fa-spinner.fa-pulse.fa-2x.fa-fw
-                span(ng-if="app.status ==='installed'", style="color: red") Trying to run the application
-          div
-            small
-              code(ng-repeat="cls in device.classes") {{cls}}
-    .col-sm-8
-      p
-        | Select a proejct to find compatible target devices
-        ul.nya-bs-select(ng-model='selectedProject', title='select a project', data-live-search='true')
-          li(nya-bs-option='project in projects')
-            a 
-              {{project.name}}
-              span.glyphicon.glyphicon-ok.check-mark
-      p
-        | OR query devices:
-        //form.form-inline.queryform
-        form
-          .form-group
-            label(for="devicequery") Device:
-            input.form-control(id="devicequery", type="text", ng-model="deviceQuery", ng-model-options='{debounce: 200}', ng-change="deselectProject()")
-          .form-group
-            label(for="appquery") App:
-            input.form-control(id="appquery", type="text", ng-model="applicationQuery", ng-model-options='{debounce: 200}', ng-change="deselectProject()")
+          form
+            .form-group
+              label(for="result") result:
+              textarea.form-control(rows="10", id="result", ng-model="resultQuery", ng-model-options='{debounce: 200}')
       #network
         vis-network(data="graphData", options="graphOptions", events="graphEvents", component="network")
       p
@@ -178,11 +197,8 @@ script(type="text/ng-template", id="manageupdateapps.html")
 // Verify deployment modal dialog
 script(type="text/ng-template", id="verifydeployment.html")
   .modal-header
-    button(type="button", class="close", ng-click="deployed ? done() : cancel()") &times;
+    button(type="button", class="close", ng-click="cancel()") &times;
     h4.modal-title Deploy
-      span(ng-if="deploying")
-        |  
-        i.fa.fa-spinner.fa-spin
   .modal-body
     ul.list-group
       li.list-group-item(ng-repeat="deployment in deployments")
@@ -201,10 +217,8 @@ script(type="text/ng-template", id="verifydeployment.html")
         ul
           li(ng-if="deployment.removeOld")
             | Remove earlier versions of the app
-        pre
-          | {{deployment.result}}
   .modal-footer
-    p(ng-if="!deployed && !deploying")
+    p
       button.btn.btn-default
         i.fa.fa-save
         | 
@@ -213,25 +227,12 @@ script(type="text/ng-template", id="verifydeployment.html")
         i.fa.fa-paper-plane
         | 
         | Deploy
-    p(ng-if="deploying")
-      button.btn.btn-danger(ng-click="cancel()")
-        i.fa.fa-paper-plane
-        | 
-        | Cancel
-    p(ng-if="deployed")
-      button.btn.btn-success(ng-click="done()")
-        i.fa.fa-paper-plane
-        | 
-        | OK
 
 // Verify deployment modal dialog
 script(type="text/ng-template", id="verifyupdate.html")
   .modal-header
-    button(type="button", class="close", ng-click="updated ? done() : cancel()") &times;
+    button(type="button", class="close", ng-click="cancel()") &times;
     h4.modal-title Update
-      span(ng-if="updating")
-        |  
-        i.fa.fa-spinner.fa-spin
   .modal-body
     ul.list-group
       li.list-group-item(ng-repeat="update in updates")
@@ -240,22 +241,11 @@ script(type="text/ng-template", id="verifyupdate.html")
         |  to all the apps matching
         strong
           code {{update.appquery}}
-        //|  
-        //span(ng-if="update.n==='all'") all the 
-        //span(ng-if="update.n!=='all'") {{update.n}}
-        //|  devices matching 
-        //strong
-        //  code {{update.devicequery}}
-        //  |  - 
-        //  code {{update.appquery}}
-        //|  (approx. {{update.numApproxDevices}} such devices)
         ul
           li(ng-if="update.removeOld")
             | Remove earlier versions of the app
-        pre
-          | {{update.result}}
   .modal-footer
-    p(ng-if="!updated && !updating")
+    p
       button.btn.btn-default
         i.fa.fa-save
         | 
@@ -264,16 +254,6 @@ script(type="text/ng-template", id="verifyupdate.html")
         i.fa.fa-paper-plane
         | 
         | Update
-    p(ng-if="updating")
-      button.btn.btn-danger(ng-click="cancel()")
-        i.fa.fa-paper-plane
-        | 
-        | Cancel
-    p(ng-if="updated")
-      button.btn.btn-success(ng-click="done()")
-        i.fa.fa-paper-plane
-        | 
-        | OK
 
 // Application log modal dialog
 script(type="text/ng-template", id="applog.html")

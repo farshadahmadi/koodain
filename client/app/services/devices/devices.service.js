@@ -292,20 +292,19 @@ angular.module('koodainApp')
       return devs;*/
     }
 
-    function queryDevicess(deviceQuery, appQuery, operation){
+    function queryDevicess(deviceQuery){
 
-      /*if(deviceQuery === undefined && appQuery === undefined){
-        console.log("yes");
+
+      if(!deviceQuery){
+        deviceQuery = 'FOR device IN devices RETURN device';
       }
-
-      console.log(deviceQuery);
-      console.log(appQuery);*/
 
       return $http({
         method: 'GET',
         url: deviceManagerUrl,
-        params: {device: deviceQuery, app: appQuery, operation: operation}
+        params: {device: deviceQuery}
       }).then(function(res) {
+        console.log(res);
        return res.data; 
       });
     } 

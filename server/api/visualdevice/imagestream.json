@@ -1,0 +1,15 @@
+{
+  "kind": "ImageStream",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "<%= project.name %>",
+    "namespace": "node-mongo2",
+    "labels": {
+      "app": "<%= project.name %>"
+    }
+  },
+  "spec": {},
+  "status": {
+    "dockerImageRepository": null
+  }
+}

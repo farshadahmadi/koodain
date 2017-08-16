@@ -1,0 +1,23 @@
+{
+  "kind": "Route",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "<%= project.name %>",
+    "namespace": "node-mongo2",
+    "labels": {
+      "app": "<%= project.name %>"
+    }
+  },
+  "spec": {
+    "host": null,
+    "to": {
+      "kind": "Service",
+      "name": "<%= project.name %>",
+      "weight": 100
+    },
+    "port": {
+      "targetPort": "8080-tcp"
+    }
+  },
+  "status":{}
+}

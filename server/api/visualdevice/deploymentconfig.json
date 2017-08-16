@@ -1,0 +1,89 @@
+{
+  "kind": "DeploymentConfig",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "<%= project.name %>",
+    "namespace": "node-mongo2",
+    "labels": {
+      "app": "<%= project.name %>"
+    }
+  },
+  "spec": {
+    "strategy": {
+      "type": "Rolling"
+    },
+    "triggers": [
+      {
+        "type": "ConfigChange"
+      },
+      {
+        "type": "ImageChange",
+        "imageChangeParams": {
+          "automatic": true,
+          "containerNames": [
+            "<%= project.name %>"
+          ],
+          "from": {
+            "kind": "ImageStreamTag",
+            "namespace": "node-mongo2",
+            "name": "<%= project.name %>:latest"
+          }
+        }
+      }
+    ],
+    "replicas": 1,
+    "test": false,
+    "selector": {
+      "app": "<%= project.name %>",
+      "deploymentconfig": "<%= project.name %>"
+    },
+    "template": {
+      "metadata": {
+        "creationTimestamp": null,
+        "labels": {
+          "app": "<%= project.name %>",
+          "deploymentconfig": "<%= project.name %>"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "<%= project.name %>",
+            "ports": [
+              {
+                "containerPort": 8080,
+                "protocol": "TCP"
+              }
+            ],
+            "env": [
+            {
+              "name": "DEVICE_URL",
+              "value": "<%= device.url %>"
+            },
+            {
+              "name": "DEVICE_NAME",
+              "value": "<%= project.name %>"
+            },
+            {
+              "name": "DEVICE_LOCATION_X",
+              "value": "<%= device.location.x %>"
+            },
+            {
+              "name": "DEVICE_LOCATION_Y",
+              "value": "<%= device.location.y %>"
+            }
+            ],
+            "resources": {},
+            "terminationMessagePath": "/dev/termination-log",
+            "imagePullPolicy": "Always"
+          }
+        ],
+        "restartPolicy": "Always",
+        "terminationGracePeriodSeconds": 30,
+        "dnsPolicy": "ClusterFirst",
+        "securityContext": {}
+      }
+    }
+  },
+  "status": {}
+}

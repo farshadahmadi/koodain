@@ -100,6 +100,7 @@ function sendPackage(pkgBuffer, url) {
   return rp.post({url: url, formData: formData});
 }
 
+
 function putPackage(pkgBuffer, url) {
   var formData = {
     'filekey': {
@@ -136,21 +137,132 @@ function create(name) {
     return fsp.readFileAsync(pkgFilename);
   });
 };
+////////////////////////////////////////////////////////////////////
+  
+  // Returns a promise for executing the deployment object.
+  function deployPromise(deployment) {
+    
+    // number of successful deployments
+    var numSuccessDeps = 0;
+    // number of failed deployments
+    var numFailDeps = 0;
 
-// deploy to device.
+    var name = deployment.project;
+    return create(name)
+      .then(function(pkgBuffer) {
+        return Promise.all(deployment.selectedDevices.map(function(device) {
+          return sendPackage(pkgBuffer, device.url + '/app')
+            .then(function(res){
+              numSuccessDeps++;
+              return res;
+            })
+            .catch(function(err){
+              numFailDeps++;
+              return err;
+            });
+        }))
+        .then(function(res){
+          return {
+            numberOfSuccess: numSuccessDeps,
+            numberOfFailure: numFailDeps,
+            result: res
+          };
+        });
+      });
+  }
+
+// deploy to a device.
+exports.deploys = function(req, res) {
+
+  var deps = req.body.deployments;
+
+  Promise.all(deps.map(deployPromise))
+    .then(function(deployResults){
+      // total number of successful deployments
+      var numSuccessDeps = 0;
+      // total number of failed deployments
+      var numFailDeps = 0;
+      // total deployment responses
+      var results = [];
+
+      deployResults.forEach(function(res){
+        numSuccessDeps += res.numberOfSuccess;
+        numFailDeps += res.numberOfFailure;
+        results = results.concat(res.result);
+      });
+
+      var finalResult = {
+        numberOfSuccess: numSuccessDeps,
+        numberOfFailure: numFailDeps,
+        result: results
+      };
+
+      res.status(200).json(finalResult);
+    })
+    .catch(errorHandler(res));
+};
+////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+  
+function deleteApp(device, app) {
+  var url = device.url + '/app/' + app.id;
+  return rp({
+    url: url,
+    method: 'DELETE'
+  });
+}
+
+// deploy to a device.
+exports.removeApp = function(req, res) {
+
+  var hostDevs = req.body.devices;
+  // number of successful deployments
+  var numSuccessDels = 0;
+  // number of failed deployments
+  var numFailDels = 0;
+
+  Promise.all(hostDevs.map(function(device){
+    return Promise.all(device.matchedApps.map(function(app) {
+      return deleteApp(device, app)
+        .then(function(res){
+          numSuccessDels++;
+          return res;
+        })
+        .catch(function(err){
+          numFailDels++;
+          return err;
+        });
+    }));
+  }))
+  .then(function(deleteResults){
+    var finalResult = {
+      numberOfSuccess: numSuccessDels,
+      numberOfFailure: numFailDels,
+      result: deleteResults
+    };
+
+    res.status(200).json(finalResult);
+  })
+  .catch(errorHandler(res));
+};
+////////////////////////////////////////////////////////////////////
+// deploy to a device.
 exports.deploy = function(req, res) {
   var name = req.params.project;
   var url = req.body.deviceUrl + '/app';
+  console.log('received: ' + url);
   create(name)
     .then(function(pkgBuffer) {
     return sendPackage(pkgBuffer, url);
   }).then(function(response) {
     //console.log(response);
+    console.log('sent back: ' + url);
     res.status(200).json(response);
   }).catch(errorHandler(res));//.then(null, errorHandler(res));
 };
 
-// deploy to device.
+// update an app in a device.
 exports.update = function(req, res) {
   var name = req.params.project;
   var url = req.body.deviceUrl + '/app/' + req.body.appId;

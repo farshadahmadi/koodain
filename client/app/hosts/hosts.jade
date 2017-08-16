@@ -1,0 +1,40 @@
+div(ng-include='"components/navbar/navbar.html"')
+
+.container
+  .row
+    .col-sm-12
+      h2 Hosts
+      table.table.table-bordered.table-hover
+        thead
+          th name
+          th build status
+        tr(ng-repeat="host in hosts")
+          td {{host.name}}
+          td {{host.buildStatus}}
+    .com-sm-12
+      button.btn.btn-primary(ng-click="openNewHostModal()")
+        i.fa.fa-plus
+          |  New Host
+
+script(type="text/ng-template" id="newhost.html")
+  .modal-header
+    button.close(ng-click="cancel()") &times;
+    h4.modal-title New Host
+  .modal-body
+    form(role="form", name="newhostform")
+      .form-group
+        label(for="hostname") Host name:
+        input.form-control(type="text", required, ng-pattern="/^[a-z][a-z0-9-]*$/", id="hostname", name="hostname", placeholder="", ng-model="host.name")
+        span.error(ng-if="newhostform.hostname.$error.pattern") Host name must match 
+          code [a-z][a-z0-9]*
+        span(ng-if="newhostform.hostname.$error.required || !newhostform.hostname.$invalid")
+          i.fa
+      div(ng-if="errorLog")
+        label(style="color:red") The following error happened while creating the host
+        pre
+          | {{errorLog}}
+  .modal-footer
+    button.btn.btn-default(ng-click="cancel()") Cancel
+    button.btn.btn-primary(ng-disabled="newhostform.hostname.$invalid", ng-click="createHost()") Create host
+
+div(ng-include='"components/footer/footer.html"')

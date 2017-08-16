@@ -127,7 +127,9 @@ function createFile(filename, content) {
 
 function writeFile(filename, content) {
   content = content || '';
-  return fsp.writeFileAsync(filename, content, {flag: 'w'});
+  return fsp.writeFileAsync(filename, content, {flag: 'w'}).catch(function(err){
+    throw err;
+  });
 }
 
 exports.create = series(upload.single('file'), function(req, res) {
@@ -181,6 +183,10 @@ exports.destroy = function(req, res) {
 function addProjectFiles(filenames, project, vars) {
 
   var projectDir = path.resolve(GITDIR, project.name);
+  
+  var dirs = path.resolve(projectDir, 'resources');
+  
+  fsp.mkdirsSync(dirs);
 
   var ps = filenames.map(function(f) {
     return fsp.readFileAsync(f).then(function(data) {
@@ -195,10 +201,7 @@ function addProjectFiles(filenames, project, vars) {
     });
   });
 
-  var d = path.resolve(projectDir, 'resources');
-  return fsp.mkdirsAsync(d).then(function() {
-    return Promise.all(ps);
-  });
+  return Promise.all(ps);
 }
 
 exports.addProjectFiles = addProjectFiles;
