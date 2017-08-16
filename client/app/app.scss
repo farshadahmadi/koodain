@@ -11,6 +11,7 @@ $fa-font-path: "/bower_components/font-awesome/fonts";
 
 @import 'bootstrap-sass-official/vendor/assets/stylesheets/bootstrap';
 @import 'font-awesome/scss/font-awesome';
+//@import 'font-awesome/css/font-awesome';
 
 /**
  * App-wide Styles
@@ -26,6 +27,12 @@ $fa-font-path: "/bower_components/font-awesome/fonts";
 @import 'api-descr/api-descr.scss';
 @import 'deploy/deploy.scss';
 @import 'main/main.scss';
+@import 'myAPIs/myAPIs.scss';
+@import 'myHome/myHome.scss';
+@import 'myProjects/myProjects.scss';
+@import 'mycode/mycode.scss';
+@import 'mydeploy/mydeploy.scss';
 @import 'project/project.scss';
 @import 'modal/modal.scss';
+@import 'navbar/navbar.scss';
 // endinjector

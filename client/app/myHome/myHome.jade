@@ -1,0 +1,49 @@
+// Copyright (c) TUT Tampere University of Technology 2015-2016
+// All rights reserved.
+// 
+// Main author(s):
+// Antti Nieminen <antti.h.nieminen@tut.fi>
+
+div(ng-include='"components/navbar/navbar.html"')
+
+
+.container
+  .row
+    .col-lg-12(style='background-color: grey')
+      h3 Devices
+      .row.col-lg-12(style='background-color: #f2f2f2')
+        ul.nav.nav-tabs.nav-stacked.col-md-4.col-lg-4.col-sm-6(style='margin-top: 20px', ng-repeat='device in devices')          
+          li(style='background-color: white')
+            //img(src='/assets/images/project_icon.png')
+            i.fa.fa-industry.fa-wifi.fa-3x(style='color:orange; float:left; padding-right:10px') 
+            p
+              span(style='text-tramsform: capitalize; font-weight: 700; font-family: Arial Bold, Arial; font-style: normal; font-size: 24px; color: #ff9b00') {{device.name}} 
+            //p(style='clear: both'){{project.description}}
+            textarea(style='border: none; clear: both;background-color: transparent; width: 100%', 
+              | readonly=true)  Location: {{device.location.tag}} &#013 Capabilities:  {{device.classes.join(", ")}}
+            ul(ng-repeat='app in device.apps')
+              li
+                i.fa.fa-cogs.fa-2x(style='color:black; float: left; padding-right:10px')
+                  span {{app.name}}
+                  .btn-group(role="group")
+                    a.btn.btn-default(ng-if="app.name.indexOf('liquidiot-')===0", ng-href="/project/{{app.name.slice(10)}}")
+                      i.fa.fa-edit
+                    button.btn.btn-default(ng-click="openLogModal(device, app)")
+                      i.fa.fa-list
+                    button.btn.btn-primary(ng-if="app.status==='paused'", ng-click="setAppStatus(device, app, 'running')")
+                      i.fa.fa-play
+                    button.btn.btn-primary(ng-if="app.status==='running'", ng-click="setAppStatus(device, app, 'paused')")
+                      i.fa.fa-pause
+                    button.btn.btn-danger(ng-click="removeApp(device, app)")
+                      i.fa.fa-trash
+
+                
+
+            // a(ng-href='/project/{{project.name}}')
+              | {{project.name}}   
+ 
+
+div(ng-include='"components/footer/footer.html"')
+
+
+

@@ -1,0 +1,40 @@
+
+<!-- Copyright (c) TUT Tampere University of Technology 2015-2016-->
+<!-- All rights reserved.-->
+<!-- -->
+<!-- Main author(s):-->
+<!-- Antti Nieminen <antti.h.nieminen@tut.fi>-->
+<div ng-include="&quot;components/navbar/navbar.html&quot;"></div>
+<div class="container">
+  <div class="row">
+    <div class="col-lg-9" style="background-color: grey">
+      <h3>Existing projects</h3>
+      <div class="row col-lg-12" style="background-color: white">
+        <ul class="nav nav-tabs nav-stacked col-md-3 col-lg-3 col-sm-4" ng-repeat="project in projects">         
+          <li style="background-color: lightgrey">
+            <!--img(src='/assets/images/project_icon.png')--><i class="fa fa-file-code-o fa-3x" style="color:orange; float:left"> </i>
+            <h3>{{project.name}}</h3>
+            <p>{{project.description}}</p>
+            <button class="btn btn-default" style="background-color: #b4dc00; color: white" ng-click="">Edit</button>
+            <!-- a(ng-href='/project/{{project.name}}')
+            | {{project.name}}   
+            
+            
+            -->
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-lg-3" style="background-color: grey">
+      <h3>Create new project</h3>
+      <div class="row col-lg-12" style="background-color: white">
+        <label for="projectname">Project name:</label>
+        <input style="margin-bottom:20px" type="text" required="required" ng-pattern="/^[a-z][a-z0-9]*$/" id="projectname" name="projectname" placeholder=""/>
+        <label for="projectdescription">Project description:</label>
+        <textarea style="margin-bottom:50px" required="required" ng-pattern="/^[a-z][a-z0-9]*$/" id="projectdescription" name="projectdescription" placeholder=""></textarea>
+        <button class="btn btn-default" style="background-color: #b4dc00; color: white" ng-click="">Create</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div ng-include="&quot;components/footer/footer.html&quot;"></div>

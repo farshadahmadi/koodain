@@ -1,0 +1,42 @@
+
+<!-- Copyright (c) TUT Tampere University of Technology 2015-2016-->
+<!-- All rights reserved.-->
+<!-- -->
+<!-- Main author(s):-->
+<!-- Antti Nieminen <antti.h.nieminen@tut.fi>-->
+<div ng-include="&quot;components/navbar/navbar.html&quot;"></div>
+<div class="container">
+  <div class="row">
+    <div class="col-sm-12">
+      <h3>Projects</h3>
+      <p>Choose a project or create a new one</p>
+      <ul class="nav nav-tabs nav-stacked col-md-3 col-lg-3 col-sm-4" ng-repeat="project in projects">
+        <li class="project"><a ng-href="/project/{{project.name}}">{{project.name}}</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-12">
+      <button class="btn btn-primary mainbutton" ng-click="openNewProjectModal()"> <i class="fa fa-plus"></i> New Project</button>
+    </div>
+  </div>
+</div>
+<div ng-include="&quot;components/footer/footer.html&quot;"></div>
+<!-- Template for the create new project modal dialog.-->
+<!-- https://docs.angularjs.org/api/ng/directive/script-->
+<script type="text/ng-template" id="newproject.html">
+  <div class="modal-header">
+    <button class="close" type="button" ng-click="cancel()">&times;</button>
+    <h4 class="modal-title">New Project</h4>
+  </div>
+  <div class="modal-body">
+    <form role="form" name="newprojectform" ng-submit="ok()">
+      <div class="form-group">
+        <label for="projectname">Project name:</label>
+        <input class="form-control" type="text" required="required" ng-pattern="/^[a-z][a-z0-9]*$/" id="projectname" name="projectname" placeholder="" ng-model="newproject.name"/><span class="error" ng-if="newprojectform.projectname.$error.pattern">Project name must match <code>[a-z][a-z0-9]*</code></span><span ng-if="newprojectform.projectname.$error.required || !newprojectform.projectname.$invalid"><i class="fa"></i></span>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-default" type="submit" ng-click="cancel()">Cancel</button>
+    <button class="btn btn-primary" type="submit" ng-disabled="newprojectform.projectname.$invalid" ng-click="ok()">Create project</button>
+  </div>
+</script>

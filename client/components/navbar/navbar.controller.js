@@ -9,8 +9,7 @@ angular.module('koodainApp')
       'title': 'Home',
       'link': '/'
     },
-    {
-    */
+    {    
       'title': 'Edit',
       'link': '/project'
     },
@@ -21,6 +20,22 @@ angular.module('koodainApp')
     {
       'title': 'APIs',
       'link': '/api-descr'
+    },
+    {*/
+      'title': 'Home',
+      'link': '/myHome'
+    },
+    {
+      'title':'Projects',
+      'link':'/myProjects'
+    },
+    {
+      'title': 'Deploy',
+      'link': '/mydeploy'
+    },
+    {
+      'title': 'APIs',
+      'link': '/myAPIs'
     }];
 
     $scope.isCollapsed = true;

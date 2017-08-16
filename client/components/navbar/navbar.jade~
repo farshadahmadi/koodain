@@ -6,6 +6,7 @@ div.navbar.navbar-default.navbar-static-top(ng-controller='NavbarCtrl')
         span.icon-bar
         span.icon-bar
         span.icon-bar
+      a.navbar-brand(class='btn btn-primary navbar-btn', ref='/') Koodain
 
     div#navbar-main.navbar-collapse.collapse(uib-collapse='isCollapsed')
       ul.nav.navbar-nav
