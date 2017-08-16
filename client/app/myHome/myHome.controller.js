@@ -14,7 +14,7 @@ angular.module('koodainApp')
   /**
    * Controller for the deploy view.
    */
-  .controller('MyHomeCtrl', function ($scope, $http, $resource, $uibModal, Notification, VisDataSet, DeviceManager, deviceManagerUrl, $stateParams, $q) {
+  .controller('MyHomeCtrl', function ($scope, $http, $resource, $uibModal, Notification, VisDataSet, DeviceManager, deviceManagerUrl, $stateParams, $q, $timeout) {
 
   var Project = $resource('/api/projects/:project');
   Project.query(function(projects){
@@ -25,61 +25,100 @@ angular.module('koodainApp')
     
   var deviceManager = DeviceManager(deviceManagerUrl);
 
-  var loadDevices = function () {
+  $scope.loadDevices = function () {
         return deviceManager.queryDevicess().then(function(devices) {
            $scope.devices = devices;
+           $timeout(function() {
+             $.fn.matchHeight._applyDataApi()
+           }, 100);
         });
   }
 
-  loadDevices();
+  $scope.loadDevices();
 
-  // tool tip for an app
-  var generateAppTooltip = function(app){
 
-    var apis = app.hasOwnProperty("applicationInterfaces") ? app.applicationInterfaces.join(", ") : "";
-    var status = app.hasOwnProperty("status") ? app.status : "";
-    var version = app.hasOwnProperty("version") ? app.version : "";
-    var description = app.hasOwnProperty("description") ? app.description : "";
+$scope.openLogModal = function(device, app) {
+    $uibModal.open({
+      controller: 'AppLogCtrl',
+      templateUrl: 'applog.html',
+      resolve: {
+        device: device,
+        app: app,
+      }
+    }).result.then(null, function() {
+      clearInterval(app._logInterval);
+    });
+  };
 
-    var tooltip = "<div class='panel panel-success' style='margin-bottom:0px'>"+
-        "<div class='panel-heading'>"+
-          "<h3 class='panel-title'>application</h3>"+
-        "</div>"+
-        "<div class='panel-body' style='padding-top: 0px; padding-bottom: 0px'>"+
-          "<table class='table' style='border: none; margin-bottom:1px'>"+
-            "<tr>"+
-              "<td>id</td>"+
-              "<td>" + app.id + "</td>"+
-            "</tr>"+
-            "<tr>"+
-              "<td>name</td>"+
-              "<td>" + app.name + "</td>"+
-            "</tr>"+
-            "<tr>"+
-              "<td>interfaces</td>"+
-              "<td>" + apis + "</td>"+
-            "</tr>"+
-            "<tr>"+
-              "<td>status</td>"+
-              "<td>" + status + "</td>"+
-            "</tr>"+
-            "<tr>"+
-              "<td>version</td>"+
-              "<td>" + version + "</td>"+
-            "</tr>"+
-            "<tr>"+
-              "<td>description</td>"+
-              "<td>" + description +"</td>"+
-            "</tr>"+
-          "</table>"+
-        "</div>"+
-      "</div>";
-
-    return tooltip;
+  // "Piping" HTTP request through server.
+  // This is necessary for some network configurations...
+  function devicePipeUrl(url) {
+    return '/api/pipe/'  + url;
   }
-  
 
-});
+
+
+  $scope.setAppStatus = function(device, app, status) {
+    var url = device.url + '/app/' + app.id;
+    return $http({
+      url: devicePipeUrl(url),
+      method: 'PUT',
+      data: {status: status},
+    }).then(function(response) {
+      // This is a bit of quickndirty way to update app,
+      // would be better to load it from the server for realz...
+      //app.status = response.data.status;
+      $scope.loadDevices();
+    }, function(error){
+      Notification.error("Connection to the application was not succeccfull.");
+      $scope.loadDevices();
+    });
+  };
+
+  $scope.removeApp = function(device, app) {
+    //console.log(device);
+    var url = device.url + '/app/' + app.id;
+    return $http({
+      url: devicePipeUrl(url),
+      method: 'DELETE',
+    }).then(function() {
+          // do not now why loaddevices should be called two time to take effect !!!
+          $scope.loadDevices().then(function(){
+            $scope.loadDevices();
+          });
+    }, function(error){
+      Notification.error("Connection to the application was not succeccfull.");
+    });
+  };
+})
+
+
+.controller('AppLogCtrl', function($scope, $http, $uibModalInstance, Notification, device, app) {
+
+    // TODO: refactor, this is needed in 2(?) controllers...
+    function devicePipeUrl(url) {
+      return '/api/pipe/'  + url;
+    }
+
+    $scope.device = device;
+    $scope.app = app;
+    $scope.cancel = function() {
+      $uibModalInstance.dismiss('cancel');
+    };
+    app._logInterval = setInterval(function() {
+      var url = device.url + '/app/' + app.id + '/log';
+      $http({
+        method: 'GET',
+        url: devicePipeUrl(url),
+      }).then(function(response) {
+        $scope.log = response.data.message;
+      },function(error){
+        $scope.cancel();
+        Notification.error("Connection to the application was not successful.");
+      });
+    }, 2000);
+  });
+
 
 
 

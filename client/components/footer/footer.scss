@@ -1,0 +1,64 @@
+$liot-font: sans-serif;
+$liot-font-size: 12px;
+$liot-font-color: #333333;
+$liot-grey-color: #797979;
+
+.footer-font {
+  font: 100% $liot-font;
+  color: $liot-font-color;
+  font-size: $liot-font-size;
+}
+
+.liot-step {
+  position: relative;
+  width: 140px;
+  height: 80px;
+}
+
+.step-stack {
+  width: 95%;
+  height: 95%;
+  position: absolute;
+  pointer-events: none;
+  padding: 5px 5px 5px 5px;
+  border: 2px solid #0099cc;
+  white-space: normal;
+  word-wrap: break-word;
+  border-color: $liot-grey-color;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 85%, rgba(228, 228, 228, 1) 100%, rgba(228, 228, 228, 1) 100%);
+}
+
+.step-stack.btm {
+  left: 6px;
+  top: 6px;
+  z-index: -2;
+}
+
+.step-stack.mid {
+  left: 3px;
+  top: 3px;
+  z-index: -1;
+}
+
+.step-stack.top {
+  left: 0px;
+  top: 0px;
+  z-index: 0;
+}
+
+.liot-step.flow {
+  width: 40px;
+}
+
+.liot-arrow {
+  position: absolute;
+  left: 0px;
+  top: 20px;
+  color: $liot-grey-color;
+}
+
+
+.selectedpage {
+  background: none;
+  background-color: $tut-green;
+}

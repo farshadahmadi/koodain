@@ -7,13 +7,12 @@
 div(ng-include='"components/navbar/navbar.html"')
 
 .container
-  .row(style='margin-bottom: 20px')
-    .col-sm-12(style='background-color: lightgrey')
-      h3 {{project.name}}
-  .row(style='margin-bottom: 20px')
+  .row
+    .col-sm-12
+      div.liot-title {{project.name}}
+  .row
     .col-sm-3
       .sidebar
-        //h4 {{project.name}} source files
         .files.container Source
           ul
             li.project-file(ng-repeat="file in files.files | filter:{isDirectory: false} | orderBy:'name'",
@@ -38,39 +37,32 @@ div(ng-include='"components/navbar/navbar.html"')
             li
               a(ng-click='showAPIs()')
                 |   Add new API
-          //div
-            .btn.btn-default(ng-click="changeView('deploy')") Do to deploy view
-          //.div
-            button.btn.btn-default
     .col-sm-9
       .the-editor(ng-if='activeFile', ui-ace='{onLoad: aceLoaded, mode: activeFile.mode}', ng-model='activeFile.content', ng-model-options='{debounce: 500}')
-  .row(style='background-color: lightgrey')
+  .row
     .col-sm-10
     .col-sm-2
-       a.btn.btn-default(style='background-color: green', role="button", ng-href="/deploy?project={{project.name}}") Go to deploy view
+       a.btn.liot-button(role="button", ng-href="/mydeploy?project={{project.name}}") Go to deploy view
 
-
-div(ng-include='"components/footer/footer.html"')
+//Add the footer and specify name of current page (as found in components/footer/footer.controller.js)
+liot-footer(current-page='mycode')
 
 script(type="text/ng-template", id="showapis.html")
   .modal-header
     button(type="button", class="close", ng-click="cancel()") &times;
-    h3 Select APIs to implement
+    div.liot-title Select API template(s) to add to project {{currentProject}}
   .modal-body
       .row
-          .col-md-12(style='background-color: #f2f2f2')
-            ul.nav.nav-tabs.nav-stacked.col-md-6.col-sm-6(style='margin-top: 20px', ng-repeat='api in allAPIs')          
-              li(style='background-color: white')
-                //img(src='/assets/images/project_icon.png')
-                input(type='checkbox', style='float:left; margin-right: 20px', ng-checked="implementedAPIs.indexOf(api.name) > -1", ng-click='toggleAPISelection(api.name)', ng-disabled="implementedAPIs.indexOf(api.name) > -1")
-                i.fa.fa-file-code-o.fa-3x(style='color:orange; float:left; padding-right:10px') 
-                p
-                  span(style='text-tramsform: capitalize; font-weight: 700; font-family: Arial Bold, Arial; font-style: normal; font-size: 24px; color: #ff9b00') {{api.name}}
-                  //p(style='clear: both'){{project.description}}
-                textarea(style='border: none; clear: both;background-color: transparent; width: 100%', 
-                  | readonly=true) Required capabilities: {{api.devcap}} &#013 Description: {{api.description}}
+          .col-md-12
+            ul.nav.nav-tabs.nav-stacked.col-md-4.col-sm-4.top-buffer(ng-repeat='api in allAPIs')          
+              li
+                input.pull-left(type='checkbox', ng-checked="implementedAPIs.indexOf(api.name) > -1",
+                    | ng-click='toggleAPISelection(api.name)', ng-disabled="implementedAPIs.indexOf(api.name) > -1")
+                div.liot-item-title {{api.name}}
+                p Required capabilities: {{api.devcap}} 
+                p Description: {{api.description}}
                   
     
   .modal-footer
-      button.btn.btn-default(type="submit", ng-click="cancel()") Cancel
-      button.btn.btn-primary(type="submit", ng-disabled="", ng-click="ok()") OK
+      button.btn.liot-button(type="submit", ng-click="cancel()") Cancel
+      button.btn.liot-button(type="submit", ng-disabled="", ng-click="ok()") Generate template(s)

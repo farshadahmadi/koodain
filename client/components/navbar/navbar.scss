@@ -2,10 +2,15 @@
     color: #FFFFFF !important;
     background-color: #47c8ff;
     font-family: 'Bell MT';
-    font-weight: 400;
     font-style: normal;
     font-size: 18px;
+    font-weight: normal;
+    line-height: normal;
     border: none;
+    //border-radius: 10px;
+    margin-left: 10px;
+    padding: 10px !important;
+    text-rendering: optimizelegibility;
 }
 .navbar-btn:hover {
     color: #FFFFFF !important;
@@ -19,6 +24,6 @@
 
 .btn-primary {
     color: #FFFFFF !important;
-    border-radius: 10px;
+    border-radius: 5px;
     margin-left:10px;
 }

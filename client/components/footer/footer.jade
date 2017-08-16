@@ -1,3 +1,17 @@
 footer.footer
+  .container.footer-font
+    ul.list-unstyled
+      li.pull-left(ng-repeat='step in steps')
+        div.pull-left.liot-step(ng-if='step.substeps')
+          button.btn.step-stack.btm
+          button.btn.step-stack.mid
+          button.btn.step-stack.top(ng-class='{selectedpage: step.pagename == currentPage}') {{step.desc}}
+
+        div.pull-left.liot-step(ng-if='!step.substeps')
+          button.btn.step-stack.top(ng-class='{selectedpage: step.pagename == currentPage}') {{step.desc}}
+        
+        div.pull-left.liot-step.flow(ng-if='!$last')
+          i.fa.fa-long-arrow-right.fa-3x.liot-arrow
+  br
   .container
     small © Tampere University of Technology 2015-2016

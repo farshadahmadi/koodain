@@ -9,33 +9,35 @@ div(ng-include='"components/navbar/navbar.html"')
 
 .container
   .row
-    .col-lg-9(style='background-color: grey')
-      h3 Existing projects
-      .row.col-lg-12(style='background-color: #f2f2f2')
-        ul.nav.nav-tabs.nav-stacked.col-md-4.col-lg-4.col-sm-6(style='margin-top: 20px', ng-repeat='project in projects')          
-          li(style='background-color: white')
-            //img(src='/assets/images/project_icon.png')
-            i.fa.fa-file-code-o.fa-3x(style='color:orange; float:left; padding-right:10px') 
-            p
-              span(style='text-tramsform: capitalize; font-weight: 700; font-family: Arial Bold, Arial; font-style: normal; font-size: 24px; color: #ff9b00') {{project.name}}
-            //p(style='clear: both'){{project.description}}
-            textarea(style='border: none; clear: both;background-color: transparent; overflow: hidden; text-overflow: ellipsis', 
-                | rows=5, columns=100, readonly=true) Version: {{project.version}} &#013 Description: {{project.description}}
-            a.btn.btn-default(style='background-color: #b4dc00; color: white', ng-href="/mycode/{{project.name}}") Edit
-            // a(ng-href='/project/{{project.name}}')
-              | {{project.name}}   
+    .col-sm-9
+      div.liot-title Existing projects
+      .row.col-lg-12
+        ul.list-unstyled.col-md-4.col-lg-4.col-sm-6.top-buffer(ng-repeat='project in projects', data-mh='projects')          
+          div.liot-item
+            div.liot-item-title
+              i.fa.fa-file-code-o.pull-left 
+              p {{project.name}}
 
+            p Version: {{project.version}}
+            p Description: {{project.description}}
+            a.btn.btn-sm.liot-button.pull-right(ng-href="/mycode/{{project.name}}") Edit
+          
+    .col-sm-3
+      div.liot-title Create new
+      .row
+        .form
+          br
+          div
+            p Project name:            
+            input(type="text", required, ng-pattern="/^[a-z][a-z0-9]*$/", placeholder="" ng-model='newProj.name')
+          br
+          div
+            p Project description:            
+            textarea(required, placeholder="" ng-model='newProj.description')
+          br
+          div
+            button.btn.liot-button(type='submit', ng-click="createProject()") Create
 
-    .col-lg-3(style='background-color: grey')
-      h3 Create new project
-      .row.col-lg-12(style='background-color: white')
-        label(for="projectname") Project name:
-        input(style='margin-bottom:20px', type="text", required, ng-pattern="/^[a-z][a-z0-9]*$/", id="projectname", name="projectname", placeholder="" ng-model='newProjectName')
-        label(for="projectdescription") Project description:
-        textarea(style='margin-bottom:50px', required, ng-pattern="/^[a-z][a-z0-9]*$/", id="projectdescription", name="projectdescription", placeholder="" ng-model='newProjectDescription')
-        button.btn.btn-default(style='background-color: #b4dc00; color: white', ng-click="createProject()") Create
- 
- 
-
-div(ng-include='"components/footer/footer.html"')
+//Add the footer and specify name of current page (as found in components/footer/footer.controller.js)
+liot-footer(current-page='myProjects')
 

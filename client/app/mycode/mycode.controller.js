@@ -83,6 +83,9 @@ angular.module('koodainApp')
           },
           allAPIs: function() {
             return $scope.apis;
+          },
+          projectName: function() {
+            return $scope.project.name;
           }
       }
       }).result.then(function(result){
@@ -356,9 +359,10 @@ angular.module('koodainApp')
   })
 
 
-  .controller('showAPIsCtrl', function($scope, $resource, $uibModalInstance, allAPIs, implementedAPIs) {
+  .controller('showAPIsCtrl', function($scope, $resource, $uibModalInstance, allAPIs, implementedAPIs, projectName) {
     $scope.allAPIs = allAPIs;
     $scope.implementedAPIs = angular.copy(implementedAPIs);
+    $scope.currentProject = projectName;
     console.log(implementedAPIs);
     $scope.ok = function() {
       $uibModalInstance.close($scope.implementedAPIs);

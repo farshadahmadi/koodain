@@ -23,7 +23,8 @@
     "angular-encode-uri": "~1.0.0",
     "nya-bootstrap-select": "^2.1.6",
     "swagger-parser": "^3.4.1",
-    "esprima": "^2.0.0"
+    "esprima": "^2.0.0",
+    "matchHeight": "matchheight#^0.7.0"
   },
   "devDependencies": {
     "angular-mocks": ">=1.2.*",

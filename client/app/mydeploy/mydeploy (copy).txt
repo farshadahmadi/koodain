@@ -7,8 +7,8 @@
 div(ng-include='"components/navbar/navbar.html"')
 
 .container(id='r')
-  .row(style='display: table') 
-   .col-sm-4(style='display: table-cell; float: none')
+  .row
+   .col-sm-8
       p
         | Select a proejct to find compatible target devices
         ul.nya-bs-select(ng-model='selectedProject', title='select a project', data-live-search='true')
@@ -26,10 +26,26 @@ div(ng-include='"components/navbar/navbar.html"')
           .form-group
             label(for="appquery") App:
             input.form-control(id="appquery", type="text", ng-model="applicationQuery", ng-model-options='{debounce: 200}', ng-change="deselectProject()")
+      #network
+        vis-network(data="graphData", options="graphOptions", events="graphEvents", component="network")
+      p
+        .btn-group(role="group")
+          button.btn.btn-default(ng-click="loadDevices()")
+            span.fa.fa-refresh
+          button.btn.btn-default(ng-click="camera.fit()")
+            span.fa.fa-arrows-alt  fit camera
+          button.btn.btn-default(ng-click="camera.fitOnSelectedNodes()")
+            span.fa.fa-arrows-alt  fit camera on selection
+          button.btn.btn-default(ng-click="camera.crawl()", ng-show="isCrawlingPossible" )
+            span.fa.fa-arrows-alt  crawl in selection
+     .col-sm-4
       .row
-        .col-sm-12
-          button.btn.btn-primary(ng-disabled="!selectedDevices.length", ng-click="openManageDeployAppsModal()" style='padding-left: 20px') Deploy          
-          button.btn.btn-primary(ng-disabled="!selectedDevs4Update.length", ng-click="openManageUpdateAppsModal()") Update
+        .col-sm-6
+          .btn-group(role="group")
+            button.btn.btn-default(ng-disabled="!selectedDevices.length", ng-click="openManageDeployAppsModal()") Deploy Apps
+        .col-sm-6
+          .btn-group(role="group")
+            button.btn.btn-default(ng-disabled="!selectedDevs4Update.length", ng-click="openManageUpdateAppsModal()") Update Apps
       .row
         .col-sm-12
           .jumbotron(ng-if="deployments.length", style="text-align:center; padding:24px;")
@@ -67,16 +83,11 @@ div(ng-include='"components/navbar/navbar.html"')
               uib-bar(value="numFailUps", type="danger")
                 span(ng-hide="numFailUps==0")
                   {{numFailUps}}
-
-          ul(ng-repeat="device in selectedDevices | groupBy: 'location.tag'")
-            Key: {{device.name}} Value: {{device.location.tag}}
-          ul.list-group(ng-init="shownIndex = -1")          
-            li.list-group-item(ng-repeat="device in selectedDevices | orderBy: 'location.tag'", ng-click="$parent.shownIndex = $index")
-              
-                divi(style='margin-bottom: 10px')
-                  i.fa.fa-industry(style='color:orange; float:left; padding-right:10px') {{device.name}} 
-                  |  
-                  i.fa.fa-map-marker(style='color:orange; float:left; padding-right:10px') {{device.location.tag}}
+          ul.list-group(ng-init="shownIndex = -1")
+            li.list-group-item(ng-repeat="device in selectedDevices", ng-click="$parent.shownIndex = $index")
+                i.fa.fa-industry(style='color:orange; float:left; padding-right:10px') {{device.name}} 
+                |  
+                i.fa.fa-map-marker(style='color:orange; float:left; padding-right:10px') {{device.location.tag}}
                 div
                   ul.appinfo
                     li(ng-repeat="app in device.apps | filter:filterSelApp")
@@ -105,25 +116,13 @@ div(ng-include='"components/navbar/navbar.html"')
             div
               small
                 code(ng-repeat="cls in device.classes") {{cls}}
-   .col-sm-8(style='display: table-cell; float: none')
-     p
-        .btn-group(role="group")
-          button.btn.btn-default(ng-click="loadDevices()")
-            span.fa.fa-refresh
-          button.btn.btn-default(ng-click="camera.fit()")
-            span.fa.fa-arrows-alt  fit camera
-          button.btn.btn-default(ng-click="camera.fitOnSelectedNodes()")
-            span.fa.fa-arrows-alt  fit camera on selection
-          button.btn.btn-default(ng-click="camera.crawl()", ng-show="isCrawlingPossible" )
-            span.fa.fa-arrows-alt  crawl in selection
-     #network(style='height: 900px')
-        vis-network(data="graphData", options="graphOptions", events="graphEvents", component="network")
-        
-//Add the footer and specify name of current page (as found in components/footer/footer.controller.js)
-<liot-footer current-page='mydeploy'></liot-footer>
+    
 
-// App management (deployment) modal dialog
-script(type="text/ng-template", id="managedeployapps.html")
+
+  div(ng-include='"components/footer/footer.html"')
+
+  // App management (deployment) modal dialog
+  script(type="text/ng-template", id="managedeployapps.html")
     .modal-header
       button(type="button", class="close", ng-click="cancel()") &times;
       h4.modal-title Deploy Applications

@@ -9,7 +9,7 @@ angular.module('koodainApp')
       'title': 'Home',
       'link': '/'
     },
-    {    
+    {  
       'title': 'Edit',
       'link': '/project'
     },
