@@ -362,23 +362,24 @@ angular.module('koodainApp')
   .controller('showAPIsCtrl', function($scope, $resource, $uibModalInstance, allAPIs, implementedAPIs, projectName) {
     $scope.allAPIs = allAPIs;
     $scope.implementedAPIs = angular.copy(implementedAPIs);
+    $scope.apisToAdd = [];
     $scope.currentProject = projectName;
     console.log(implementedAPIs);
     $scope.ok = function() {
-      $uibModalInstance.close($scope.implementedAPIs);
+      $uibModalInstance.close($scope.apisToAdd);
     }
     $scope.cancel = function() {
       $uibModalInstance.dismiss('cancel');
     }
      $scope.toggleAPISelection = function toggeleAPISelection(apiName) {
-           var idx = $scope.implementedAPIs.indexOf(apiName);
+           var idx = $scope.apisToAdd.indexOf(apiName);
            // is currently selected
            if (idx > -1) {
-                 $scope.implementedAPIs.splice(idx, 1);
+                 $scope.apisToAdd.splice(idx, 1);
                   }
             // is newly selected
             else {
-                  $scope.implementedAPIs.push(apiName);
+                  $scope.apisToAdd.push(apiName);
                   }
     };
 
