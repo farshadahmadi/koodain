@@ -609,6 +609,13 @@ angular.module('koodainApp')
   // loading of the devices
   loadDevicesIntervally(60000);
   
+  // when the has changed the timer for refreshing visualization interface should be canceled.
+  $scope.$on("$destroy", function(){
+    if(timer){
+      clearInterval(timer);
+    }
+  });
+  
 
   // Update Vis.js nodes and edges
   // look at setTheData() function http://visjs.org/examples/network/data/datasets.html
@@ -855,7 +862,7 @@ angular.module('koodainApp')
     })
     .catch(function(err){
       console.log(err);
-      Notification.danger('Deployment process encountered some problems!');
+      Notification.error('Deployment process encountered some problems!');
       loadDevicesIntervally(60000);
       $scope.loadDevices();
     });
