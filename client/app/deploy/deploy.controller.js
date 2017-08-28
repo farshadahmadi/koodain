@@ -520,15 +520,24 @@ angular.module('koodainApp')
                   queriedDevIds.push(dev._key);
                   queriedDevs.push(dev);
                 });
+                return {queriedDevIds: queriedDevIds, queriedAppIds: queriedAppIds, queriedDevs: queriedDevs, queriedApps: queriedApps}
               });
+          } else {
+            return {queriedDevIds: queriedDevIds, queriedAppIds: queriedAppIds, queriedDevs: queriedDevs, queriedApps: queriedApps}
           }
 
-        }).then(function(){
-          
-          queriedAppsAndDevs = queriedDevIds.concat(queriedAppIds);
+        }).then(function(data){
+         
+          console.log(data);
+          queriedAppsAndDevs = data.queriedDevIds.concat(data.queriedAppIds);
+          findSelectedDevCaps(data.queriedDevs);
+          network.selectNodes(queriedAppsAndDevs);
+          select(data.queriedDevIds, data.queriedAppIds, data.queriedDevs, data.queriedApps);
+
+          /*queriedAppsAndDevs = queriedDevIds.concat(queriedAppIds);
           findSelectedDevCaps(queriedDevIds);
           network.selectNodes(queriedAppsAndDevs);
-          select(queriedDevIds, queriedAppIds, queriedDevs, queriedApps);
+          select(queriedDevIds, queriedAppIds, queriedDevs, queriedApps);*/
         }).catch(function(err){
           findSelectedDevCaps(queriedDevIds);
           network.selectNodes(queriedAppsAndDevs);
@@ -721,9 +730,14 @@ angular.module('koodainApp')
   var selDevCaps = [];
 
   function findSelectedDevCaps(selDevs){
+
+    console.log(selDevs);
+
     selDevCaps = selDevs.map(function(selDev){
       return selDev.classes;
     });
+
+    console.log(selDevCaps);
   }
 
 
@@ -1222,6 +1236,8 @@ angular.module('koodainApp')
   $scope.devicequery = data.devicequery;
   $scope.appquery = data.appquery;
 
+  console.log(selDevCaps);
+
   // checks if one array is subset of another array
   var isSubset = function(arr1, arr2){
     return arr1.every(function(value){
@@ -1232,7 +1248,9 @@ angular.module('koodainApp')
   // checks if device capabilities listed in the project (liquidiot.json file)
   // is subset of capabilities of every selected device.
   var isSubsetOfAll = function(dcs){
+    console.log(selDevCaps);
     return selDevCaps.every(function(devCaps){
+      console.log(devCaps);
       return isSubset(dcs, devCaps);
     });
   }
@@ -1241,6 +1259,8 @@ angular.module('koodainApp')
   $scope.projects = projects.filter(function(project){
     var json = JSON.parse(project.data.content);
     var dcs = json['deviceCapabilities'];
+    console.log(json);
+    console.log(dcs);
     // free-class means all devices, so we remove it from device capabilities.
     // if array becomes empty 
     // otherwise we query the remaining devices
