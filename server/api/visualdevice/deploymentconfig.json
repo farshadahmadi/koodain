@@ -71,6 +71,10 @@
             {
               "name": "DEVICE_LOCATION_Y",
               "value": "<%= device.location.y %>"
+            },
+            {
+              "name": "RR_URL",
+              "value": "<%= deviceManager.url %>"
             }
             ],
             "resources": {},

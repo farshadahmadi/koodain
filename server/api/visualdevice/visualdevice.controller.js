@@ -88,7 +88,8 @@ exports.create = function (req, res) {
         name: req.body.hostname,
         git: {
           url: "https://github.com/farshadahmadi/liquidiot-server.git",
-          ref: "oc-singleprocess"
+          //ref: "oc-singleprocess"
+          ref: "impact"
         }
       },
       device: {
@@ -97,6 +98,9 @@ exports.create = function (req, res) {
           x: (hostNumber % 4) * 400,
           y: Math.floor(hostNumber / 4) * 400
         }
+      },
+      deviceManager: {
+        url: "http://resource-registry-node-mongo2.paas.msv-project.com/"
       }
     };
 
