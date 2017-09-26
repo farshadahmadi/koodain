@@ -16,6 +16,8 @@ if (!process.env.NODE_ENV) {
   process.exit(1);
 }
 
+var bodyParser = require('body-parser');
+
 var express = require('express');
 var mongoose = require('mongoose');
 var config = require('./config/environment');
@@ -32,6 +34,12 @@ if(config.seedDB) { require('./config/seed'); }
 
 // Setup server
 var app = express();
+
+// These twi lines is added to increase the payload size.
+// Otherwise it throws payload too large  error
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+
 app.use(express.static(__dirname + "/public"));
 var server = require('http').createServer(app);
 require('./config/express')(app);

@@ -159,7 +159,8 @@ function create(name) {
             .catch(function(err){
               console.log('eeee: ' + err.message);
               numFailDeps++;
-              return err.message ? JSON.stringify({mesaage: err.message }) : JSON.stringify({ error: err });
+              //return err.message ? JSON.stringify({mesaage: err.message }) : JSON.stringify({ error: err });
+              return JSON.stringify({error: err.toString()});
             });
         }))
         .then(function(res){
