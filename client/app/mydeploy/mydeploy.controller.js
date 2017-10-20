@@ -14,12 +14,78 @@ angular.module('koodainApp')
   /**
    * Controller for the deploy view.
    */
-  .controller('MydeployCtrl', function ($scope, $http, $resource, $uibModal, Notification, VisDataSet, DeviceManager, deviceManagerUrl, $stateParams, $q) {
+  .controller('MydeployCtrl', function ($scope, $http, $resource, $uibModal, Notification, VisDataSet, DeviceManager, deviceManagerUrl, $stateParams, $q, uiGridConstants) {
 
   var Project = $resource('/api/projects/:project');
+  $scope.gridOptions = {
+    enableFiltering: true,
+    enableRowSelection: true,
+    multiSelect: true,
+    enableSelectAll: true,
+    enableFullRowSelection: true,
+    columnDefs: [
+      {field: 'name'},
+      //{field: 'location.streetAddress'},
+      {name: 'Location', field: 'location.tag'},
+      {field: 'manufacturer'},
+      {name: 'Capabilities', field: 'classes'},
+      //{field: 'connectedDevices'},
+      {name: 'Installed apps', field: 'apps'}
+    ]
+  };
+
+  
+
+  $scope.projGridOptions = {
+    enableFiltering: true,
+    enableRowSelection: true,
+    multiSelect: true,
+    enableSelectAll: true,
+    enableFullRowSelection: true,
+    columnDefs: [
+      {name: 'name', field: 'name'},
+      //{field: 'location.streetAddress'},
+      {name: 'Req.Capabilities', field: 'reqCapabilities'},
+      {field: 'appInterfaces'}
+    ]
+  };
+
+
   Project.query(function(projects){
     $scope.projects = projects;
+    angular.forEach($scope.projects, function(value, key, obj) {
+      getProjectDetails(value);
+      });
+    $scope.projGridOptions.data = projects;
+    
   });
+
+
+  function getProjectDetails(project) {
+    
+      // Read the liquidiot.json and construct a query based on its
+      // 'deviceCapabilities' field.
+      $http({
+        method: 'GET',
+        url: '/api/projects/' + project.name + '/files/liquidiot.json'
+      }).then(function(res) {
+        var json = JSON.parse(res.data.content);
+        var dcs = json['deviceCapabilities'];
+        // free-class means all devices, so we remove it from device capabilities.
+        // if array becomes empty we query all devices
+        // otherwise we query the remaining devices
+        var index = dcs.indexOf("free-class");
+        if(index != -1){
+          dcs.splice(index, 1);
+        }
+        project.reqCapabilities = dcs;
+        project.appInterfaces = json['applicationInterfaces'];
+      })
+    };
+  
+
+  
+  
 
   $scope.deviceManagerUrl = deviceManagerUrl;
     
@@ -533,9 +599,13 @@ angular.module('koodainApp')
     deselectNode: selectClick
   };
 
+  $scope.devList;
   $scope.loadDevices = function () {
     return deviceManager.queryDevicess().then(function(devices) {
       //console.log(JSON.stringify(devices));
+      $scope.devList = devices;
+      $scope.gridOptions.data = devices;
+      
       var devs = deviceListAsObject(devices);
       // if you want to remove visual devices,
       // comment this line and uncomment the next line
@@ -553,6 +623,16 @@ angular.module('koodainApp')
   
   // loading of the devices
   $scope.loadDevices();
+  $scope.gridOptions.onRegisterApi = function(gridApi) {
+    $scope.gridApi = gridApi;
+    gridApi.selection.on.rowSelectionChanged($scope, function(row){
+      console.log("Row selection changed" + row.isSelected);
+    });
+
+    gridApi.selection.on.rowSelectionChangedBatch($scope, function(rows){
+      console.log("Row selection changed" + row.length);
+    });
+  }
 
   // Update Vis.js nodes and edges
   // look at setTheData() function http://visjs.org/examples/network/data/datasets.html
@@ -565,8 +645,8 @@ angular.module('koodainApp')
       for (var i in allDevices) {
         var d = allDevices[i];
         var apps = d.apps;
-        console.log("deleted devices' apps:");
-        console.log(apps);
+        //console.log("deleted devices' apps:");
+        //console.log(apps);
         if (apps && apps.length > 0) {
           nodesArray.push.apply(nodesArray, apps.map(nodeFromApp));
           //nodes.add(apps.map(nodeFromApp));

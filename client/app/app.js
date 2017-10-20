@@ -19,7 +19,12 @@ angular.module('koodainApp', [
   'ui-notification',
   'ui.ace',
   'rt.encodeuri',
-  'nya.bootstrap.select'//,
+  'nya.bootstrap.select',
+  'ui.grid',
+  'ui.grid.selection',
+  'ui.grid.resizeColumns',
+  'angular.filter',
+  'ngMaterial' //,
   //'ui.select'//,
   //'ngSanitize'
 ])

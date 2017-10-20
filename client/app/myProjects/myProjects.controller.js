@@ -59,7 +59,7 @@ angular.module('koodainApp')
       var newProject = new Project({name: $scope.newProj.name});
 
       // Save the project
-      newProject.$save().then(function(){i
+      newProject.$save().then(function(){
         // Once the project is created, write the descrption to the new project's package.json
         $resource('/api/projects/' + $scope.newProj.name + '/files/package.json').get().$promise.then(function(packageJson) {
           var projJson = JSON.parse(packageJson.content);                           
@@ -76,7 +76,7 @@ angular.module('koodainApp')
         // Update the UI with the new project
         $resource('/api/projects/' + $scope.newProj.name).get().$promise.then(function(savedProj) {
           $scope.projects.push(savedProj);
-          getProjDesc(savedProj);
+          getProjDetails(savedProj);
           makeEqualHgtRows();
         });
 

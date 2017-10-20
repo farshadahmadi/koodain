@@ -56,8 +56,7 @@ script(type="text/ng-template", id="showapis.html")
           .col-md-12
             ul.nav.nav-tabs.nav-stacked.col-md-4.col-sm-4.top-buffer(ng-repeat='api in allAPIs')          
               li
-                input.pull-left(type='checkbox', 
-                    | ng-checked="implementedAPIs.indexOf(api.name) > -1 || apisToAdd.indexOf(api.name) > -1",
+                input.pull-left(type='checkbox', ng-checked="implementedAPIs.indexOf(api.name) > -1 || apisToAdd.indexOf(api.name) > -1",
                     | ng-click='toggleAPISelection(api.name)', ng-disabled="implementedAPIs.indexOf(api.name) > -1")
                 div.liot-item-title {{api.name}}
                 p Required capabilities: {{api.devcap}} 
