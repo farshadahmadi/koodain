@@ -620,19 +620,117 @@ angular.module('koodainApp')
       return "done";
     });
   }
+
+  var isSubset = function(arr1, arr2){
+    return arr1.every(function(value){
+      return arr2.indexOf(value) >= 0;
+    });
+  }
   
   // loading of the devices
   $scope.loadDevices();
+  $scope.capsAndDevsMap = new Map();
   $scope.gridOptions.onRegisterApi = function(gridApi) {
     $scope.gridApi = gridApi;
     gridApi.selection.on.rowSelectionChanged($scope, function(row){
       console.log("Row selection changed" + row.isSelected);
+      if(row.isSelected) {
+        row.entity.classes.forEach(function(cap) {
+          if($scope.capsAndDevsMap.has(cap)){
+            var devsWithCap = $scope.capsAndDevsMap.get(cap);
+            devsWithCap.push(row.entity._id);
+            $scope.capsAndDevsMap.set(cap, devsWithCap);
+          }
+          else {
+            var devsWithCap = [];
+            devsWithCap.push(row.entity._id);
+            $scope.capsAndDevsMap.set(cap, devsWithCap);
+          }
+        });
+      }
+      else {
+        row.entity.classes.forEach(function(cap) {
+          if($scope.capsAndDevsMap.has(cap)){
+            var devsWithCap = $scope.capsAndDevsMap.get(cap);
+            var devInd = devsWithCap.indexOf(row.entity._id);
+            devsWithCap.splice(devInd, 1);
+            if(devsWithCap.length == 0) {
+              $scope.capsAndDevsMap.delete(cap);
+            } else {
+              $scope.capsAndDevsMap.set(cap, devsWithCap);
+            }
+          }
+        });
+      }
+
+      var suitableProjects = [];
+      $scope.projects.forEach(function(proj) {
+          if(proj.reqCapabilities.length == 0 || isSubset(Array.from($scope.capsAndDevsMap.keys()), proj.reqCapabilities)) {
+            suitableProjects.push(proj);
+          } 
+      });
+      $scope.projGridOptions.data = suitableProjects;
     });
+  
 
     gridApi.selection.on.rowSelectionChangedBatch($scope, function(rows){
       console.log("Row selection changed" + row.length);
     });
-  }
+  } //end of OnRegisterApi device grid
+
+
+  $scope.capsAndAppsMap = new Map();
+  $scope.projGridOptions.onRegisterApi = function(projGridApi) {
+    $scope.projGridApi = projGridApi;
+    projGridApi.selection.on.rowSelectionChanged($scope, function(row){
+      console.log("Row selection changed" + row.isSelected);
+      if(row.isSelected) {
+        row.entity.reqCapabilities.forEach(function(cap) {
+          if($scope.capsAndAppsMap.has(cap)){
+            var appsReqCap = $scope.capsAndAppsMap.get(cap);
+            appsReqCap.push(row.entity.name);
+            $scope.capsAndAppsMap.set(cap, appsReqCap);
+          }
+          else {
+            var appsReqCap = [];
+            appsReqCap.push(row.entity.name);
+            $scope.capsAndAppsMap.set(cap, appsReqCap);
+          }
+        });
+      }
+      else {
+        row.entity.reqCapabilities.forEach(function(cap) {
+          if($scope.capsAndAppsMap.has(cap)){
+            var appsReqCap = $scope.capsAndAppsMap.get(cap);
+            var appInd = appsReqCap.indexOf(row.entity.name);
+            appsReqCap.splice(appInd, 1);
+            if(appsReqCap.length == 0) {
+              $scope.capsAndAppsMap.delete(cap);
+            } else {
+              $scope.capsAndAppsMap.set(cap, appsReqCap);
+            }
+          }
+        });
+      }
+
+      if(Array.from($scope.capsAndAppsMap.keys()).length > 0) {
+        var suitableDevices = [];
+        $scope.devList.forEach(function(dev) {
+            if(isSubset(Array.from($scope.capsAndAppsMap.keys()), dev.classes)) {
+              suitableDevices.push(dev);
+            } 
+        });
+        $scope.gridOptions.data = suitableDevices;
+      } else {
+        $scope.gridOptions.data = $scope.devList;
+      }
+    });
+  
+
+    projGridApi.selection.on.rowSelectionChangedBatch($scope, function(rows){
+      console.log("Row selection changed" + row.length);
+    });
+  } //end of OnRegisterApi project grid
 
   // Update Vis.js nodes and edges
   // look at setTheData() function http://visjs.org/examples/network/data/datasets.html
