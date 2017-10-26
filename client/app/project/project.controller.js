@@ -71,49 +71,57 @@ angular.module('koodainApp')
 
     $scope.generateCode = function(){
 
-      // Synchronizes liquidiot.josn file with the selected
-      // device capability and app interfaces
-      var liFile = JSON.parse($scope.liquidiotJson.content);
-      liFile.applicationInterfaces = $scope.selectedAppCaps;
-      liFile.deviceCapabilities = $scope.selectedDevCaps;
-      $scope.liquidiotJson.content = JSON.stringify(liFile);
+      try {
+        
+        var mainFileContent = $scope.mainFile.content;
+        // the list of implemented apis in the code
+        var implementedApis = apiParser.getApiList(mainFileContent);
+        console.log(implementedApis);
+        
+        // Synchronizes liquidiot.josn file with the selected
+        // device capability and app interfaces
+        var liFile = JSON.parse($scope.liquidiotJson.content);
+        liFile.applicationInterfaces = $scope.selectedAppCaps;
+        liFile.deviceCapabilities = $scope.selectedDevCaps;
+        $scope.liquidiotJson.content = JSON.stringify(liFile);
 
-      var mainFileContent = $scope.mainFile.content;
+        mainFileContent = apiParser.markAsDirty(implementedApis, $scope.selectedAppCaps, mainFileContent);
+        $scope.mainFile.content = mainFileContent;
 
-      // the list of implemented apis in the code
-      var implementedApis = apiParser.getApiList(mainFileContent);
-      console.log(implementedApis);
+        var workingApiNames = implementedApis
+          .filter(function(api){
+            return api.state == "working";
+          })
+          .map(function(api){
+            return api.name;
+          });
 
-      mainFileContent = apiParser.markAsDirty(implementedApis, $scope.selectedAppCaps, mainFileContent);
-      $scope.mainFile.content = mainFileContent;
-
-      var workingApiNames = implementedApis
-        .filter(function(api){
-          return api.state == "working";
-        })
-        .map(function(api){
-          return api.name;
-        });
-
-      for(var i = 0; i < $scope.selectedAppCaps.length; i++){
-        if(workingApiNames.indexOf($scope.selectedAppCaps[i]) == -1){
-          apitocode.generate($scope.project, deviceManagerUrl + "/apis/" + $scope.selectedAppCaps[i])
-            .then(function(code){
-              $scope.mainFile.content += code;
-            })
-            //.catch(function(err){
-              //console.log(err);
-            //});
+        for(var i = 0; i < $scope.selectedAppCaps.length; i++){
+          if(workingApiNames.indexOf($scope.selectedAppCaps[i]) == -1){
+            apitocode.generate($scope.project, deviceManagerUrl + "/apis/" + $scope.selectedAppCaps[i])
+              .then(function(code){
+                $scope.mainFile.content += code;
+              })
+              //.catch(function(err){
+                //console.log(err);
+              //});
+          }
         }
+      } catch(err){
+        Notification.error('Fix all syntax errors in the code and try again.');
       }
 
     };
 
     $scope.deleteDirtyApis = function(){
-      var mainFileContent = $scope.mainFile.content;
-      // the list of implemented apis in the code
-      var implementedApis = apiParser.getApiList(mainFileContent);
-      $scope.mainFile.content = apiParser.deleteDirtyApis(implementedApis, mainFileContent);
+      try {
+        var mainFileContent = $scope.mainFile.content;
+        // the list of implemented apis in the code
+        var implementedApis = apiParser.getApiList(mainFileContent);
+        $scope.mainFile.content = apiParser.deleteDirtyApis(implementedApis, mainFileContent);
+      } catch(err){
+        Notification.error('Fix all syntax errors in the code and try again.');
+      }
     }
 
     // Files that are currently updated, to show a spinner on the view
@@ -166,7 +174,11 @@ angular.module('koodainApp')
       $scope.openFile(mainJss[0]);
       $scope.mainFile = mainJss[0];
 
-      var tree = esprima.parse($scope.mainFile.content, {comment:true, range:true, loc:true});
+      var c = $scope.mainFile.content
+      console.log('c' + c);
+      console.log(c.split("\n"));
+
+      /*var tree = esprima.parse($scope.mainFile.content, {comment:true, range:true, loc:true});
       var lines = $scope.mainFile.content.split("\n");
       console.log(lines);
       var ss = tree.loc.start.line,
@@ -174,6 +186,13 @@ angular.module('koodainApp')
       console.log(tree.loc.start.line + " : " + tree.loc.end.line);
       lines.splice(ee -1, 1);
       lines.splice(ss - 1, 1);
+      console.log(lines);
+      $scope.mainFile.content = lines.join("\n");*/
+      
+      var lines = $scope.mainFile.content.split("\n");
+      console.log(lines);
+      lines.splice(lines.length - 1, 1);
+      lines.splice(0, 1);
       console.log(lines);
       $scope.mainFile.content = lines.join("\n");
     }
