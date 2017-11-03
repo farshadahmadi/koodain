@@ -557,10 +557,12 @@ angular.module('koodainApp')
               queriedDevIds.push(item._key);
               queriedDevs.push(item);
 
-              item.apps.forEach(function(app){
-                queriedApps.push(app);
-                queriedAppIds.push("app:" + app.id);
-              });
+              if (item.apps) {
+                item.apps.forEach(function(app){
+                  queriedApps.push(app);
+                  queriedAppIds.push("app:" + app.id);
+                });
+              }
             }
           });
 
@@ -620,8 +622,8 @@ angular.module('koodainApp')
     }
   });
 
-  //var img = new Image();
-  //img.src = "/images/Department.png";
+  var img = new Image();
+  img.src = "/images/Department.png";
   
   // Vis.js events
   $scope.graphEvents = {
@@ -629,14 +631,14 @@ angular.module('koodainApp')
       network = _network;
       updateSelection();
     },    
-    /*beforeDrawing: function(ctx){
+    beforeDrawing: function(ctx){
       ctx.save();
       ctx.translate(-500, -140);
       ctx.rotate(19 * Math.PI/180);
       ctx.drawImage(img, 150, -400, 3222, 2291);
-      ctx.drawImage(img, 0, 0, 200, 200);
+      //ctx.drawImage(img, 0, 0, 200, 200);
       ctx.restore();
-    },*/
+    },
     selectNode: selectClick,
     deselectNode: selectClick
   };
@@ -1091,7 +1093,17 @@ angular.module('koodainApp')
     })
     .then(function(res){
       console.log('ressssssssssssssssss:');
-      var deployedAppIds = res.data.result.map((app) => JSON.parse(app).id);
+      //var deployedAppIds = res.data.result.map((app) => JSON.parse(app).id);
+      var deployedAppIds = [];
+      deployedAppIds = res.data.result
+      .filter(function(item){
+        console.log(item);
+        return JSON.parse(item).id ? true : false;
+      })
+      .map(function(app){ 
+        return JSON.parse(app).id;
+      });
+      
       $scope.devQuery = 'FOR device IN devices FOR app in device.apps[*] FILTER app.id IN ' + JSON.stringify(deployedAppIds)  + ' RETURN app';
       //console.log(deployedApps);
       // number of successful eployments

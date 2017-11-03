@@ -97,7 +97,7 @@ function sendPackage(pkgBuffer, url) {
       }
     }
   };
-  return rp.post({url: url, formData: formData});
+  return rp.post({url: url, formData: formData, timeout: 5000});
 }
 
 
@@ -157,10 +157,10 @@ function create(name) {
               return res;
             })
             .catch(function(err){
-              console.log("Error: " + err);
-              console.log('eeee: ' + err.response.body);
+              console.log('eeee: ' + err.message);
               numFailDeps++;
-              return err.response.body;
+              //return err.message ? JSON.stringify({mesaage: err.message }) : JSON.stringify({ error: err });
+              return JSON.stringify({error: err.toString()});
             });
         }))
         .then(function(res){
