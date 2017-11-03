@@ -147,7 +147,7 @@ function create(name) {
     // number of failed deployments
     var numFailDeps = 0;
 
-    var name = deployment.project;
+    var name = deployment.projectName;
     return create(name)
       .then(function(pkgBuffer) {
         return Promise.all(deployment.selectedDevices.map(function(device) {
@@ -157,6 +157,7 @@ function create(name) {
               return res;
             })
             .catch(function(err){
+              console.log("Error: " + err);
               console.log('eeee: ' + err.response.body);
               numFailDeps++;
               return err.response.body;
@@ -176,6 +177,7 @@ function create(name) {
 exports.deploys = function(req, res) {
 
   var deps = req.body.deployments;
+
 
   Promise.all(deps.map(deployPromise))
     .then(function(deployResults){

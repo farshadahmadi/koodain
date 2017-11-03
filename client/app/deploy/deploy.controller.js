@@ -14,13 +14,74 @@ angular.module('koodainApp')
   /**
    * Controller for the deploy view.
    */
-  .controller('DeployCtrl', function ($scope, $http, $resource, $uibModal, Notification, VisDataSet, DeviceManager, deviceManagerUrl, $stateParams, $q) {
+  .controller('DeployCtrl', function ($scope, $http, $resource, $uibModal, Notification, VisDataSet, DeviceManager, 
+    deviceManagerUrl, $stateParams, $q, uiGridConstants, $mdBottomSheet) {
 
   // get the list of projects
   var Project = $resource('/api/projects/:project');
+  $scope.gridOptions = {
+    enableFiltering: true,
+    enableRowSelection: true,
+    multiSelect: true,
+    enableSelectAll: true,
+    enableFullRowSelection: true,
+    columnDefs: [
+      {field: 'name'},
+      //{field: 'location.streetAddress'},
+      {name: 'Location', field: 'location.tag'},
+      {field: 'manufacturer'},
+      {name: 'Capabilities', field: 'classes'},
+      //{field: 'connectedDevices'},
+      {name: 'Installed apps', field: 'apps'}
+    ]
+  };
+
+  
+
+  $scope.projGridOptions = {
+    enableFiltering: true,
+    enableRowSelection: true,
+    multiSelect: true,
+    enableSelectAll: true,
+    enableFullRowSelection: true,
+    columnDefs: [
+      {name: 'name', field: 'name'},
+      //{field: 'location.streetAddress'},
+      {name: 'Req.Capabilities', field: 'reqCapabilities'},
+      {field: 'appInterfaces'}
+    ]
+  };
+
   Project.query(function(projects){
     $scope.projects = projects;
+    angular.forEach($scope.projects, function(value, key, obj) {
+      getProjectDetails(value);
+      });
+    $scope.projGridOptions.data = $scope.projects;
   });
+
+  function getProjectDetails(project) {
+    
+      // Read the liquidiot.json and construct a query based on its
+      // 'deviceCapabilities' field.
+      $http({
+        method: 'GET',
+        url: '/api/projects/' + project.name + '/files/liquidiot.json'
+      }).then(function(res) {
+        var json = JSON.parse(res.data.content);
+        var dcs = json['deviceCapabilities'];
+        // free-class means all devices, so we remove it from device capabilities.
+        // if array becomes empty we query all devices
+        // otherwise we query the remaining devices
+        var index = dcs.indexOf("free-class");
+        if(index != -1){
+          dcs.splice(index, 1);
+        }
+        project.reqCapabilities = dcs;
+        project.appInterfaces = json['applicationInterfaces'];
+      })
+    };
+  
 
   // the url of RR (Resource Registry) (AKA device manager)
   // RR keeps info about all resources (devices and their host apps, AIs, ...)
@@ -580,9 +641,12 @@ angular.module('koodainApp')
     deselectNode: selectClick
   };
 
+  $scope.devList;
   $scope.loadDevices = function () {
     return deviceManager.queryDevicess().then(function(devices) {
       console.log(devices);
+      $scope.devList = devices;
+      $scope.gridOptions.data = devices;
       var devs = deviceListAsObject(devices);
       console.log(devs);
       // if you want to remove visual devices,
@@ -615,8 +679,172 @@ angular.module('koodainApp')
     interval);
   }
 
+  var isSubset = function(arr1, arr2){
+    return arr1.every(function(value){
+      return arr2.indexOf(value) >= 0;
+    });
+  }
+
   // loading of the devices
   loadDevicesIntervally(60000);
+  $scope.capsAndDevsMap = new Map();
+  $scope.devicesSelected = [];
+  
+  $scope.gridOptions.onRegisterApi = function(gridApi) {
+    $scope.gridApi = gridApi;
+    gridApi.selection.on.rowSelectionChanged($scope, function(row){      
+      console.log("Row selection changed" + row.isSelected);
+      if(row.isSelected) {
+        $scope.devicesSelected.push(row.entity);
+        row.entity.classes.forEach(function(cap) {
+          if($scope.capsAndDevsMap.has(cap)){
+            var devsWithCap = $scope.capsAndDevsMap.get(cap);
+            devsWithCap.push(row.entity._id);
+            $scope.capsAndDevsMap.set(cap, devsWithCap);
+          }
+          else {
+            var devsWithCap = [];
+            devsWithCap.push(row.entity._id);
+            $scope.capsAndDevsMap.set(cap, devsWithCap);
+          }
+        });
+      }
+      else {
+        $scope.devicesSelected.splice($scope.devicesSelected.indexOf(row.entity), 1);
+        row.entity.classes.forEach(function(cap) {
+          if($scope.capsAndDevsMap.has(cap)){
+            var devsWithCap = $scope.capsAndDevsMap.get(cap);
+            var devInd = devsWithCap.indexOf(row.entity._id);
+            devsWithCap.splice(devInd, 1);
+            if(devsWithCap.length == 0) {
+              $scope.capsAndDevsMap.delete(cap);
+            } else {
+              $scope.capsAndDevsMap.set(cap, devsWithCap);
+            }
+          }
+        });
+      }   
+
+      var suitableProjects = [];
+      $scope.projects.forEach(function(proj) {
+          if(proj.reqCapabilities.length == 0 || isSubset(Array.from($scope.capsAndDevsMap.keys()), proj.reqCapabilities)) {
+            suitableProjects.push(proj);
+          } 
+      });
+      $scope.projGridOptions.data = suitableProjects;
+    });
+  
+
+    gridApi.selection.on.rowSelectionChangedBatch($scope, function(rows){
+      console.log("Row selection changed" + rows.length);
+    });
+  } //end of OnRegisterApi device grid
+
+
+  $scope.capsAndAppsMap = new Map();
+  $scope.projectsSelected = [];
+  $scope.projGridOptions.onRegisterApi = function(projGridApi) {
+    $scope.projGridApi = projGridApi;
+    projGridApi.selection.on.rowSelectionChanged($scope, function(row){
+      
+      console.log("Row selection changed" + row.isSelected);
+      if(row.isSelected) {
+        $scope.projectsSelected.push(row.entity);
+        row.entity.reqCapabilities.forEach(function(cap) {
+          if($scope.capsAndAppsMap.has(cap)){
+            var appsReqCap = $scope.capsAndAppsMap.get(cap);
+            appsReqCap.push(row.entity.name);
+            $scope.capsAndAppsMap.set(cap, appsReqCap);
+          }
+          else {
+            var appsReqCap = [];
+            appsReqCap.push(row.entity.name);
+            $scope.capsAndAppsMap.set(cap, appsReqCap);
+          }
+        });
+      }
+      else {
+        $scope.projectsSelected.splice($scope.projectsSelected.indexOf(row.entity), 1);
+        
+        row.entity.reqCapabilities.forEach(function(cap) {
+          if($scope.capsAndAppsMap.has(cap)){
+            var appsReqCap = $scope.capsAndAppsMap.get(cap);
+            var appInd = appsReqCap.indexOf(row.entity.name);
+            appsReqCap.splice(appInd, 1);
+            if(appsReqCap.length == 0) {
+              $scope.capsAndAppsMap.delete(cap);
+            } else {
+              $scope.capsAndAppsMap.set(cap, appsReqCap);
+            }
+          }
+        });
+      }
+    
+
+      if(Array.from($scope.capsAndAppsMap.keys()).length > 0) {
+        var suitableDevices = [];
+        $scope.devList.forEach(function(dev) {
+            if(isSubset(Array.from($scope.capsAndAppsMap.keys()), dev.classes)) {
+              suitableDevices.push(dev);
+            } 
+        });
+        $scope.gridOptions.data = suitableDevices;
+      } else {
+        $scope.gridOptions.data = $scope.devList;
+      }
+    });
+  
+
+    projGridApi.selection.on.rowSelectionChangedBatch($scope, function(rows){
+      console.log("Row selection changed" + rows.length);
+    });
+  } //end of OnRegisterApi project grid
+
+
+  $scope.stagedDeployments = [];
+
+  $scope.stageDeploy = function() {
+    console.log($scope.projectsSelected);
+    console.log($scope.devicesSelected);
+
+    var strTargetsInfo = [];
+    $scope.devicesSelected.forEach(function(dev){
+      strTargetsInfo.push(dev.name + " in " + dev.location.tag);
+    })
+
+    $scope.projectsSelected.forEach(function(proj){
+      var deployInfo = {
+        projectName: proj.name,
+        selectedDevices: $scope.devicesSelected,
+        strTargets: strTargetsInfo.toString()
+      };
+      $scope.stagedDeployments.push(deployInfo);
+    })
+
+    $scope.gridApi.selection.clearSelectedRows();
+    $scope.projGridApi.selection.clearSelectedRows();
+    $scope.capsAndDevsMap.clear();
+    $scope.capsAndAppsMap.clear();
+    $scope.projectsSelected = [];
+    $scope.devicesSelected = [];
+    $scope.gridOptions.data = $scope.devList;
+    $scope.projGridOptions.data = $scope.projects;
+    
+
+    $uibModal.open({
+      templateUrl: 'deploysheet.html',
+      controller: 'deploySheetCtrl',
+      resolve: {
+        stagedDeployments: function() { 
+          return $scope.stagedDeployments; }
+        }
+    }).result.then(function(deployResults){
+      console.log(deployResults);
+
+    })    
+  }
+
+
   
   // when the has changed the timer for refreshing visualization interface should be canceled.
   $scope.$on("$destroy", function(){

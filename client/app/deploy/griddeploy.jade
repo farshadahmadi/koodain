@@ -1,0 +1,35 @@
+.container.flex(layout='row')
+    md-content.flex(id='content')
+        .row
+            .col-sm-2
+                button.btn.liot-button(type="submit", ng-click="") Clear selection
+            .col-sm-2
+                button.btn.btn-primary(ng-click="stageDeploy()") Stage Deployment
+
+        .row
+            .col-sm-6
+                p LiquidIoT devices
+                .container.grid(id='devGrid', ui-grid='gridOptions' ui-grid-selection ui-grid-resize-columns)
+            .col-sm-6
+                p LiquidIoT projects
+                .container.grid(id='projGrid', ui-grid='projGridOptions' ui-grid-selection ui-grid-resize-columns)
+
+
+script(type="text/ng-template", id="deploysheet.html")
+    .modal-header
+        h4 Staged deployments
+    .modal-body
+        ul.list-unstyled(ng-repeat="dep in stagedDeployments")
+            li.list-group-item
+                input.pull-left(type='checkbox', ng-model='deleted')
+                p(ng-class="{strike: deleted}") Deploy {{dep.projectName}} to {{dep.strTargets}}
+                //ul.list-group.inner(ng-repeat="dev in dep.selectedDevices")
+                  //  li.list-group-item
+                   //     input.pull-left(type='checkbox', ng-checked="true", ng-model='selToDeploy')
+                     //   p {{dev.name}}
+       
+            
+        
+    .modal-footer
+        button.btn.btn-primary(ng-click="deploy()") Deploy
+        button.btn.btn-primary(ng-click="close()") Stage more

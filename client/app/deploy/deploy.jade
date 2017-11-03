@@ -6,133 +6,144 @@
 
 div(ng-include='"components/navbar/navbar.html"')
 
-.container(id='r')
-  .jumbotron(ng-if="deployments.length", style="text-align:center; padding:24px;")
-    | You have staged deployment changes
-    br 
-    button.btn.btn-default(ng-click="discardDeployment()") Discard
-    |  
-    button.btn.btn-primary(ng-click="verifyDeployment()") Verify
-  .jumbotron(ng-if="updates.length", style="text-align:center; padding:24px;")
-    | You have staged updates changes
-    br 
-    button.btn.btn-default(ng-click="discardUpdate()") Discard
-    |  
-    button.btn.btn-primary(ng-click="verifyUpdate()") Verify
-  .row
-    .col-sm-4
-      p {{selectedDevices.length}} devices selected
-      p
-        button.btn.btn-default(ng-disabled="!selectedDevices.length", ng-click="openManageDeployAppsModal()")
-          | Deploy Apps
-        button.btn.btn-default.navbar-right(ng-disabled="!selAppIds.length", ng-click="openManageUpdateAppsModal()")
-          | Update Apps
-      p
-        div(ng-if="deploying") 
-          p Last deployment progress status:
-          uib-progress(max="numDeps")
-            uib-bar(value="numSuccessDeps", type="success")
-              span(ng-hide="numSuccessDeps==0")
-                {{numSuccessDeps}}
-            uib-bar(value="numFailDeps", type="danger")
-              span(ng-hide="numFailDeps==0")
-                {{numFailDeps}}
-        div(ng-if="updating") 
-          p Last update progress status:
-          uib-progress(max="numUps")
-            uib-bar(value="numSuccessUps", type="success")
-              span(ng-hide="numSuccessUps==0")
-                {{numSuccessUps}}
-            uib-bar(value="numFailUps", type="danger")
-              span(ng-hide="numFailUps==0")
-                {{numFailUps}}
-        div(ng-if="deleting") 
-          p Last delete progress status:
-          uib-progress(max="numDels")
-            uib-bar(value="numSuccessDels", type="success")
-              span(ng-hide="numSuccessDels==0")
-                {{numSuccessDels}}
-            uib-bar(value="numFailDels", type="danger")
-              span(ng-hide="numFailDels==0")
-                {{numFailDels}}
-      p
-        button.btn.btn-danger(ng-if="selAppIds.length", ng-click="removeApps()")
-          i.fa.fa-trash  Delete all apps
-      p
-        ul.list-group(ng-init="shownIndex = -1")
-          li.list-group-item(ng-repeat="device in selectedDevices", ng-click="$parent.shownIndex = $index")
-            i.fa {{device.code}} 
-            |  
-            //strong {{device.id}}
-            strong {{device._key}}
-            div
-              ul.appinfo
-                //li(ng-repeat="app in device.apps | filter:filterSelApp")
-                li(ng-repeat="app in device.apps")
-                  strong {{app.name}} {{app.version}}
-                  |  {{app.status}}
-                  |  
-                  a(ng-href="{{deviceManagerUrl}}/devices/{{device.id}}/apps/{{app.id}}/api", target="_blank") API
-                  br
-                  .btn-group(ng-if="app.status !=='installed'", role="group")
-                      a.btn.btn-default(ng-if="app.name.indexOf('liquidiot-')===0", ng-href="/project/{{app.name.slice(10)}}")
-                        i.fa.fa-edit
-                      button.btn.btn-default(ng-click="openLogModal(device, app)")
-                        i.fa.fa-list
-                      button.btn.btn-primary(ng-if="app.status==='paused'", ng-click="setAppStatus(device, app, 'running')")
-                        i.fa.fa-play
-                      button.btn.btn-primary(ng-if="app.status==='running'", ng-click="setAppStatus(device, app, 'paused')")
-                        i.fa.fa-pause
-                      button.btn.btn-warning(ng-if="app.canRollback", ng-click="rollbackApp(device, app)")
-                        i.fa.fa-rotate-left
-                      button.btn.btn-success(ng-click="updateApp(device, app)")
-                        i.fa.fa-rotate-right
-                      button.btn.btn-danger(ng-click="removeApp(device, app)")
-                        i.fa.fa-trash
-                  i(ng-if="app.status ==='installed'", style="color: red").fa.fa-spinner.fa-pulse.fa-2x.fa-fw
-                  span(ng-if="app.status ==='installed'", style="color: red") Trying to run the application
-            div
-              small
-                code(ng-repeat="cls in device.classes") {{cls}}
-    .col-sm-8
-      .row
-        p
-          | Select a proejct to find compatible target devices
-          ul.nya-bs-select(ng-model='selectedProject', title='select a project', data-live-search='true')
-            li(nya-bs-option='project in projects')
-              a 
-                {{project.name}}
-                span.glyphicon.glyphicon-ok.check-mark
-      .row
-        p
-          | Or query devices:
-          //form.form-inline.queryform
-      .row
-        .col-sm-6
-          form
-            .form-group
-              label(for="queryStr") query:
-              textarea.form-control(rows="10", id="queryStr", ng-model="query", ng-model-options='{debounce: 200}')
-        .col-sm-6
-          form
-            .form-group
-              label(for="result") result:
-              textarea.form-control(rows="10", id="result", ng-model="resultQuery", ng-model-options='{debounce: 200}')
-      #network
-        vis-network(data="graphData", options="graphOptions", events="graphEvents", component="network")
-      p
-        .btn-group(role="group")
-          button.btn.btn-default(ng-click="loadDevices()")
-            span.fa.fa-refresh
-          button.btn.btn-default(ng-click="camera.fit()")
-            span.fa.fa-arrows-alt  fit camera
-          button.btn.btn-default(ng-click="camera.fitOnSelectedNodes()")
-            span.fa.fa-arrows-alt  fit camera on selection
-          button.btn.btn-default(ng-click="camera.crawl()", ng-show="isCrawlingPossible" )
-            span.fa.fa-arrows-alt  crawl in selection
+.container.liotlarge
+  .ng-cloak
+    md-content
+      md-tabs.md-dynamic-height.md-border-bottom
+        md-tab(label='Grid view')
+          md-content.md-padding
+          include griddeploy.jade
+        
+        md-tab(label='Map view')
+          md-content.md-padding
+            .container(id='r')
+              .jumbotron(ng-if="deployments.length", style="text-align:center; padding:24px;")
+                | You have staged deployment changes
+                br 
+                button.btn.btn-default(ng-click="discardDeployment()") Discard
+                |  
+                button.btn.btn-primary(ng-click="verifyDeployment()") Verify
+              .jumbotron(ng-if="updates.length", style="text-align:center; padding:24px;")
+                | You have staged updates changes
+                br 
+                button.btn.btn-default(ng-click="discardUpdate()") Discard
+                |  
+                button.btn.btn-primary(ng-click="verifyUpdate()") Verify
+              .row
+                .col-sm-4
+                  p {{selectedDevices.length}} devices selected
+                  p
+                    button.btn.btn-default(ng-disabled="!selectedDevices.length", ng-click="openManageDeployAppsModal()")
+                      | Deploy Apps
+                    button.btn.btn-default.navbar-right(ng-disabled="!selAppIds.length", ng-click="openManageUpdateAppsModal()")
+                      | Update Apps
+                  p
+                    div(ng-if="deploying") 
+                      p Last deployment progress status:
+                      uib-progress(max="numDeps")
+                        uib-bar(value="numSuccessDeps", type="success")
+                          span(ng-hide="numSuccessDeps==0")
+                            {{numSuccessDeps}}
+                        uib-bar(value="numFailDeps", type="danger")
+                          span(ng-hide="numFailDeps==0")
+                            {{numFailDeps}}
+                    div(ng-if="updating") 
+                      p Last update progress status:
+                      uib-progress(max="numUps")
+                        uib-bar(value="numSuccessUps", type="success")
+                          span(ng-hide="numSuccessUps==0")
+                            {{numSuccessUps}}
+                        uib-bar(value="numFailUps", type="danger")
+                          span(ng-hide="numFailUps==0")
+                            {{numFailUps}}
+                    div(ng-if="deleting") 
+                      p Last delete progress status:
+                      uib-progress(max="numDels")
+                        uib-bar(value="numSuccessDels", type="success")
+                          span(ng-hide="numSuccessDels==0")
+                            {{numSuccessDels}}
+                        uib-bar(value="numFailDels", type="danger")
+                          span(ng-hide="numFailDels==0")
+                            {{numFailDels}}
+                  p
+                    button.btn.btn-danger(ng-if="selAppIds.length", ng-click="removeApps()")
+                      i.fa.fa-trash  Delete all apps
+                  p
+                    ul.list-group(ng-init="shownIndex = -1")
+                      li.list-group-item(ng-repeat="device in selectedDevices", ng-click="$parent.shownIndex = $index")
+                        i.fa {{device.code}} 
+                        |  
+                        //strong {{device.id}}
+                        strong {{device._key}}
+                        div
+                          ul.appinfo
+                            //li(ng-repeat="app in device.apps | filter:filterSelApp")
+                            li(ng-repeat="app in device.apps")
+                              strong {{app.name}} {{app.version}}
+                              |  {{app.status}}
+                              |  
+                              a(ng-href="{{deviceManagerUrl}}/devices/{{device.id}}/apps/{{app.id}}/api", target="_blank") API
+                              br
+                              .btn-group(ng-if="app.status !=='installed'", role="group")
+                                  a.btn.btn-default(ng-if="app.name.indexOf('liquidiot-')===0", ng-href="/project/{{app.name.slice(10)}}")
+                                    i.fa.fa-edit
+                                  button.btn.btn-default(ng-click="openLogModal(device, app)")
+                                    i.fa.fa-list
+                                  button.btn.btn-primary(ng-if="app.status==='paused'", ng-click="setAppStatus(device, app, 'running')")
+                                    i.fa.fa-play
+                                  button.btn.btn-primary(ng-if="app.status==='running'", ng-click="setAppStatus(device, app, 'paused')")
+                                    i.fa.fa-pause
+                                  button.btn.btn-warning(ng-if="app.canRollback", ng-click="rollbackApp(device, app)")
+                                    i.fa.fa-rotate-left
+                                  button.btn.btn-success(ng-click="updateApp(device, app)")
+                                    i.fa.fa-rotate-right
+                                  button.btn.btn-danger(ng-click="removeApp(device, app)")
+                                    i.fa.fa-trash
+                              i(ng-if="app.status ==='installed'", style="color: red").fa.fa-spinner.fa-pulse.fa-2x.fa-fw
+                              span(ng-if="app.status ==='installed'", style="color: red") Trying to run the application
+                        div
+                          small
+                            code(ng-repeat="cls in device.classes") {{cls}}
+                .col-sm-8
+                  .row
+                    p
+                      | Select a proejct to find compatible target devices
+                      ul.nya-bs-select(ng-model='selectedProject', title='select a project', data-live-search='true')
+                        li(nya-bs-option='project in projects')
+                          a 
+                            {{project.name}}
+                            span.glyphicon.glyphicon-ok.check-mark
+                  .row
+                    p
+                      | Or query devices:
+                      //form.form-inline.queryform
+                  .row
+                    .col-sm-6
+                      form
+                        .form-group
+                          label(for="queryStr") query:
+                          textarea.form-control(rows="10", id="queryStr", ng-model="query", ng-model-options='{debounce: 200}')
+                    .col-sm-6
+                      form
+                        .form-group
+                          label(for="result") result:
+                          textarea.form-control(rows="10", id="result", ng-model="resultQuery", ng-model-options='{debounce: 200}')
+                  #network
+                    vis-network(data="graphData", options="graphOptions", events="graphEvents", component="network")
+                  p
+                    .btn-group(role="group")
+                      button.btn.btn-default(ng-click="loadDevices()")
+                        span.fa.fa-refresh
+                      button.btn.btn-default(ng-click="camera.fit()")
+                        span.fa.fa-arrows-alt  fit camera
+                      button.btn.btn-default(ng-click="camera.fitOnSelectedNodes()")
+                        span.fa.fa-arrows-alt  fit camera on selection
+                      button.btn.btn-default(ng-click="camera.crawl()", ng-show="isCrawlingPossible" )
+                        span.fa.fa-arrows-alt  crawl in selection
 
 
-div(ng-include='"components/footer/footer.html"')
+//Add the footer and specify name of current page (as found in components/footer/footer.controller.js)
+<liot-footer current-page='mydeploy'></liot-footer>
 
 // App management (deployment) modal dialog
 script(type="text/ng-template", id="managedeployapps.html")

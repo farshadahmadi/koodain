@@ -31,8 +31,8 @@ angular.module('koodainApp')
     },
     {
       'title': 'Deploy',
-      'link': '/mydeploy'
-    },
+      'link': '/deploy'
+    },    
     {
       'title': 'APIs',
       'link': '/myAPIs'
