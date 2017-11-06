@@ -209,6 +209,12 @@ angular.module('koodainApp')
             media: "impact service"
           },
           {
+            caption: "getSubscriptionDetails",
+            snippet: "impact.services.getSubscriptionDetails({subscriptionId:'${0}'})",
+            description: "Returns the subscription details for an (lifecycle or resource) event.",
+            media: "impact service"
+          },
+          {
             caption: "getEndpointDetails",
             snippet: "impact.services.getEndpointDetails({serialNumber:'${0}'})",
             description: "The response contains a requestId to which an event should listen to get the asynchronous data",
