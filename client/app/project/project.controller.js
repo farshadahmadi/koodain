@@ -173,6 +173,18 @@ angular.module('koodainApp')
             media: "impact service"
           },
           {
+            caption: "createResourceEventSubscription",
+            snippet: "var ${1:configObject} = {\n\tcriteria: {\n\t\tmanufacturerData: {\n\t\t\tmake:'${2}',\n\t\t\tmodel:'${3}',\n\t\t\tfirmwareVersion:'${4}'}\n\t},\n\tresources:[{\n\t\tconditions:{\n\t\t\tgt:${5:0},\n\t\t\tlt:${6:0},\n\t\t\tpmin:${7:0},\n\t\t\tsteps:${8:0}\n\t\t},\n\t\tresourcePath:'${9}'\n\t}],\n\tdeletionPolicy: ${10:0},\n\tgroupName:'${11}',\n\tsubsciptionType:'resources'\n}\nimpact.services.createResourceEventSubscription(${1:configObject})",
+            description: "The device selection criteria is a combination of manufacturer-related information like make, model, and firware version.",
+            media: "impact service"
+          },
+          {
+            caption: "createResourceEventSubscription",
+            snippet: "var ${1:configObject} = {\n\tcriteria: {\n\t\tserialNumbers: ['${2}']\n\t},\n\tresources:[{\n\t\tconditions:{\n\t\t\tgt:${3:0},\n\t\t\tlt:${4:0},\n\t\t\tpmin:${5:0},\n\t\t\tsteps:${6:0}\n\t\t},\n\t\tresourcePath:'${7}'\n\t}],\n\tdeletionPolicy: ${8:0},\n\tgroupName:'${9}',\n\tsubsciptionType:'resources'\n}\nimpact.services.createResourceEventSubscription(${1:configObject})",
+            description: "The device selection criteria is a list of serial numbers.",
+            media: "impact service"
+          },
+          {
             caption: "createLifecycleEventSubscription",
             snippet: "var ${1:configObject} = {\n\tcriteria: {\n\t\tserialNumbers: ['${2}']\n\t},\n\tevents:['${3}'],\n\tdeletionPolicy: ${4:0},\n\tgroupName:'${5}',\n\tsubsciptionType:'lifecycleEvents'\n}\nimpact.services.createLifecycleEventSubscription(${1:configObject})",
             description: "The device selection criteria is a list of serial numbers.",
@@ -180,7 +192,7 @@ angular.module('koodainApp')
           },
           {
             caption: "createLifecycleEventSubscription",
-            snippet: "var ${1:configObject} = {\n\tcriteria: {\n\t\tmanufacturerData: {\n\t\t\tmake:'${2}',\n\t\t\tmodel:'${3},'\n\t\t\tfirmwareVersion:'${4}'}\n\t},\n\tevents:['${3}'],\n\tdeletionPolicy: ${4:0},\n\tgroupName:'${5}',\n\tsubsciptionType:'lifecycleEvents'\n}\nimpact.services.createLifecycleEventSubscription(${1:configObject})",
+            snippet: "var ${1:configObject} = {\n\tcriteria: {\n\t\tmanufacturerData: {\n\t\t\tmake:'${2}',\n\t\t\tmodel:'${3}',\n\t\t\tfirmwareVersion:'${4}'}\n\t},\n\tevents:['${3}'],\n\tdeletionPolicy: ${4:0},\n\tgroupName:'${5}',\n\tsubsciptionType:'lifecycleEvents'\n}\nimpact.services.createLifecycleEventSubscription(${1:configObject})",
             description: "The device selection criteria is a combination of manufacturer-related information like make, model, and firware version.",
             media: "impact service"
           },
@@ -200,6 +212,30 @@ angular.module('koodainApp')
             caption: "getEndpointDetails",
             snippet: "impact.services.getEndpointDetails({serialNumber:'${0}'})",
             description: "The response contains a requestId to which an event should listen to get the asynchronous data",
+            media: "impact service"
+          },
+          {
+            caption: "getResourceEventSubscriptions",
+            snippet: "impact.services.getResourceEventSubscriptions({groupName:'${0}'})",
+            description: "Returns the list of subscriptions for resource events.",
+            media: "impact service"
+          },
+          {
+            caption: "getLifecycleEventSubscriptions",
+            snippet: "impact.services.getLifecycleEventSubscriptions({groupName:'${0}'})",
+            description: "Returns the list of subscriptions for lifecycle events.",
+            media: "impact service"
+          },
+          {
+            caption: "getAllEventSubscriptions",
+            snippet: "impact.services.getAllEventSubscriptions({groupName:'${0}'})",
+            description: "Returns the list of all subscriptions (resource and lifleccyle events).",
+            media: "impact service"
+          },
+          {
+            caption: "deleteAllSubscriptions", 
+            snippet: "impact.services.deleteAllSubscriptions()",
+            description: "Deletes all event subsciptions created by this app.",
             media: "impact service"
           },
           {
