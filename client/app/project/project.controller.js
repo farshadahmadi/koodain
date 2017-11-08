@@ -215,6 +215,12 @@ angular.module('koodainApp')
             media: "impact service"
           },
           {
+            caption: "readResource",
+            snippet: "impact.services.readResource({serialNumber:'${1}', resourcePath:'${0}'})",
+            description: "The response contains a requestId to which an event should listen to get the asynchronous data",
+            media: "impact service"
+          },
+          {
             caption: "getEndpointDetails",
             snippet: "impact.services.getEndpointDetails({serialNumber:'${0}'})",
             description: "The response contains a requestId to which an event should listen to get the asynchronous data",
