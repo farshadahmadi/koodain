@@ -988,6 +988,7 @@ angular.module('koodainApp')
   };
 
   $scope.openLogModal = function(device, app) {
+    $scope.loadDevices();
     $uibModal.open({
       controller: 'AppLogCtrl',
       templateUrl: 'applog.html',
@@ -996,6 +997,7 @@ angular.module('koodainApp')
         app: app,
       }
     }).result.then(null, function() {
+      $scope.loadDevices();
       clearInterval(app._logInterval);
     });
   };

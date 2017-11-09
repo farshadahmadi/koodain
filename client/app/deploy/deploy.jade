@@ -79,9 +79,9 @@ div(ng-include='"components/navbar/navbar.html"')
                         i.fa.fa-edit
                       button.btn.btn-default(ng-click="openLogModal(device, app)")
                         i.fa.fa-list
-                      button.btn.btn-primary(ng-if="app.status==='paused'", ng-click="setAppStatus(device, app, 'running')")
+                      //button.btn.btn-primary(ng-if="app.status==='paused'", ng-click="setAppStatus(device, app, 'running')")
                         i.fa.fa-play
-                      button.btn.btn-primary(ng-if="app.status==='running'", ng-click="setAppStatus(device, app, 'paused')")
+                      //button.btn.btn-primary(ng-if="app.status==='running'", ng-click="setAppStatus(device, app, 'paused')")
                         i.fa.fa-pause
                       button.btn.btn-warning(ng-if="app.canRollback", ng-click="rollbackApp(device, app)")
                         i.fa.fa-rotate-left
@@ -89,8 +89,14 @@ div(ng-include='"components/navbar/navbar.html"')
                         i.fa.fa-rotate-right
                       button.btn.btn-danger(ng-click="removeApp(device, app)")
                         i.fa.fa-trash
-                  i(ng-if="app.status ==='installed'", style="color: red").fa.fa-spinner.fa-pulse.fa-2x.fa-fw
-                  span(ng-if="app.status ==='installed'", style="color: red") Trying to run the application
+                    div(ng-if="app.status ==='running'")
+                      i(style="color: green").fa.fa-spinner.fa-pulse.fa-2x.fa-fw
+                      span App is running
+                    div(ng-if="app.status ==='crashed'")
+                      i(style="color: red").fa.fa-bug.fa-2x.fa-fw
+                      span App crashed
+                  //i(ng-if="app.status ==='installed'", style="color: red").fa.fa-spinner.fa-pulse.fa-2x.fa-fw
+                  //span(ng-if="app.status ==='installed'", style="color: red") Trying to run the application
             div
               small
                 code(ng-repeat="cls in device.classes") {{cls}}
