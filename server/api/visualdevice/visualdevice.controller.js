@@ -23,7 +23,8 @@ exports.list = function (req, res) {
 
     var bps = bcs.items
     .filter(function(buildConfig){
-      return (buildConfig.metadata.labels.app != "ide1" && buildConfig.metadata.labels.app != "resource-registry")
+      //return (buildConfig.metadata.labels.app != "ide1" && buildConfig.metadata.labels.app != "resource-registry")
+      return buildConfig.metadata.labels.app.startsWith('host');
     })
     .map(function(buildConfig){
       return {lastBuildName: buildConfig.metadata.labels.app + "-" + buildConfig.status.lastVersion};
@@ -74,7 +75,8 @@ exports.create = function (req, res) {
 
     var hostsNumber = bcs.items
     .filter(function(buildConfig){
-      return (buildConfig.metadata.labels.app != "ide1" && buildConfig.metadata.labels.app != "resource-registry")
+      //return (buildConfig.metadata.labels.app != "ide1" && buildConfig.metadata.labels.app != "resource-registry")
+      return buildConfig.metadata.labels.app.startsWith('host');
     })
     .map(function(buildConfig){
       return {lastBuildName: buildConfig.metadata.labels.app + "-" + buildConfig.status.lastVersion};
@@ -85,10 +87,14 @@ exports.create = function (req, res) {
 
     var vars = {
       project:{
-        name: req.body.hostname,
+        //name: req.body.hostname,
+        namespace: 'impact-ide',
+        name: 'host' + hostNumber,
         git: {
+          //url: "https://github.com/farshadahmadi/liquidiot-server.git",
+          //ref: "oc-singleprocess"
           url: "https://github.com/farshadahmadi/liquidiot-server.git",
-          ref: "oc-singleprocess"
+          ref: "research-development-newframework"
         }
       },
       device: {
@@ -97,6 +103,9 @@ exports.create = function (req, res) {
           x: (hostNumber % 4) * 400,
           y: Math.floor(hostNumber / 4) * 400
         }
+      },
+      rr: {
+        url: "http://resource-registry-impact-ide.paas.msv-project.com/"
       }
     };
 

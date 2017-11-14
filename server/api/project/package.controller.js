@@ -157,7 +157,7 @@ function create(name) {
               return res;
             })
             .catch(function(err){
-              console.log('eeee: ' + err.message);
+              //console.log('eeee: ' + err.message);
               numFailDeps++;
               //return err.message ? JSON.stringify({mesaage: err.message }) : JSON.stringify({ error: err });
               return JSON.stringify({error: err.toString()});
@@ -199,7 +199,7 @@ exports.deploys = function(req, res) {
         result: results
       };
 
-      console.log('res: ' + JSON.stringify(finalResult));
+      //console.log('res: ' + JSON.stringify(finalResult));
       
       res.status(200).json(finalResult);
     })
@@ -255,13 +255,13 @@ exports.removeApp = function(req, res) {
 exports.deploy = function(req, res) {
   var name = req.params.project;
   var url = req.body.deviceUrl + '/app';
-  console.log('received: ' + url);
+  //console.log('received: ' + url);
   create(name)
     .then(function(pkgBuffer) {
     return sendPackage(pkgBuffer, url);
   }).then(function(response) {
     //console.log(response);
-    console.log('sent back: ' + url);
+    //console.log('sent back: ' + url);
     res.status(200).json(response);
   }).catch(errorHandler(res));//.then(null, errorHandler(res));
 };

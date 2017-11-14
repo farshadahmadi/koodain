@@ -62,8 +62,8 @@ angular.module('koodainApp')
     $scope.createHost = function(){
       $http({
         method: 'POST',
-        url: '/api/visualdevices',
-        data: {hostname: $scope.host.name},
+        url: '/api/visualdevices'//,
+        //data: {hostname: $scope.host.name},
       }).then(function(res){
         //console.log(res.data);
         $scope.ok();

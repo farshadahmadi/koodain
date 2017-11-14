@@ -22,19 +22,21 @@ script(type="text/ng-template" id="newhost.html")
     h4.modal-title New Host
   .modal-body
     form(role="form", name="newhostform")
-      .form-group
-        label(for="hostname") Host name:
-        input.form-control(type="text", required, ng-pattern="/^[a-z][a-z0-9-]*$/", id="hostname", name="hostname", placeholder="", ng-model="host.name")
-        span.error(ng-if="newhostform.hostname.$error.pattern") Host name must match 
-          code [a-z][a-z0-9]*
-        span(ng-if="newhostform.hostname.$error.required || !newhostform.hostname.$invalid")
-          i.fa
+      p Do you want to create a new host?
+      //.form-group
+        //label(for="hostname") Host name:
+        //input.form-control(type="text", required, ng-pattern="/^[a-z][a-z0-9-]*$/", id="hostname", name="hostname", placeholder="", ng-model="host.name")
+        //span.error(ng-if="newhostform.hostname.$error.pattern") Host name must match 
+        //  code [a-z][a-z0-9]*
+        //span(ng-if="newhostform.hostname.$error.required || !newhostform.hostname.$invalid")
+        //  i.fa
       div(ng-if="errorLog")
         label(style="color:red") The following error happened while creating the host
         pre
           | {{errorLog}}
   .modal-footer
     button.btn.btn-default(ng-click="cancel()") Cancel
-    button.btn.btn-primary(ng-disabled="newhostform.hostname.$invalid", ng-click="createHost()") Create host
+    //button.btn.btn-primary(ng-disabled="newhostform.hostname.$invalid", ng-click="createHost()") Create host
+    button.btn.btn-primary(ng-click="createHost()") Confirm
 
 div(ng-include='"components/footer/footer.html"')

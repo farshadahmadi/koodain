@@ -574,8 +574,7 @@ angular.module('koodainApp')
       ctx.save();
       ctx.translate(-500, -140);
       ctx.rotate(19 * Math.PI/180);
-      ctx.drawImage(img, 150, -400, 3222, 2291);
-      //ctx.drawImage(img, 0, 0, 200, 200);
+      //ctx.drawImage(img, 150, -400, 3222, 2291);
       ctx.restore();
     },
     selectNode: selectClick,

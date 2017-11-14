@@ -16,15 +16,15 @@ function errorHandler(res) {
       res.status(400).json({error: "Already exists"});
     }
     else if (err.name === 'RequestError') {
-      console.log(err);
+      //console.log(err);
       res.status(500).json(err);
       //res.status(500).json({error: "Request error"});
     }
     else if(err.name === 'StatusCodeError') {
-      console.log(err);
+      //console.log(err);
       res.status(err.statusCode).json(err);
     } else {
-      console.log(err.toString());
+      //console.log(err.toString());
       res.status(500).json({error: 'Uknown Error'});
     }
   };
