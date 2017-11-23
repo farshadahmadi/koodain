@@ -94,7 +94,8 @@ exports.create = function (req, res) {
           //url: "https://github.com/farshadahmadi/liquidiot-server.git",
           //ref: "oc-singleprocess"
           url: "https://github.com/farshadahmadi/liquidiot-server.git",
-          ref: "research-development-newframework"
+          //ref: "research-development-newframework"
+          ref: "research-development-newframework-separateprocesses"
         }
       },
       device: {
