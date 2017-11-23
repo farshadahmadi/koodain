@@ -38,6 +38,28 @@ angular.module('koodainApp')
       });
     };
 
+    // Opens a new modal view for deleting a project.
+    $scope.deleteProjectModal = function(project) {
+      $uibModal.open({
+        controller: 'deleteProjectCtrl',
+        templateUrl: 'deleteproject.html',
+        resolve: {
+          project: function() { return project; }
+        }
+      }).result.then(function(projectName) {
+        console.log(name);
+        var p = $resource('/api/projects/' + projectName);
+        return p.remove();
+        //return name;
+      }).then(function() {
+        // New project successfully saved, reload projects.
+        $scope.projects = Project.query();
+      },function(res) {
+        // Could not create the project, for some reason.
+        Notification.error(res.data.error);
+      });
+    };
+
   })
 
   /**
@@ -46,6 +68,18 @@ angular.module('koodainApp')
   .controller('NewProjectCtrl', function ($scope, $uibModalInstance) {
     $scope.ok = function() {
       $uibModalInstance.close($scope.newproject.name);
+    };
+    $scope.cancel = function() {
+      $uibModalInstance.dismiss('cancel');
+    };
+  })
+  /**
+   * Controller for the delete a project modal dialog.
+   */
+  .controller('deleteProjectCtrl', function ($scope, $uibModalInstance, project) {
+    $scope.project = project;
+    $scope.ok = function() {
+      $uibModalInstance.close($scope.project.name);
     };
     $scope.cancel = function() {
       $uibModalInstance.dismiss('cancel');
