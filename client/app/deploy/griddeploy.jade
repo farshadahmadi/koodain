@@ -1,35 +1,140 @@
-.container.flex(layout='row')
-    md-content.flex(id='content')
-        .row
-            .col-sm-2
-                button.btn.liot-button(type="submit", ng-click="") Clear selection
-            .col-sm-2
-                button.btn.btn-primary(ng-click="stageDeploy()") Stage Deployment
-
+.container.flex
+    .row
+        .col-sm-12
+            md-radio-group(ng-model="operation" layout="row")
+                md-radio-button(value="Deploy") Deploy
+                md-radio-button(value="Update") Update
+    .row
+        .col-sm-12
+            span
+.container.flex(layout='row' ng-show="operation == 'Deploy'")
+    md-content.flex(id='content')        
         .row
             .col-sm-6
                 p LiquidIoT devices
-                .container.grid(id='devGrid', ui-grid='gridOptions' ui-grid-selection ui-grid-resize-columns)
+                .grid(id='devGrid', ui-grid='gridOptions' ui-grid-selection ui-grid-resize-columns)
+           
             .col-sm-6
                 p LiquidIoT projects
-                .container.grid(id='projGrid', ui-grid='projGridOptions' ui-grid-selection ui-grid-resize-columns)
+                .grid(id='projGrid', ui-grid='projGridOptions' ui-grid-selection ui-grid-resize-columns)
+        .row
+            .col-sm-12
+                span
+        .row    
+            .col-sm-12        
+                button.btn.liot-button(type="submit", ng-click="") Clear selection
+                span
+                button.btn.btn-primary(ng-click="stageDeploy()") Stage Deployment
+                span
+                button.btn.btn-primary(ng-click="openMapView()") View in Map
 
+.container.flex(layout='row' ng-if="operation == 'Update'")
+    md-content.flex(id='content')        
+        .row           
+            //- .col-sm-6
+            //-     p LiquidIoT application instances
+            //-     .grid(ng-if="operation == 'Update'", id='appInstancesGrid', ui-grid='appDevGridOptions' ui-grid-selection ui-grid-resize-columns)
+            .col-sm-8
+                table.table.table-striped.table-bordered(st-table="installedApps")
+                    thread
+                        tr
+                            th(select-all-rows all-data-rows="installedApps"  selected-rows="selectedAppInstances" ng-click="selectAllApps()")
+                            th Name
+                            th Version
+                            th Device
+                            th Location
+                            th Possible actions
+                        tr  
+                            th                          
+                            th
+                                input(st-search="name" placeholder="app name" class="input-sm form-control" type="search") 
+                            th
+                                input(st-search="version" placeholder="version" class="input-sm form-control" type="search") 
+                            th
+                                input(st-search="device.name" placeholder="host device" class="input-sm form-control" type="search") 
+                            th
+                                input(st-search="device.location.tag" placeholder="location" class="input-sm form-control" type="search") 
+                    tbody
+                        tr(ng-repeat="app in installedApps")
+                            td(select-row row-data="app" ng-click="selectApp(app)")
+                            td {{app.name}}
+                            td {{app.version}}
+                            td {{app.device.name}}
+                            td {{app.device.location.tag}}
+                            td 
+                                .btn-group
+                                    button.btn-sm.btn-success(ng-click="updateApp(app.device, app)")
+                                        i.fa.fa-rotate-right
+                                    button.btn-sm.btn-danger(ng-click="removeApp(app.device, app)")
+                                        i.fa.fa-trash
+
+            .col-sm-4
+                Selected: {{selectedAppInstances}}                            
+
+            //.col-sm-5
+            //    p Latest versions
+            //    .grid(ng-if="operation == 'Update'", id='installedApps' ui-grid='appGridOptions' ui-grid-selection ui-grid-resize-columns)
+        .row
+            .col-sm-12
+                span
+        .row            
+            button.btn.liot-button(type="submit", ng-click="") Clear selection
+            span
+            button.btn.btn-primary(ng-click="stageUpdates()") Stage Updates
+            span
+            button.btn.btn-primary(ng-click="openMapView()") View in Map
+
+        
 
 script(type="text/ng-template", id="deploysheet.html")
-    .modal-header
-        h4 Staged deployments
-    .modal-body
-        ul.list-unstyled(ng-repeat="dep in stagedDeployments")
-            li.list-group-item
-                input.pull-left(type='checkbox', ng-model='deleted')
-                p(ng-class="{strike: deleted}") Deploy {{dep.projectName}} to {{dep.strTargets}}
-                //ul.list-group.inner(ng-repeat="dev in dep.selectedDevices")
-                  //  li.list-group-item
-                   //     input.pull-left(type='checkbox', ng-checked="true", ng-model='selToDeploy')
-                     //   p {{dev.name}}
-       
+    .md-dialog(aria-label="Staged deployments")
+        form.ng-cloak
+            md-toolbar
+                .container.md-toolbar-tools
+                    h2 Staged deployments
+                    span.flex
+                    md-button.md-icon-button(ng-click="cancel()")
+                        md-icon(md-font-icon="fa-window-close" class="fa")
+            md-dialog-content
+                .container.md-dialog-content
+                    ul.list-unstyled(ng-repeat="dep in stagedDeployments")
+                        li
+                            md-checkbox(ng-model="dep.confirmDeployment") Deploy {{dep.projectName}} to {{dep.strTargets}}
+                    
+                    .container(ng-show="showResults")
+                        md-progress-circular(md-mode="indeterminate" md-diameter="20px" ng-disabled="deploymentDone")
+                        ul.list-unstyled(ng-repeat="msg in results")                            
+                            li
+                                p {{msg}}
+
+            md-dialog-actions(layout="row")
+                span.flex 
+                md-button.md-autofocus(ng-click="deploy()") Deploy
+                md-button.md-autofocus(ng-click="cancel()") Cancel
+
+
+
+
+script(type="text/ng-template", id="mapview.html")
+    .md-dialog(aria-label="Location of devices")
+        form.ng-cloak
+            md-toolbar
+                .container.md-toolbar-tools
+                    h2 Location of Devices
+                    span.flex
+                    md-button.md-icon-button(ng-click="cancel()")
+                        md-icon(md-font-icon="fa-window-close" class="fa")
+            md-dialog-content
+                .container.md-dialog-content
+                    #network
+                        vis-network(data="graphData", options="graphOptions", events="graphEvents", component="network")
+            md-dialog-actions(layout="row")
+                span.flex
+                md-button.md-autofocus(ng-click="close()") Close
+
             
         
-    .modal-footer
-        button.btn.btn-primary(ng-click="deploy()") Deploy
-        button.btn.btn-primary(ng-click="close()") Stage more
+
+
+            
+        

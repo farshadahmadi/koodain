@@ -15,24 +15,26 @@ angular.module('koodainApp')
    * Controller for the deploy view.
    */
   .controller('DeployCtrl', function ($scope, $http, $resource, $uibModal, Notification, VisDataSet, DeviceManager, 
-    deviceManagerUrl, $stateParams, $q, uiGridConstants, $mdBottomSheet) {
+    deviceManagerUrl, $stateParams, $q, uiGridConstants, $mdDialog) {
 
   // get the list of projects
   var Project = $resource('/api/projects/:project');
+  $scope.operation = "Deploy";
   $scope.gridOptions = {
     enableFiltering: true,
     enableRowSelection: true,
     multiSelect: true,
     enableSelectAll: true,
     enableFullRowSelection: true,
+    enableSelectionBatchEvent: false,
+    showGridFooter: true,
     columnDefs: [
       {field: 'name'},
       //{field: 'location.streetAddress'},
-      {name: 'Location', field: 'location.tag'},
-      {field: 'manufacturer'},
-      {name: 'Capabilities', field: 'classes'},
+      {name: 'Location', field: 'location.tag'},     
+      {name: 'Capabilities', field: 'classes.toString()'},
       //{field: 'connectedDevices'},
-      {name: 'Installed apps', field: 'apps'}
+      {name: 'Installed apps', field: 'getAppNames()'}
     ]
   };
 
@@ -46,11 +48,44 @@ angular.module('koodainApp')
     enableFullRowSelection: true,
     columnDefs: [
       {name: 'name', field: 'name'},
-      //{field: 'location.streetAddress'},
-      {name: 'Req.Capabilities', field: 'reqCapabilities'},
-      {field: 'appInterfaces'}
+      {name: 'Version', field: 'version'}, 
+      {name: 'Req.Capabilities', field: 'reqCapabilities.toString()'},
+      {field: 'appInterfaces.toString()'}
     ]
   };
+
+  $scope.appDevGridOptions = {
+    enableFiltering: true,
+    enableRowSelection: true,
+    multiselect: true,
+    enableSelectAll: true,
+    enableFullRowSelection: true,
+    columnDefs: [
+      {name: 'Name', field: 'name'},
+      {name: 'Version', field: 'version'},      
+      {name: 'Device', field: 'device.name'},
+      {name: 'Location', field: 'device.location.tag'},
+    ]
+  };
+
+  $scope.appGridOptions = {
+    enableFiltering: true,
+    enableRowSelection: true,
+    multiselect: true,
+    enableSelectAll: true,
+    enableFullRowSelection: true,
+    columnDefs: [
+      {name: 'name', field: 'name'},
+      {name: 'Version', field: 'version'}, 
+      //{field: 'location.streetAddress'},
+      {name: 'Req.Capabilities', field: 'reqCapabilities.toString()'},
+      {field: 'appInterfaces.toString()'}
+    ]
+  };
+
+  $scope.$watch('operation', function(){
+    //$scope.getInstalledApps();
+  })
 
   Project.query(function(projects){
     $scope.projects = projects;
@@ -79,6 +114,16 @@ angular.module('koodainApp')
         }
         project.reqCapabilities = dcs;
         project.appInterfaces = json['applicationInterfaces'];
+      })
+
+      $http({
+        method: 'GET',
+        url: '/api/projects/' + project.name + '/files/package.json'
+      }).then(function(res) {
+        var json = JSON.parse(res.data.content);
+       
+        project.version = json.version;
+        project.description = json.description;
       })
     };
   
@@ -356,6 +401,15 @@ angular.module('koodainApp')
     for (var i=0; i<devs.length; i++) {
       // add id property to the device
       devs[i].id = devs[i]._key;
+      devs[i].getAppNames = function() {
+        var appNames = [];
+        if(this.apps) {
+          this.apps.forEach(function(app){
+            appNames.push(app.name.replace('liquidiot-', ''));
+          })
+        }
+        return appNames.toString();
+      };
       // add coordination manually since it is not included in json file
       //devs[i].coords = {x:(i%10)*200, y:(Math.floor(i/10))*200};
       //devs[i].coords = {x: devs[i].location.x, y: devs[i].location.y};
@@ -618,7 +672,7 @@ angular.module('koodainApp')
     //console.log(newValue);
     //console.log("device query changed");
     if(network) {
-      updateSelection();
+      //updateSelection();
     }
   });
 
@@ -629,7 +683,7 @@ angular.module('koodainApp')
   $scope.graphEvents = {
     onload: function(_network) {
       network = _network;
-      updateSelection();
+      //updateSelection();
     },    
     beforeDrawing: function(ctx){
       ctx.save();
@@ -644,6 +698,7 @@ angular.module('koodainApp')
   };
 
   $scope.devList;
+  $scope.installedAppsLoaded = false;
   $scope.loadDevices = function () {
     return deviceManager.queryDevicess().then(function(devices) {
       console.log(devices);
@@ -651,6 +706,11 @@ angular.module('koodainApp')
       $scope.gridOptions.data = devices;
       var devs = deviceListAsObject(devices);
       console.log(devs);
+      if(!$scope.installedAppsLoaded) {
+        $scope.getInstalledApps();
+        $scope.installedAppsLoaded = true;
+      }
+     
       // if you want to remove visual devices,
       // comment this line and uncomment the next line
       //return deviceManager.addMockDevicesTo(allDevices);
@@ -664,7 +724,68 @@ angular.module('koodainApp')
       return "done";
     });
   }
- 
+
+  $scope.installedApps = [];
+  $scope.installedProjectNames = [];
+  $scope.installedProjects = [];
+  $scope.selectedAppInstances = [];
+  $scope.getInstalledApps = function() {
+    $scope.installedApps = [];
+    $scope.installedProjectNames = [];
+    $scope.installedProjects = [];
+    
+    $scope.devList.forEach(function(dev){
+      if(dev.apps) {
+        dev.apps.forEach(function(app){
+        var installedApp = {
+          id: app.id,
+          name: app.name,
+          version: app.version,
+          device: dev
+        };
+        if(!$scope.installedProjectNames.includes(app.name)) {
+          $scope.installedProjectNames.push(app.name);
+          var installedProject = $scope.projects.filter(function(project){
+            return project.name == app.name.replace('liquidiot-', '');
+          })[0];
+          $scope.installedProjects.push(installedProject);
+        }
+        $scope.installedApps.push(installedApp);
+        })
+      }
+    });
+    $scope.appDevGridOptions.data = $scope.installedApps;
+    $scope.appGridOptions.data = $scope.installedProjects;
+    
+  }
+  
+  $scope.selectAllApps = function() {
+    if($scope.selectedAppInstances.length === 0) {
+      $scope.installedApps.forEach(function(app){
+        $scope.selectedAppInstances.push(app.name +app.device._id);
+      })
+    } else if($scope.selectedAppInstances.length > 0 && $scope.selectedAppInstances.length != $scope.installedApps.length) {
+      $scope.installedApps.forEach(function(app){
+        var isFound = $scope.selectedAppInstances.indexOf(app.name +app.device._id);
+        if(isFound === -1) {
+          $scope.selectedAppInstances.push(app.name +app.device._id);
+        }
+      })
+    }
+    else {
+      $scope.selectedAppInstances = [];
+    }
+  }
+
+  $scope.selectApp = function(app) {
+    var appIndex = $scope.selectedAppInstances.indexOf(app.name +app.device._id);
+    if(appIndex === -1) {
+      $scope.selectedAppInstances.push(app.name +app.device._id);
+    } else {
+      $scope.selectedAppInstances.splice(appIndex, 1);
+    }
+  }
+
   var timer;
 
   function loadDevicesIntervally(interval){
@@ -810,18 +931,52 @@ angular.module('koodainApp')
     console.log($scope.devicesSelected);
 
     var strTargetsInfo = [];
+    var targetDevices = [];
     $scope.devicesSelected.forEach(function(dev){
       strTargetsInfo.push(dev.name + " in " + dev.location.tag);
+      targetDevices.push({url: dev.url});
     })
 
     $scope.projectsSelected.forEach(function(proj){
       var deployInfo = {
         projectName: proj.name,
-        selectedDevices: $scope.devicesSelected,
+        selectedDevices: targetDevices,
         strTargets: strTargetsInfo.toString()
       };
       $scope.stagedDeployments.push(deployInfo);
     })
+
+    
+    
+
+    // $uibModal.open({
+    //   templateUrl: 'deploysheet.html',
+    //   controller: 'deploySheetCtrl',
+    //   resolve: {
+    //     stagedDeployments: function() { 
+    //       return $scope.stagedDeployments; }
+    //     }
+    // }).result.then(function(deployResults){
+    //   console.log(deployResults);
+
+    // }) 
+    
+    $mdDialog.show({
+      controller: 'deploySheetCtrl',
+      templateUrl: 'deploysheet.html',
+      parent: angular.element(document.body),
+      clickOutsideToClose:false,
+      fullscreen: $scope.customFullscreen, // Only for -xs, -sm breakpoints.
+      resolve: {
+            stagedDeployments: function() { 
+              return $scope.stagedDeployments; }
+            }
+    })
+    .then(function(answer) {
+      $scope.status = 'You said the information was "' + answer + '".';
+    }, function() {
+      $scope.status = 'You cancelled the dialog.';
+    });
 
     $scope.gridApi.selection.clearSelectedRows();
     $scope.projGridApi.selection.clearSelectedRows();
@@ -831,21 +986,12 @@ angular.module('koodainApp')
     $scope.devicesSelected = [];
     $scope.gridOptions.data = $scope.devList;
     $scope.projGridOptions.data = $scope.projects;
-    
-
-    $uibModal.open({
-      templateUrl: 'deploysheet.html',
-      controller: 'deploySheetCtrl',
-      resolve: {
-        stagedDeployments: function() { 
-          return $scope.stagedDeployments; }
-        }
-    }).result.then(function(deployResults){
-      console.log(deployResults);
-
-    })    
   }
 
+
+  $scope.stageUpdates = function() {
+    $scope.grid
+  }
 
   
   // when the has changed the timer for refreshing visualization interface should be canceled.
@@ -1243,9 +1389,10 @@ angular.module('koodainApp')
       url: '/api/projects/' + app.name.slice(10) + '/package',
       data: {deviceUrl: device.url, appId: app.id}
     }).then(function(res){
+      Notification.error("Updating the app was successful");
       $scope.loadDevices();
     }).catch(function(err){
-      Notification.error("Connection to the application was not succeccfull.");
+      Notification.error("Connection to the application was not successful.");
       $scope.loadDevices();
     });
   };

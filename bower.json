@@ -27,7 +27,8 @@
     "matchHeight": "matchheight#^0.7.0",
     "angular-ui-grid": "^4.0.7",
     "angular-filter": "^0.5.17",
-    "angular-material": "^1.1.5"
+    "angular-material": "^1.1.5",
+    "angular-smart-table": "^2.1.9"
   },
   "devDependencies": {
     "angular-mocks": ">=1.2.*",

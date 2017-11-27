@@ -24,7 +24,8 @@ angular.module('koodainApp', [
   'ui.grid.selection',
   'ui.grid.resizeColumns',
   'angular.filter',
-  'ngMaterial' //,
+  'ngMaterial',
+  'smart-table' //,
   //'ui.select'//,
   //'ngSanitize'
 ])

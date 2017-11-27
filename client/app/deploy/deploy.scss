@@ -23,3 +23,13 @@ ul.appinfo {
     margin-bottom: 4px;
   }
 }
+
+
+.grid {
+  height: 450px;
+  width: 380px;
+}
+
+.st-selected > td {
+  background-color: rgb(44, 68, 172) !important;
+}
