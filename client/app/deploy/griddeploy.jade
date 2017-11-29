@@ -1,97 +1,103 @@
-.container.flex
+.container(id="DeployView" ng-show="tab==='deploy'" ng-controller="GridDeployCtrl")
+    br
     .row
-        .col-sm-12
-            md-radio-group(ng-model="operation" layout="row")
-                md-radio-button(value="Deploy") Deploy
-                md-radio-button(value="Update") Update
+        .col-sm-6
+            <strong>LiquidIoT devices</strong>
+            .grid(id='devGrid', ui-grid='gridOptions' ui-grid-selection ui-grid-resize-columns)
+        
+        .col-sm-6
+            <strong>LiquidIoT projects</strong>
+            .grid(id='projGrid', ui-grid='projGridOptions' ui-grid-selection ui-grid-resize-columns)
     .row
         .col-sm-12
             span
-.container.flex(layout='row' ng-show="operation == 'Deploy'")
-    md-content.flex(id='content')        
-        .row
-            .col-sm-6
-                p LiquidIoT devices
-                .grid(id='devGrid', ui-grid='gridOptions' ui-grid-selection ui-grid-resize-columns)
-           
-            .col-sm-6
-                p LiquidIoT projects
-                .grid(id='projGrid', ui-grid='projGridOptions' ui-grid-selection ui-grid-resize-columns)
-        .row
-            .col-sm-12
-                span
-        .row    
-            .col-sm-12        
-                button.btn.liot-button(type="submit", ng-click="") Clear selection
-                span
-                button.btn.btn-primary(ng-click="stageDeploy()") Stage Deployment
-                span
-                button.btn.btn-primary(ng-click="openMapView()") View in Map
-
-.container.flex(layout='row' ng-if="operation == 'Update'")
-    md-content.flex(id='content')        
-        .row           
-            //- .col-sm-6
-            //-     p LiquidIoT application instances
-            //-     .grid(ng-if="operation == 'Update'", id='appInstancesGrid', ui-grid='appDevGridOptions' ui-grid-selection ui-grid-resize-columns)
-            .col-sm-8
-                table.table.table-striped.table-bordered(st-table="installedApps")
-                    thread
-                        tr
-                            th(select-all-rows all-data-rows="installedApps"  selected-rows="selectedAppInstances" ng-click="selectAllApps()")
-                            th Name
-                            th Version
-                            th Device
-                            th Location
-                            th Possible actions
-                        tr  
-                            th                          
-                            th
-                                input(st-search="name" placeholder="app name" class="input-sm form-control" type="search") 
-                            th
-                                input(st-search="version" placeholder="version" class="input-sm form-control" type="search") 
-                            th
-                                input(st-search="device.name" placeholder="host device" class="input-sm form-control" type="search") 
-                            th
-                                input(st-search="device.location.tag" placeholder="location" class="input-sm form-control" type="search") 
-                    tbody
-                        tr(ng-repeat="app in installedApps")
-                            td(select-row row-data="app" ng-click="selectApp(app)")
-                            td {{app.name}}
-                            td {{app.version}}
-                            td {{app.device.name}}
-                            td {{app.device.location.tag}}
-                            td 
-                                .btn-group
-                                    button.btn-sm.btn-success(ng-click="updateApp(app.device, app)")
-                                        i.fa.fa-rotate-right
-                                    button.btn-sm.btn-danger(ng-click="removeApp(app.device, app)")
-                                        i.fa.fa-trash
-
-            .col-sm-4
-                Selected: {{selectedAppInstances}}                            
-
-            //.col-sm-5
-            //    p Latest versions
-            //    .grid(ng-if="operation == 'Update'", id='installedApps' ui-grid='appGridOptions' ui-grid-selection ui-grid-resize-columns)
-        .row
-            .col-sm-12
-                span
-        .row            
-            button.btn.liot-button(type="submit", ng-click="") Clear selection
-            span
-            button.btn.btn-primary(ng-click="stageUpdates()") Stage Updates
+    .row    
+        .col-sm-12        
+            button.btn.btn-primary(type="submit", ng-click="clearSelection()") Clear selection
             span
             button.btn.btn-primary(ng-click="openMapView()") View in Map
+            span
+            button.btn.btn-primary(ng-click="stageDeploy()") Deploy
+
+.container(ng-if="tab === 'update'" id="UpdateView" ng-controller="ModifyAppInstCtrl")
+    br
+    .row           
+        //- .col-sm-6
+        //-     p LiquidIoT application instances
+        //-     .grid(ng-if="operation == 'Update'", id='appInstancesGrid', ui-grid='appDevGridOptions' ui-grid-selection ui-grid-resize-columns)
+        .col-sm-9
+            table.table.table-striped.table-bordered(st-table="displayed" st-safe-src="installedApps" )
+                thread
+                    tr
+                        th(select-all-rows all-data-rows="installedApps"  selected-rows="selectedAppInstances" ng-click="selectAllApps()")
+                        th Name
+                        th Version
+                        th Device
+                        th Status
+                        th Location
+                        th.col-sm-3 Possible actions
+                    tr  
+                        th                          
+                        th
+                            input(st-search="name" placeholder="app name" class="input-sm form-control" type="search") 
+                        th
+                            input(st-search="version" placeholder="version" class="input-sm form-control" type="search") 
+                        th
+                            input(st-search="device.name" placeholder="host device" class="input-sm form-control" type="search") 
+                        th
+                            input(st-search="status" placeholder="app status" class="input-sm form-control" type="search") 
+                        th
+                            input(st-search="device.location.tag" placeholder="location" class="input-sm form-control" type="search")
+                        th
+                tbody
+                    tr(ng-repeat="app in displayed")
+                        td(select-row row-data="app" ng-click="selectApp(app)")
+                        td {{app.name.replace('liquidiot-', '')}}
+                        td {{app.version}}
+                        td {{app.device.name}}
+                        td {{app.status}}
+                        td {{app.device.location.tag}}
+                        td 
+                            .btn-group(ng-if="app.status !=='installed'", role="group")                                
+                                button.btn-sm.btn-primary(ng-if="app.status==='paused'", ng-click="setAppStatus(app.device, app, 'running')")
+                                    i.fa.fa-play
+                                button.btn-sm.btn-primary(ng-if="app.status==='running'", ng-click="setAppStatus(app.device, app, 'paused')")
+                                    i.fa.fa-pause
+                                button.btn-sm.btn-warning(ng-if="app.canRollback", ng-click="rollbackApp(app.device, app)")
+                                    i.fa.fa-rotate-left
+                                button.btn-sm.btn-success(ng-click="updateApp(app.device, app)")
+                                    i.fa.fa-rotate-right
+                                button.btn-sm.btn-danger(ng-click="removeApp(app.device, app)")
+                                    i.fa.fa-trash
+                                button.btn-sm.btn-default(ng-click="openLogModal(app.device, app)")
+                                    i.fa.fa-list
+                            i(ng-if="app.status ==='installed'", style="color: red").fa.fa-spinner.fa-pulse.fa-2x.fa-fw
+                            span(ng-if="app.status ==='installed'", style="color: red") Trying to run the application
+
+        .col-sm-3
+            //Empty for now
+                                  
+
+
+    .row
+        .col-sm-12
+            span
+    .row            
+        button.btn.btn-primary(type="submit", ng-click="clearSelections()") Clear selection
+        span
+        button.btn.btn-primary(ng-click="openMapView()") View in Map
+        span
+        button.btn.btn-primary(ng-click="modifySelectedApps()") Update
+        
 
         
 
 script(type="text/ng-template", id="deploysheet.html")
-    .md-dialog(aria-label="Staged deployments")
+    .md-dialog(aria-label="Applications to deploy")
         form.ng-cloak
-            md-toolbar
+            md-toolbar(style="background-color: #46c8ff")
                 .container.md-toolbar-tools
-                    h2 Staged deployments
+                    h2 Applications to deploy
                     span.flex
                     md-button.md-icon-button(ng-click="cancel()")
                         md-icon(md-font-icon="fa-window-close" class="fa")
@@ -103,6 +109,13 @@ script(type="text/ng-template", id="deploysheet.html")
                     
                     .container(ng-show="showResults")
                         md-progress-circular(md-mode="indeterminate" md-diameter="20px" ng-disabled="deploymentDone")
+                        //- uib-progress(max="numDeployments")
+                        //-     uib-bar(value="numSuccessDeps", type="success")
+                        //-     span(ng-hide="numSuccessDeps==0")
+                        //-         {{numSuccessDeps}}
+                        //-     uib-bar(value="numFailDeps", type="danger")
+                        //-     span(ng-hide="numFailDeps==0")
+                        //-         {{numFailDeps}}
                         ul.list-unstyled(ng-repeat="msg in results")                            
                             li
                                 p {{msg}}
@@ -113,28 +126,65 @@ script(type="text/ng-template", id="deploysheet.html")
                 md-button.md-autofocus(ng-click="cancel()") Cancel
 
 
-
-
-script(type="text/ng-template", id="mapview.html")
-    .md-dialog(aria-label="Location of devices")
+script(type="text/ng-template", id="updateSheet.html")
+    .md-dialog(aria-label="Selected applications")
         form.ng-cloak
-            md-toolbar
+            md-toolbar(style="background-color: #46c8ff")
                 .container.md-toolbar-tools
-                    h2 Location of Devices
+                    h2 Applications selected for update
                     span.flex
                     md-button.md-icon-button(ng-click="cancel()")
                         md-icon(md-font-icon="fa-window-close" class="fa")
             md-dialog-content
                 .container.md-dialog-content
-                    #network
-                        vis-network(data="graphData", options="graphOptions", events="graphEvents", component="network")
-            md-dialog-actions(layout="row")
-                span.flex
-                md-button.md-autofocus(ng-click="close()") Close
+                    ul.list-unstyled(ng-repeat="app in installedApps")                       
+                        li(ng-init="app.confirmModification = true" ng-if="app.isSelected && app.isSelected===true")
+                            md-checkbox(ng-model="app.confirmModification") {{app.name.replace('liquidiot-','')}} in {{app.device.name}} 
+                    
+                    .container(ng-show="showResults")
+                        md-progress-circular(md-mode="indeterminate" md-diameter="20px" ng-disabled="modificationsDone")
+                        //- uib-progress(max="numDeployments")
+                        //-     uib-bar(value="numSuccessDeps", type="success")
+                        //-     span(ng-hide="numSuccessDeps==0")
+                        //-         {{numSuccessDeps}}
+                        //-     uib-bar(value="numFailDeps", type="danger")
+                        //-     span(ng-hide="numFailDeps==0")
+                        //-         {{numFailDeps}}
+                        ul.list-unstyled(ng-repeat="msg in results")                            
+                            li
+                                p {{msg}}
 
+            md-dialog-actions(layout="row")
+                span.flex 
+                .btn-group(role="group")                                
+                    button.btn-sm.btn-primary(ng-click="setAppStatus('running')")
+                        i.fa.fa-play Run
+                    button.btn-sm.btn-primary(ng-click="setAppStatus('paused')")
+                        i.fa.fa-pause Pause
+                    button.btn-sm.btn-warning(ng-click="rollbackApp()")
+                        i.fa.fa-rotate-left Rollback
+                    button.btn-sm.btn-primary(ng-click="updateApp()")
+                        i.fa.fa-rotate-right Update
+                    button.btn-sm.btn-danger(ng-click="removeApp()")
+                        i.fa.fa-trash Remove
             
         
-
+script(type="text/ng-template", id="mapSheet.html")
+    .container(id='MapView')
+        #network
+            vis-network(data="graphData", options="graphOptions", events="graphEvents", component="network")
+        p
+            .btn-group(role="group")
+                button.btn.btn-default(ng-click="loadDevices()")
+                    span.fa.fa-refresh
+                button.btn.btn-default(ng-click="showSelectionsInMap()")
+                    span.fa.fa-map-marker Selections
+                button.btn.btn-default(ng-click="camera.fit()")
+                    span.fa.fa-arrows-alt  fit camera
+                button.btn.btn-default(ng-click="camera.fitOnSelectedNodes()")
+                    span.fa.fa-arrows-alt  fit camera on selection
+                button.btn.btn-default(ng-click="camera.crawl()", ng-show="isCrawlingPossible" )
+                    span.fa.fa-arrows-alt  crawl in selection
 
             
         

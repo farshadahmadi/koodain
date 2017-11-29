@@ -10,17 +10,18 @@ div(ng-include='"components/navbar/navbar.html"')
 .container
   .row
     .col-lg-12
-      div.liot-title Devices
+      div.liot-title Devices in the system: {{devices.length}}
+      hr
   .row.col-lg-12
         ul.list-unstyled.col-md-4.col-lg-4.col-sm-6(style='margin-top: 10px; padding: 10px', ng-repeat='device in devices' data-mh='devices')       
-          div.liot-item            
+          well.liot-item            
             div.liot-item-title
                i.fa.fa-industry.pull-left
                span {{device.name}} in {{device.location.tag}}
             p Capabilities:  {{device.classes.join(", ")}}
             ul.list-unstyled(ng-repeat='app in device.apps')
               div.icons-liot
-                i.fa.fa-cogs.fa-1x
+                i.fa.fa-cogs
                 span {{app.name}}
                 .btn-group
                   a.btn.btn-default(ng-if="app.status==='paused'", ng-click="setAppStatus(device, app, 'running')")

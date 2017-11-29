@@ -15,117 +15,16 @@ angular.module('koodainApp')
    * Controller for the deploy view.
    */
   .controller('DeployCtrl', function ($scope, $http, $resource, $uibModal, Notification, VisDataSet, DeviceManager, 
-    deviceManagerUrl, $stateParams, $q, uiGridConstants, $mdDialog) {
+    deviceManagerUrl, $stateParams, $q, selectedDevIds, selectedAppIds) {
 
   // get the list of projects
   var Project = $resource('/api/projects/:project');
-  $scope.operation = "Deploy";
-  $scope.gridOptions = {
-    enableFiltering: true,
-    enableRowSelection: true,
-    multiSelect: true,
-    enableSelectAll: true,
-    enableFullRowSelection: true,
-    enableSelectionBatchEvent: false,
-    showGridFooter: true,
-    columnDefs: [
-      {field: 'name'},
-      //{field: 'location.streetAddress'},
-      {name: 'Location', field: 'location.tag'},     
-      {name: 'Capabilities', field: 'classes.toString()'},
-      //{field: 'connectedDevices'},
-      {name: 'Installed apps', field: 'getAppNames()'}
-    ]
-  };
-
-  
-
-  $scope.projGridOptions = {
-    enableFiltering: true,
-    enableRowSelection: true,
-    multiSelect: true,
-    enableSelectAll: true,
-    enableFullRowSelection: true,
-    columnDefs: [
-      {name: 'name', field: 'name'},
-      {name: 'Version', field: 'version'}, 
-      {name: 'Req.Capabilities', field: 'reqCapabilities.toString()'},
-      {field: 'appInterfaces.toString()'}
-    ]
-  };
-
-  $scope.appDevGridOptions = {
-    enableFiltering: true,
-    enableRowSelection: true,
-    multiselect: true,
-    enableSelectAll: true,
-    enableFullRowSelection: true,
-    columnDefs: [
-      {name: 'Name', field: 'name'},
-      {name: 'Version', field: 'version'},      
-      {name: 'Device', field: 'device.name'},
-      {name: 'Location', field: 'device.location.tag'},
-    ]
-  };
-
-  $scope.appGridOptions = {
-    enableFiltering: true,
-    enableRowSelection: true,
-    multiselect: true,
-    enableSelectAll: true,
-    enableFullRowSelection: true,
-    columnDefs: [
-      {name: 'name', field: 'name'},
-      {name: 'Version', field: 'version'}, 
-      //{field: 'location.streetAddress'},
-      {name: 'Req.Capabilities', field: 'reqCapabilities.toString()'},
-      {field: 'appInterfaces.toString()'}
-    ]
-  };
-
-  $scope.$watch('operation', function(){
-    //$scope.getInstalledApps();
-  })
 
   Project.query(function(projects){
     $scope.projects = projects;
-    angular.forEach($scope.projects, function(value, key, obj) {
-      getProjectDetails(value);
-      });
-    $scope.projGridOptions.data = $scope.projects;
   });
 
-  function getProjectDetails(project) {
-    
-      // Read the liquidiot.json and construct a query based on its
-      // 'deviceCapabilities' field.
-      $http({
-        method: 'GET',
-        url: '/api/projects/' + project.name + '/files/liquidiot.json'
-      }).then(function(res) {
-        var json = JSON.parse(res.data.content);
-        var dcs = json['deviceCapabilities'];
-        // free-class means all devices, so we remove it from device capabilities.
-        // if array becomes empty we query all devices
-        // otherwise we query the remaining devices
-        var index = dcs.indexOf("free-class");
-        if(index != -1){
-          dcs.splice(index, 1);
-        }
-        project.reqCapabilities = dcs;
-        project.appInterfaces = json['applicationInterfaces'];
-      })
-
-      $http({
-        method: 'GET',
-        url: '/api/projects/' + project.name + '/files/package.json'
-      }).then(function(res) {
-        var json = JSON.parse(res.data.content);
-       
-        project.version = json.version;
-        project.description = json.description;
-      })
-    };
+  
   
 
   // the url of RR (Resource Registry) (AKA device manager)
@@ -144,7 +43,7 @@ angular.module('koodainApp')
         face: 'FontAwesome',
         code: '\uf233',
         size: 50,
-        color: 'green'
+        color: 'lightgreen'
       },
       // comment the line below if you want to enable dragging
       fixed: true
@@ -155,7 +54,7 @@ angular.module('koodainApp')
         face: 'FontAwesome',
         code: '\uf233',
         size: 50,
-        color: 'red'
+        color: 'LightCoral'
       },
       // comment the line below if you want to enable dragging
       fixed: true
@@ -188,7 +87,7 @@ angular.module('koodainApp')
         face: 'FontAwesome',
         code: '\uf085',
         size: 65,
-        color: 'blue'
+        color: 'lightblue'
       }
     },
     'app:installed:selected':{
@@ -206,7 +105,7 @@ angular.module('koodainApp')
         face: 'FontAwesome',
         code: '\uf085',
         size: 40,
-        color: 'green'
+        color: 'lightgreen'
       }
     },
     'app:running:selected':{
@@ -224,7 +123,7 @@ angular.module('koodainApp')
         face: 'FontAwesome',
         code: '\uf085',
         size: 40,
-        color: 'red'
+        color: 'lightcoral'
       }
     },
     'app:crashed:selected':{
@@ -242,7 +141,7 @@ angular.module('koodainApp')
         face: 'FontAwesome',
         code: '\uf085',
         size: 40,
-        color: 'green'
+        color: 'wheat'
       }
     },
     'app:paused:selected':{
@@ -251,7 +150,7 @@ angular.module('koodainApp')
         face: 'FontAwesome',
         code: '\uf085',
         size: 65,
-        color: 'green'
+        color: 'yellow'
       }
     }
   };
@@ -401,15 +300,6 @@ angular.module('koodainApp')
     for (var i=0; i<devs.length; i++) {
       // add id property to the device
       devs[i].id = devs[i]._key;
-      devs[i].getAppNames = function() {
-        var appNames = [];
-        if(this.apps) {
-          this.apps.forEach(function(app){
-            appNames.push(app.name.replace('liquidiot-', ''));
-          })
-        }
-        return appNames.toString();
-      };
       // add coordination manually since it is not included in json file
       //devs[i].coords = {x:(i%10)*200, y:(Math.floor(i/10))*200};
       //devs[i].coords = {x: devs[i].location.x, y: devs[i].location.y};
@@ -468,8 +358,8 @@ angular.module('koodainApp')
   // list of IDs of CURRENTLY selected devices
   var selDevIds = [];
   // list of IDs of CURRENTLY selected apps
-  //var selAppIds = [];
-  $scope.selAppIds = [];
+
+  
   // list of currently CURRENTLY selected apps
   var selApps = [];
 
@@ -520,7 +410,7 @@ angular.module('koodainApp')
 
     // Update curently selected devices and nodes with the new selection
     selDevIds = devIds;
-    $scope.selAppIds = appIds;
+    
 
     selApps = queriedApps;
 
@@ -672,7 +562,7 @@ angular.module('koodainApp')
     //console.log(newValue);
     //console.log("device query changed");
     if(network) {
-      //updateSelection();
+      updateSelection();
     }
   });
 
@@ -683,7 +573,7 @@ angular.module('koodainApp')
   $scope.graphEvents = {
     onload: function(_network) {
       network = _network;
-      //updateSelection();
+      updateSelection();
     },    
     beforeDrawing: function(ctx){
       ctx.save();
@@ -697,19 +587,19 @@ angular.module('koodainApp')
     deselectNode: selectClick
   };
 
+  $scope.showSelectionsInMap = function() {
+    console.log(selectedDevIds);
+    select(selectedDevIds, selectedAppIds, [], []);
+  };
+
   $scope.devList;
-  $scope.installedAppsLoaded = false;
   $scope.loadDevices = function () {
     return deviceManager.queryDevicess().then(function(devices) {
       console.log(devices);
       $scope.devList = devices;
-      $scope.gridOptions.data = devices;
       var devs = deviceListAsObject(devices);
       console.log(devs);
-      if(!$scope.installedAppsLoaded) {
-        $scope.getInstalledApps();
-        $scope.installedAppsLoaded = true;
-      }
+
      
       // if you want to remove visual devices,
       // comment this line and uncomment the next line
@@ -723,67 +613,6 @@ angular.module('koodainApp')
       //$scope.$apply();
       return "done";
     });
-  }
-
-  $scope.installedApps = [];
-  $scope.installedProjectNames = [];
-  $scope.installedProjects = [];
-  $scope.selectedAppInstances = [];
-  $scope.getInstalledApps = function() {
-    $scope.installedApps = [];
-    $scope.installedProjectNames = [];
-    $scope.installedProjects = [];
-    
-    $scope.devList.forEach(function(dev){
-      if(dev.apps) {
-        dev.apps.forEach(function(app){
-        var installedApp = {
-          id: app.id,
-          name: app.name,
-          version: app.version,
-          device: dev
-        };
-        if(!$scope.installedProjectNames.includes(app.name)) {
-          $scope.installedProjectNames.push(app.name);
-          var installedProject = $scope.projects.filter(function(project){
-            return project.name == app.name.replace('liquidiot-', '');
-          })[0];
-          $scope.installedProjects.push(installedProject);
-        }
-        $scope.installedApps.push(installedApp);
-        })
-      }
-    });
-    $scope.appDevGridOptions.data = $scope.installedApps;
-    $scope.appGridOptions.data = $scope.installedProjects;
-    
-  }
-  
-  $scope.selectAllApps = function() {
-    if($scope.selectedAppInstances.length === 0) {
-      $scope.installedApps.forEach(function(app){
-        $scope.selectedAppInstances.push(app.name +app.device._id);
-      })
-    } else if($scope.selectedAppInstances.length > 0 && $scope.selectedAppInstances.length != $scope.installedApps.length) {
-      $scope.installedApps.forEach(function(app){
-        var isFound = $scope.selectedAppInstances.indexOf(app.name +app.device._id);
-        if(isFound === -1) {
-          $scope.selectedAppInstances.push(app.name +app.device._id);
-        }
-      })
-    }
-    else {
-      $scope.selectedAppInstances = [];
-    }
-  }
-
-  $scope.selectApp = function(app) {
-    var appIndex = $scope.selectedAppInstances.indexOf(app.name +app.device._id);
-    if(appIndex === -1) {
-      $scope.selectedAppInstances.push(app.name +app.device._id);
-    } else {
-      $scope.selectedAppInstances.splice(appIndex, 1);
-    }
   }
 
   var timer;
@@ -802,197 +631,9 @@ angular.module('koodainApp')
     interval);
   }
 
-  var isSubset = function(arr1, arr2){
-    return arr1.every(function(value){
-      return arr2.indexOf(value) >= 0;
-    });
-  }
-
+    
   // loading of the devices
   loadDevicesIntervally(60000);
-  $scope.capsAndDevsMap = new Map();
-  $scope.devicesSelected = [];
-  
-  $scope.gridOptions.onRegisterApi = function(gridApi) {
-    $scope.gridApi = gridApi;
-    gridApi.selection.on.rowSelectionChanged($scope, function(row){      
-      console.log("Row selection changed" + row.isSelected);
-      if(row.isSelected) {
-        $scope.devicesSelected.push(row.entity);
-        row.entity.classes.forEach(function(cap) {
-          if($scope.capsAndDevsMap.has(cap)){
-            var devsWithCap = $scope.capsAndDevsMap.get(cap);
-            devsWithCap.push(row.entity._id);
-            $scope.capsAndDevsMap.set(cap, devsWithCap);
-          }
-          else {
-            var devsWithCap = [];
-            devsWithCap.push(row.entity._id);
-            $scope.capsAndDevsMap.set(cap, devsWithCap);
-          }
-        });
-      }
-      else {
-        $scope.devicesSelected.splice($scope.devicesSelected.indexOf(row.entity), 1);
-        row.entity.classes.forEach(function(cap) {
-          if($scope.capsAndDevsMap.has(cap)){
-            var devsWithCap = $scope.capsAndDevsMap.get(cap);
-            var devInd = devsWithCap.indexOf(row.entity._id);
-            devsWithCap.splice(devInd, 1);
-            if(devsWithCap.length == 0) {
-              $scope.capsAndDevsMap.delete(cap);
-            } else {
-              $scope.capsAndDevsMap.set(cap, devsWithCap);
-            }
-          }
-        });
-      }   
-
-      var suitableProjects = [];
-      $scope.projects.forEach(function(proj) {
-          if(proj.reqCapabilities.length == 0 || isSubset(Array.from($scope.capsAndDevsMap.keys()), proj.reqCapabilities)) {
-            suitableProjects.push(proj);
-          } 
-      });
-      $scope.projGridOptions.data = suitableProjects;
-    });
-  
-
-    gridApi.selection.on.rowSelectionChangedBatch($scope, function(rows){
-      console.log("Row selection changed" + rows.length);
-    });
-  } //end of OnRegisterApi device grid
-
-
-  $scope.capsAndAppsMap = new Map();
-  $scope.projectsSelected = [];
-  $scope.projGridOptions.onRegisterApi = function(projGridApi) {
-    $scope.projGridApi = projGridApi;
-    projGridApi.selection.on.rowSelectionChanged($scope, function(row){
-      
-      console.log("Row selection changed" + row.isSelected);
-      if(row.isSelected) {
-        $scope.projectsSelected.push(row.entity);
-        row.entity.reqCapabilities.forEach(function(cap) {
-          if($scope.capsAndAppsMap.has(cap)){
-            var appsReqCap = $scope.capsAndAppsMap.get(cap);
-            appsReqCap.push(row.entity.name);
-            $scope.capsAndAppsMap.set(cap, appsReqCap);
-          }
-          else {
-            var appsReqCap = [];
-            appsReqCap.push(row.entity.name);
-            $scope.capsAndAppsMap.set(cap, appsReqCap);
-          }
-        });
-      }
-      else {
-        $scope.projectsSelected.splice($scope.projectsSelected.indexOf(row.entity), 1);
-        
-        row.entity.reqCapabilities.forEach(function(cap) {
-          if($scope.capsAndAppsMap.has(cap)){
-            var appsReqCap = $scope.capsAndAppsMap.get(cap);
-            var appInd = appsReqCap.indexOf(row.entity.name);
-            appsReqCap.splice(appInd, 1);
-            if(appsReqCap.length == 0) {
-              $scope.capsAndAppsMap.delete(cap);
-            } else {
-              $scope.capsAndAppsMap.set(cap, appsReqCap);
-            }
-          }
-        });
-      }
-    
-
-      if(Array.from($scope.capsAndAppsMap.keys()).length > 0) {
-        var suitableDevices = [];
-        $scope.devList.forEach(function(dev) {
-            if(isSubset(Array.from($scope.capsAndAppsMap.keys()), dev.classes)) {
-              suitableDevices.push(dev);
-            } 
-        });
-        $scope.gridOptions.data = suitableDevices;
-      } else {
-        $scope.gridOptions.data = $scope.devList;
-      }
-    });
-  
-
-    projGridApi.selection.on.rowSelectionChangedBatch($scope, function(rows){
-      console.log("Row selection changed" + rows.length);
-    });
-  } //end of OnRegisterApi project grid
-
-
-  $scope.stagedDeployments = [];
-
-  $scope.stageDeploy = function() {
-    console.log($scope.projectsSelected);
-    console.log($scope.devicesSelected);
-
-    var strTargetsInfo = [];
-    var targetDevices = [];
-    $scope.devicesSelected.forEach(function(dev){
-      strTargetsInfo.push(dev.name + " in " + dev.location.tag);
-      targetDevices.push({url: dev.url});
-    })
-
-    $scope.projectsSelected.forEach(function(proj){
-      var deployInfo = {
-        projectName: proj.name,
-        selectedDevices: targetDevices,
-        strTargets: strTargetsInfo.toString()
-      };
-      $scope.stagedDeployments.push(deployInfo);
-    })
-
-    
-    
-
-    // $uibModal.open({
-    //   templateUrl: 'deploysheet.html',
-    //   controller: 'deploySheetCtrl',
-    //   resolve: {
-    //     stagedDeployments: function() { 
-    //       return $scope.stagedDeployments; }
-    //     }
-    // }).result.then(function(deployResults){
-    //   console.log(deployResults);
-
-    // }) 
-    
-    $mdDialog.show({
-      controller: 'deploySheetCtrl',
-      templateUrl: 'deploysheet.html',
-      parent: angular.element(document.body),
-      clickOutsideToClose:false,
-      fullscreen: $scope.customFullscreen, // Only for -xs, -sm breakpoints.
-      resolve: {
-            stagedDeployments: function() { 
-              return $scope.stagedDeployments; }
-            }
-    })
-    .then(function(answer) {
-      $scope.status = 'You said the information was "' + answer + '".';
-    }, function() {
-      $scope.status = 'You cancelled the dialog.';
-    });
-
-    $scope.gridApi.selection.clearSelectedRows();
-    $scope.projGridApi.selection.clearSelectedRows();
-    $scope.capsAndDevsMap.clear();
-    $scope.capsAndAppsMap.clear();
-    $scope.projectsSelected = [];
-    $scope.devicesSelected = [];
-    $scope.gridOptions.data = $scope.devList;
-    $scope.projGridOptions.data = $scope.projects;
-  }
-
-
-  $scope.stageUpdates = function() {
-    $scope.grid
-  }
-
   
   // when the has changed the timer for refreshing visualization interface should be canceled.
   $scope.$on("$destroy", function(){
@@ -1116,173 +757,7 @@ angular.module('koodainApp')
     console.log(selDevCaps);
   }
 
-
-  // Returns a promise for getting the device capabilities
-  // mentioned in liquidiot.json file of the the project
-  function getDevCapsPromise(project) {
-    return $http({
-      method: 'GET',
-      url: '/api/projects/' + project.name + '/files/liquidiot.json'
-    }).then(function(res){
-      res.name = project.name;
-      return res;
-    });
-  }
-
-  // A list of "deployment objects".
-  // Currently the staged deployment is only stored here in this controller;
-  // they are lost on page reload...
-  $scope.deployments = [];
-  var numDeployments = 0;
-
-  $scope.openManageDeployAppsModal = function() {
-    $uibModal.open({
-      controller: 'ManageDeployAppsCtrl',
-      templateUrl: 'managedeployapps.html',
-      resolve: {
-        projects: function(){
-          return Promise.all($scope.projects.map(getDevCapsPromise));
-        },
-        data: function() {
-          return {
-            devices: $scope.selectedDevices,
-            devicequery: $scope.devQuery,
-            appquery: $scope.appQuery,
-            selectedProject: $scope.selectedProject,
-            selectedDeviceCapabilities: selDevCaps
-          }; 
-        },
-      }
-    }).result.then(function(deployment) {
-      $scope.deployments.push(deployment);
-      numDeployments += deployment.numApproxDevices;
-      //console.log($scope.deployments);
-    });
-  };
-  
-  // A list of "update objects".
-  // Currently the staged update is only stored here in this controller;
-  // they are lost on page reload...
-  $scope.updates = [];
-  var numUpdates = 0;
-
-  $scope.openManageUpdateAppsModal = function() {
-    $uibModal.open({
-      controller: 'ManageUpdateAppsCtrl',
-      templateUrl: 'manageupdateapps.html',
-      resolve: {
-        projects: function(){
-          return Promise.all($scope.projects.map(getDevCapsPromise));
-        },
-        data: function() {
-          return {
-            selApps: selApps,
-            devices: $scope.selectedDevices,
-            devicequery: $scope.devQuery,
-            appquery: $scope.appQuery,
-            selectedProject: $scope.selectedProject,
-            selectedDeviceCapabilities: selDevCaps
-          }; 
-        },
-      }
-    }).result.then(function(update) {
-      $scope.updates.push(update);
-      numUpdates += update.numApproxApps;
-      //console.log($scope.updates);
-    });
-  };
-
-////////////////// Start of  Deployment process mechanism
-
-  $scope.verifyDeployment = function() {
-    $uibModal.open({
-      controller: 'VerifyDeploymentCtrl',
-      templateUrl: 'verifydeployment.html',
-      resolve: {
-        deployments: function() { return $scope.deployments; },
-      }
-    }).result.then(function() {
-      $scope.deploy();
-    });
-  };
-
-  $scope.deploying = false;
-  
-  $scope.deploy = function () {
-    
-    // updates the visualization tool every some seconds.
-    loadDevicesIntervally(3000);
-
-    // deep copy the deployment projects.
-    var deps = angular.copy($scope.deployments);
-    $scope.deployments = [];
-    if (!deps.length) {
-      return;
-    }
-    
-    // total number of deployments
-    $scope.numDeps = numDeployments;
-    // number of successful eployments
-    $scope.numSuccessDeps = 0;
-    // number of failed deployments
-    $scope.numFailDeps = 0;
-
-    numDeployments = 0;
-    $scope.deploying = true;
-
-    Notification.info('Deployment process started');
-    
-    $http({
-      method: 'POST',
-      url: '/api/projects/deploy',
-      data: {deployments: deps},
-    })
-    .then(function(res){
-      console.log('ressssssssssssssssss:');
-      //var deployedAppIds = res.data.result.map((app) => JSON.parse(app).id);
-      var deployedAppIds = [];
-      deployedAppIds = res.data.result
-      .filter(function(item){
-        console.log(item);
-        return JSON.parse(item).id ? true : false;
-      })
-      .map(function(app){ 
-        return JSON.parse(app).id;
-      });
-      
-      $scope.devQuery = 'FOR device IN devices FOR app in device.apps[*] FILTER app.id IN ' + JSON.stringify(deployedAppIds)  + ' RETURN app';
-      //console.log(deployedApps);
-      // number of successful eployments
-      $scope.numSuccessDeps = res.data.numberOfSuccess;
-      // number of failed deployments
-      $scope.numFailDeps = res.data.numberOfFailure;
-      Notification.info('Deployment process completed');
-      loadDevicesIntervally(60000);
-      $scope.loadDevices();
-    })
-    .catch(function(err){
-      console.log(err);
-      Notification.error('Deployment process encountered some problems!');
-      loadDevicesIntervally(60000);
-      $scope.loadDevices();
-    });
-  }
-
-////////////////// End of Deployment process mechanism
-
 ////////////////// Start of update process mechanism
-
-  $scope.verifyUpdate = function() {
-    $uibModal.open({
-      controller: 'VerifyUpdateCtrl',
-      templateUrl: 'verifyupdate.html',
-      resolve: {
-        updates: function() { return $scope.updates; },
-      }
-    }).result.then(function() {
-      $scope.update();
-    });
-  };
 
   $scope.updating = false;
 
@@ -1351,16 +826,6 @@ angular.module('koodainApp')
   };
 
 ////////////////// End of update process mechansim
-
-  $scope.discardDeployment = function() {
-    $scope.deployments = [];
-  };
-
-
-  $scope.discardUpdate = function() {
-    $scope.updates = [];
-  };
-
   $scope.openLogModal = function(device, app) {
     $uibModal.open({
       controller: 'AppLogCtrl',
@@ -1374,88 +839,7 @@ angular.module('koodainApp')
     });
   };
 
-  // "Piping" HTTP request through server.
-  // This is necessary for some network configurations...
-  function devicePipeUrl(url) {
-    return '/api/pipe/'  + url;
-  }
 
-
-  $scope.updateApp = function(device, app) {
-    //var url = device.url + '/app/' + app.id + "/rollback";
-    console.log(app.name);
-    return $http({
-      method: 'PUT',
-      url: '/api/projects/' + app.name.slice(10) + '/package',
-      data: {deviceUrl: device.url, appId: app.id}
-    }).then(function(res){
-      Notification.error("Updating the app was successful");
-      $scope.loadDevices();
-    }).catch(function(err){
-      Notification.error("Connection to the application was not successful.");
-      $scope.loadDevices();
-    });
-  };
-
-  $scope.rollbackApp = function(device, app, status) {
-    var url = device.url + '/app/' + app.id + "/rollback";
-    return $http({
-      url: devicePipeUrl(url),
-      method: 'POST'
-    }).then(function(response) {
-      // This is a bit of quickndirty way to update app,
-      // would be better to load it from the server for realz...
-      //app.status = response.data.status;
-      $scope.loadDevices();
-    }, function(error){
-      Notification.error("Connection to the application was not succeccfull.");
-      $scope.loadDevices();
-    });
-  };
-
-  $scope.setAppStatus = function(device, app, status) {
-    var url = device.url + '/app/' + app.id;
-    return $http({
-      url: devicePipeUrl(url),
-      method: 'PUT',
-      data: {status: status},
-    }).then(function(response) {
-      // This is a bit of quickndirty way to update app,
-      // would be better to load it from the server for realz...
-      //app.status = response.data.status;
-      return $scope.loadDevices().then(function(){
-        return response;
-      });
-    }, function(error){
-      if (app.status !== "installed") {
-        Notification.error("Starting the application was not succeccfull.");
-      }
-      return $scope.loadDevices().then(function(){
-        throw error;
-      });
-      //throw error;
-    });
-  };
-
-  ///////// <start> ---- This section is for deleting app 
-
-  $scope.removeApp = function(device, app) {
-    var url = device.url + '/app/' + app.id;
-    return $http({
-      url: devicePipeUrl(url),
-      method: 'DELETE',
-    })
-    .then(function(res) {
-      // remove the app from the list of selected Apps.
-      selApps.splice(selApps.indexOf(app), 1);
-      // remove the app ID from the list of selected App IDs.
-      $scope.selAppIds.splice($scope.selAppIds.indexOf(app.id), 1);
-      $scope.loadDevices();
-    })
-    .catch(function(error){
-      Notification.error("Connection to the application was not succeccfull.");
-    });
-  };
 
   ///////// <start> ---- This section is for deleting apps 
   
@@ -1512,55 +896,6 @@ angular.module('koodainApp')
     });
   }
 
-  /*function removeAppPromise(device, app) {
-    var url = device.url + '/app/' + app.id;
-    return $http({
-      url: devicePipeUrl(url),
-      method: 'DELETE',
-    })
-    .then(function(res) {
-      // remove the app from the list of selected Apps.
-      selApps.splice(selApps.indexOf(app), 1);
-      // remove the app ID from the list of selected App IDs.
-      selAppIds.splice(selAppIds.indexOf(app.id), 1);
-      $scope.numSuccessDels++;
-      return res;
-    })
-    .catch(function(error){
-      $scope.numFailDels++;
-      return error;
-    });
-  };
-
-  $scope.deleting = false;
-  
-  function removeAppsPromise(device){
-    return Promise.all(device.matchedApps.map(function(app){
-      return removeAppPromise(device, app);
-    }));
-  }
-
-  $scope.removeAppss = function(){
-    
-    loadDevicesIntervally(3000);
-
-    $scope.numDels = selApps.length;
-    $scope.numSuccessDels = 0;
-    $scope.numFailDels = 0;
-
-    $scope.deleting = true;
-
-    Notification.info('Delete process started');
-    Promise.all($scope.selectedDevs4Update.map(function(device){
-      return removeAppsPromise(device);
-    }))
-    .then(function(delResults){
-      console.log(delResults);
-      Notification.info('Delete process completed');
-      loadDevicesIntervally(60000);
-      $scope.loadDevices();
-    });
-  }*/
 
   ///////// <end> ---- This section was for deleting apps 
 
@@ -1611,200 +946,6 @@ angular.module('koodainApp')
     });
   }
 
-})
-
-/**
- * Controller for managing (deploying) apps modal dialog.
- */
-.controller('ManageDeployAppsCtrl', function($scope, $resource, $http, $uibModalInstance, data, projects) {
-
-  var selDevCaps = data.selectedDeviceCapabilities;
-  $scope.devices = data.devices;
-  $scope.devicequery = data.devicequery;
-  $scope.appquery = data.appquery;
-
-  console.log(selDevCaps);
-
-  // checks if one array is subset of another array
-  var isSubset = function(arr1, arr2){
-    return arr1.every(function(value){
-      return arr2.indexOf(value) >= 0;
-    });
-  }
-
-  // checks if device capabilities listed in the project (liquidiot.json file)
-  // is subset of capabilities of every selected device.
-  var isSubsetOfAll = function(dcs){
-    console.log(selDevCaps);
-    return selDevCaps.every(function(devCaps){
-      console.log(devCaps);
-      return isSubset(dcs, devCaps);
-    });
-  }
-
-  // selecting projects based on the selected device capabilities
-  $scope.projects = projects.filter(function(project){
-    var json = JSON.parse(project.data.content);
-    var dcs = json['deviceCapabilities'];
-    console.log(json);
-    console.log(dcs);
-    // free-class means all devices, so we remove it from device capabilities.
-    // if array becomes empty 
-    // otherwise we query the remaining devices
-    var index = dcs.indexOf("free-class");
-    if(index != -1){
-      dcs.splice(index, 1);
-    }
-    if (!dcs || !dcs.length) {
-      // No deviceCapabilities, can be deployed to all devices
-      return true;
-    }
-    else if (isSubsetOfAll(dcs)){
-      return true;
-    } else {
-      return false;
-    }
-  });
-
-  if(data.selectedProject){
-    $scope.selectedProject = $scope.projects.filter(function(project){
-      return project.name == data.selectedProject.name;
-    })[0];
-  }
-
-  $scope.cancel = function() {
-    $uibModalInstance.dismiss('cancel');
-  };
-
-  $scope.done = function() {
-    // Construct a "deployment object"
-    // TODO: we could have various tasks to be done on deployment,
-    // currently the only kind of task is to deploy app.
-    var deployment = {
-      devicequery: data.devicequery,
-      appquery: data.appquery,
-      project: $scope.selectedProject.name,
-      numApproxDevices: data.devices.length,
-      n: $scope.allDevices || !$scope.numDevices ? 'all' : $scope.numDevices,
-      removeOld: $scope.removeOld,
-      selectedDevices: data.devices
-    };
-    $uibModalInstance.close(deployment);
-  };
-})
-
-/**
- * Controller for managing (updating) apps modal dialog.
- */
-.controller('ManageUpdateAppsCtrl', function($scope, $resource, $http, $uibModalInstance, data, projects) {
-
-  var selDevCaps = data.selectedDeviceCapabilities;
-  $scope.devices = data.devices;
-  $scope.devicequery = data.devicequery;
-  $scope.appquery = data.appquery;
-
-  // checks if one array is subset of another array
-  var isSubset = function(arr1, arr2){
-    return arr1.every(function(value){
-      return arr2.indexOf(value) >= 0;
-    });
-  }
-
-  // checks if device capabilities listed in the project (liquidiot.json file)
-  // is subset of capabilities of every selected device.
-  var isSubsetOfAll = function(dcs){
-    return selDevCaps.every(function(devCaps){
-      return isSubset(dcs, devCaps);
-    });
-  }
-
-  // selecting projects based on the selected device capabilities
-  $scope.projects = projects.filter(function(project){
-    var json = JSON.parse(project.data.content);
-    var dcs = json['deviceCapabilities'];
-    // free-class means all devices, so we remove it from device capabilities.
-    // if array becomes empty 
-    // otherwise we query the remaining devices
-    var index = dcs.indexOf("free-class");
-    if(index != -1){
-      dcs.splice(index, 1);
-    }
-    if (!dcs || !dcs.length) {
-      // No deviceCapabilities, can be deployed to all devices
-      return true;
-    }
-    else if (isSubsetOfAll(dcs)){
-      return true;
-    } else {
-      return false;
-    }
-  });
-
-  if(data.selectedProject){
-    $scope.selectedProject = $scope.projects.filter(function(project){
-      return project.name == data.selectedProject.name;
-    })[0];
-  }
-
-  $scope.cancel = function() {
-    $uibModalInstance.dismiss('cancel');
-  };
-
-  $scope.done = function() {
-    // Construct an "update object"
-    var update = {
-      devicequery: data.devicequery,
-      appquery: data.appquery,
-      project: $scope.selectedProject.name,
-      numApproxDevices: data.devices.length,
-      numApproxApps: data.selApps.length,
-      n: $scope.allDevices || !$scope.numDevices ? 'all' : $scope.numDevices,
-      removeOld: $scope.removeOld,
-      selectedDevices: data.devices
-    };
-    $uibModalInstance.close(update);
-  };
-})
-
-/**
- * Controller for the verify deployment modal dialog.
- */
-  .controller('VerifyDeploymentCtrl', function($scope, $http, $resource, $uibModalInstance, Notification, deployments, deviceManagerUrl) {
-
-  $scope.deployments = deployments;
-
-  $scope.cancel = function() {
-    $uibModalInstance.dismiss('cancel');
-  };
-
-  $scope.done = function() {
-    $uibModalInstance.close();
-  };
-
-  $scope.deploy = function() {
-    $scope.done();
-  };
-})
-
-
-/**
- * Controller for the verify deployment modal dialog.
- */
-  .controller('VerifyUpdateCtrl', function($scope, $http, $resource, $uibModalInstance, Notification, updates, deviceManagerUrl) {
-
-  $scope.updates = updates;
-
-  $scope.cancel = function() {
-    $uibModalInstance.dismiss('cancel');
-  };
-
-  $scope.done = function() {
-    $uibModalInstance.close();
-  };
-
-  $scope.update = function() {
-    $scope.done();
-  };
 })
 
 /**
