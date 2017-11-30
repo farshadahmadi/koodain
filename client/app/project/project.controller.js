@@ -15,7 +15,8 @@ angular.module('koodainApp')
   /**
    * Controller for the view for editing project sources.
    */
-  .controller('ProjectCtrl', function ($scope, $stateParams, $resource, $http, $location, $state, Notification, Upload, project, files, resources, apitocode, deviceManagerUrl, apiParser) {
+  .controller('ProjectCtrl', function ($scope, $stateParams, $resource, $http, $location, $state, 
+    Notification, Upload, project, files, resources, apitocode, deviceManagerUrl, apiParser, $uibModal) {
 
     // project, files, and resources are resolved in project.js
 
@@ -68,6 +69,27 @@ angular.module('koodainApp')
         $scope.selectedAppCaps = JSON.parse($scope.liquidiotJson.content).applicationInterfaces;
       });
     });
+
+    $scope.showAPIs = function() {
+      $uibModal.open({
+        templateUrl: 'showapis.html',
+        controller: 'showAPIsCtrl',
+        resolve: {
+          implementedAPIs: function() {
+            return $scope.selectedAppCaps;
+          },
+          allAPIs: function() {
+            return $scope.apis;
+          },
+          projectName: function() {
+            return $scope.project.name;
+          }
+      }
+      }).result.then(function(result){
+        $scope.selectedAppCaps = result;
+        $scope.generateCode();
+      });
+    };
 
     $scope.generateCode = function(){
 
@@ -424,6 +446,33 @@ angular.module('koodainApp')
       getApiList: getApiList,
       markAsDirty: markAsDirty,
       deleteDirtyApis: deleteDirtyApis
+    };
+
+  })
+
+
+  .controller('showAPIsCtrl', function($scope, $resource, $uibModalInstance, allAPIs, implementedAPIs, projectName) {
+    $scope.allAPIs = allAPIs;
+    $scope.implementedAPIs = angular.copy(implementedAPIs);
+    $scope.apisToAdd = [];
+    $scope.currentProject = projectName;
+    console.log(implementedAPIs);
+    $scope.ok = function() {
+      $uibModalInstance.close($scope.apisToAdd);
+    }
+    $scope.cancel = function() {
+      $uibModalInstance.dismiss('cancel');
+    }
+     $scope.toggleAPISelection = function toggeleAPISelection(apiName) {
+           var idx = $scope.apisToAdd.indexOf(apiName);
+           // is currently selected
+           if (idx > -1) {
+                 $scope.apisToAdd.splice(idx, 1);
+                  }
+            // is newly selected
+            else {
+                  $scope.apisToAdd.push(apiName);
+                  }
     };
 
   });

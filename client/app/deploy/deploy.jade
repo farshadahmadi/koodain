@@ -18,7 +18,7 @@ div(ng-include='"components/navbar/navbar.html"')
     include griddeploy.jade
 
 
-    .container(id='MapView' ng-if="tab==='mapview'" ng-controller="DeployCtrl")      
+    .container(id='MapView' ng-if="tab==='mapview'" ng-controller="MapViewCtrl")      
       .row
         .col-sm-12
           .row
@@ -59,7 +59,7 @@ div(ng-include='"components/navbar/navbar.html"')
 
 
 //Add the footer and specify name of current page (as found in components/footer/footer.controller.js)
-liot-footer(current-page='mydeploy')
+liot-footer(current-page='deploy')
 //<liot-footer current-page='mydeploy'></liot-footer>
      
 

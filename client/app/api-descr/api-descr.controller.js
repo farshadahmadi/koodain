@@ -91,6 +91,10 @@ angular.module('koodainApp')
         url: deviceManagerUrl + '/apis',
       }).then(function(res) {
         $scope.apis = res.data;
+        $timeout(function(){
+          $.fn.matchHeight._applyDataApi();
+        },100);
+
       });
     }
     loadApis();
@@ -110,4 +114,8 @@ angular.module('koodainApp')
         loadApis();
       });
     };
+
+    angular.element(document).ready(function(){
+      $.fn.matchHeight._applyDataApi();
+    });
   });

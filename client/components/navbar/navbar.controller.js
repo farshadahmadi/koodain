@@ -23,20 +23,25 @@ angular.module('koodainApp')
     },
     {*/
       'title': 'Home',
-      'link': '/myHome'
+      'link': '/'
     },
     {
       'title':'Projects',
-      'link':'/myProjects'
+      'link':'/projects'
     },
+    // {
+    //   'title': 'Hosts',
+    //   'link': '/hosts'
+    // },
     {
       'title': 'Deploy',
       'link': '/deploy'
     },    
     {
       'title': 'APIs',
-      'link': '/myAPIs'
-    }];
+      'link': '/api-descr'
+    }
+  ];
 
     $scope.isCollapsed = true;
     $scope.isLoggedIn = Auth.isLoggedIn;

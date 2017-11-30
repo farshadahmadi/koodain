@@ -1,7 +1,6 @@
 'use strict';
 
-angular.module('koodainApp')  
-  .controller('MyProjectsCtrl', function ($scope, $http, $resource, $uibModal, Notification, projectlist, $timeout) {
+angular.module('koodainApp').controller('ProjectsCtrl', function ($scope, $http, $resource, $uibModal, Notification, projectlist, $timeout) {
 
     // Get the project version and description from package.json file
     var getProjDetails = function(proj) {

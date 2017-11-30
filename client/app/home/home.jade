@@ -1,0 +1,67 @@
+// Copyright (c) TUT Tampere University of Technology 2015-2016
+// All rights reserved.
+// 
+// Main author(s):
+// Antti Nieminen <antti.h.nieminen@tut.fi>
+
+div(ng-include='"components/navbar/navbar.html"')
+
+
+.container
+  .row
+    .col-lg-12
+      div.liot-title Devices in the system: {{devices.length}}
+      hr
+  //- .row.col-lg-12
+  //-       ul.list-unstyled.col-md-4.col-lg-4.col-sm-6(style='margin-top: 10px; padding: 10px', ng-repeat='device in devices' data-mh='devices')       
+  //-         div.liot-item            
+  //-           div.liot-item-title
+  //-              i.fa.fa-industry.pull-left
+  //-              span {{device.name}} in {{device.location.tag}}
+  //-           p Capabilities:  {{device.classes.join(", ")}}
+  //-           ul.list-unstyled(ng-repeat='app in device.apps')
+  //-             div.icons-liot
+  //-               i.fa.fa-cogs
+  //-               span {{app.name.replace('liquidiot-', '')}}
+  //-               .btn-group.pull-right
+  //-                 a.btn-sm.btn-default(ng-if="app.status==='paused'", ng-click="setAppStatus(device, app, 'running')")
+  //-                   i.fa.fa-youtube-play
+  //-                 a.btn-sm.btn-default(ng-if="app.status==='running'", ng-click="setAppStatus(device, app, 'paused')")
+  //-                   i.fa.fa-pause
+  //-                 a.btn-sm.btn-default(ng-click="removeApp(device, app)")
+  //-                   i.fa.fa-trash
+  //-                 a.btn-sm.btn-default(ng-if="app.name.indexOf('liquidiot-')===0", ng-href="/mycode/{{app.name.slice(10)}}")
+  //-                   i.fa.fa-edit
+  //-                 a.btn-sm.btn-default(ng-click="openLogModal(device, app)")
+  //-                   i.fa.fa-history
+
+  .row.col-lg-12
+      .container(id='MapView' ng-controller="MapViewCtrl")
+        #network
+            vis-network(data="graphData", options="graphOptions", events="graphEvents", component="network")
+        p
+            .btn-group(role="group")
+                button.btn.btn-default(ng-click="loadDevices()")
+                    span.fa.fa-refresh
+                //- button.btn.btn-default(ng-click="showSelectionsInMap()")
+                //-     span.fa.fa-map-marker Selections
+                button.btn.btn-default(ng-click="camera.fit()")
+                    span.fa.fa-arrows-alt  fit camera
+                button.btn.btn-default(ng-click="camera.fitOnSelectedNodes()")
+                    span.fa.fa-arrows-alt  fit camera on selection
+                button.btn.btn-default(ng-click="camera.crawl()", ng-show="isCrawlingPossible" )
+                    span.fa.fa-arrows-alt  crawl in selection
+
+//Add the footer and specify name of current page (as found in components/footer/footer.controller.js)
+liot-footer(current-page='home')
+
+// Application log modal dialog
+script(type="text/ng-template", id="applog.html")
+  .modal-header
+    button(type="button", class="close", ng-click="cancel()") &times;
+    h4.liot-item-title Log of {{app.name}} at {{device.name}}
+  .modal-body
+    pre
+      | {{log}}
+
+

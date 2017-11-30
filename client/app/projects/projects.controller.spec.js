@@ -1,16 +1,16 @@
 'use strict';
 
-describe('Controller: MyAPIsCtrl', function () {
+describe('Controller: ProjectsCtrl', function () {
 
   // load the controller's module
   beforeEach(module('koodainApp'));
 
-  var MyAPIsCtrl, scope;
+  var ProjectsCtrl, scope;
 
   // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller, $rootScope) {
     scope = $rootScope.$new();
-    MyAPIsCtrl = $controller('MyAPIsCtrl', {
+    ProjectsCtrl = $controller('ProjectsCtrl', {
       $scope: scope
     });
   }));

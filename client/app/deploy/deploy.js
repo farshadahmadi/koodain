@@ -6,6 +6,6 @@ angular.module('koodainApp')
       .state('deploy', {
         url: '/deploy?project',
         templateUrl: 'app/deploy/deploy.html',
-        //controller: 'DeployCtrl'
+        controller: 'DeployCtrl'
       });
   });

@@ -35,28 +35,29 @@ $liot-bg-lightgrey: #f2f2f2;
 
 .liot-title-common {
     font-weight: bold;
-    //font-family: Bell-MT;
+    font-family: "myriad-pro",sans-serif;
     color: $tut-orange;
     //background-color: $liot-bg-lightgrey;
 } 
 
 .liot-title {
   @extend .liot-title-common;
-  font-size: 24px;
+  font-size: 14px;
 }
 
 .liot-item-title {
   @extend .liot-title-common;
+  color: $tut-link-blue;
   font-size: 14px;  
   text-transform: capitalize;
 }
 
 .liot-item {
-//  margin-top: 10px;
-//  padding: 10px;
+  margin-top: 10px;
+  padding: 10px;
   border: solid 2px;
   border-color: $liot-bg-lightgrey;
-  //box-shadow: 0 2px 4px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12)!important;
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12)!important;
   overflow: hidden;
 }
 
@@ -75,13 +76,11 @@ $liot-bg-lightgrey: #f2f2f2;
 @import 'admin/admin.scss';
 @import 'api-descr/api-descr.scss';
 @import 'deploy/deploy.scss';
+@import 'home/home.scss';
 @import 'hosts/hosts.scss';
 @import 'main/main.scss';
-@import 'myAPIs/myAPIs.scss';
-@import 'myHome/myHome.scss';
-@import 'myProjects/myProjects.scss';
-@import 'mycode/mycode.scss';
 @import 'project/project.scss';
+@import 'projects/projects.scss';
 @import 'footer/footer.scss';
 @import 'modal/modal.scss';
 @import 'navbar/navbar.scss';

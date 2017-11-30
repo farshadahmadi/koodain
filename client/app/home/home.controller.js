@@ -14,7 +14,7 @@ angular.module('koodainApp')
   /**
    * Controller for the deploy view.
    */
-  .controller('MyHomeCtrl', function ($scope, $http, $resource, $uibModal, Notification, VisDataSet, DeviceManager, deviceManagerUrl, $stateParams, $q, $timeout) {
+  .controller('HomeCtrl', function ($scope, $http, $resource, $uibModal, Notification, VisDataSet, DeviceManager, deviceManagerUrl, $stateParams, $q, $timeout) {
 
   var Project = $resource('/api/projects/:project');
   Project.query(function(projects){

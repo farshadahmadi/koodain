@@ -1,4 +1,4 @@
-.container(id="DeployView" ng-show="tab==='deploy'" ng-controller="GridDeployCtrl")
+.container(id="DeployView" ng-show="tab==='deploy'" ng-controller="DeployCtrl")
     br
     .row
         .col-sm-6
@@ -21,10 +21,7 @@
 
 .container(ng-if="tab === 'update'" id="UpdateView" ng-controller="ModifyAppInstCtrl")
     br
-    .row           
-        //- .col-sm-6
-        //-     p LiquidIoT application instances
-        //-     .grid(ng-if="operation == 'Update'", id='appInstancesGrid', ui-grid='appDevGridOptions' ui-grid-selection ui-grid-resize-columns)
+    .row 
         .col-sm-9
             table.table.table-striped.table-bordered(st-table="displayed" st-safe-src="installedApps" )
                 thread
@@ -75,8 +72,7 @@
                             span(ng-if="app.status ==='installed'", style="color: red") Trying to run the application
 
         .col-sm-3
-            //Empty for now
-                                  
+            //Empty for now - Add query options                               
 
 
     .row
@@ -107,18 +103,18 @@ script(type="text/ng-template", id="deploysheet.html")
                         li
                             md-checkbox(ng-model="dep.confirmDeployment") Deploy {{dep.projectName}} to {{dep.strTargets}}
                     
-                    .container(ng-show="showResults")
-                        md-progress-circular(md-mode="indeterminate" md-diameter="20px" ng-disabled="deploymentDone")
-                        //- uib-progress(max="numDeployments")
-                        //-     uib-bar(value="numSuccessDeps", type="success")
-                        //-     span(ng-hide="numSuccessDeps==0")
-                        //-         {{numSuccessDeps}}
-                        //-     uib-bar(value="numFailDeps", type="danger")
-                        //-     span(ng-hide="numFailDeps==0")
-                        //-         {{numFailDeps}}
-                        ul.list-unstyled(ng-repeat="msg in results")                            
-                            li
-                                p {{msg}}
+                .container(ng-show="showResults")
+                    md-progress-circular(md-mode="indeterminate" md-diameter="20px" ng-disabled="deploymentDone")
+                    //- uib-progress(max="numDeployments")
+                    //-     uib-bar(value="numSuccessDeps", type="success")
+                    //-     span(ng-hide="numSuccessDeps==0")
+                    //-         {{numSuccessDeps}}
+                    //-     uib-bar(value="numFailDeps", type="danger")
+                    //-     span(ng-hide="numFailDeps==0")
+                    //-         {{numFailDeps}}
+                    ul.list-unstyled(ng-repeat="msg in results")                            
+                        li
+                            p {{msg}}
 
             md-dialog-actions(layout="row")
                 span.flex 
@@ -142,14 +138,7 @@ script(type="text/ng-template", id="updateSheet.html")
                             md-checkbox(ng-model="app.confirmModification") {{app.name.replace('liquidiot-','')}} in {{app.device.name}} 
                     
                     .container(ng-show="showResults")
-                        md-progress-circular(md-mode="indeterminate" md-diameter="20px" ng-disabled="modificationsDone")
-                        //- uib-progress(max="numDeployments")
-                        //-     uib-bar(value="numSuccessDeps", type="success")
-                        //-     span(ng-hide="numSuccessDeps==0")
-                        //-         {{numSuccessDeps}}
-                        //-     uib-bar(value="numFailDeps", type="danger")
-                        //-     span(ng-hide="numFailDeps==0")
-                        //-         {{numFailDeps}}
+                        md-progress-circular(md-mode="indeterminate" md-diameter="20px" ng-disabled="modificationsDone")                      
                         ul.list-unstyled(ng-repeat="msg in results")                            
                             li
                                 p {{msg}}
@@ -177,8 +166,8 @@ script(type="text/ng-template", id="mapSheet.html")
             .btn-group(role="group")
                 button.btn.btn-default(ng-click="loadDevices()")
                     span.fa.fa-refresh
-                button.btn.btn-default(ng-click="showSelectionsInMap()")
-                    span.fa.fa-map-marker Selections
+                //- button.btn.btn-default(ng-click="showSelectionsInMap()")
+                //-     span.fa.fa-map-marker Selections
                 button.btn.btn-default(ng-click="camera.fit()")
                     span.fa.fa-arrows-alt  fit camera
                 button.btn.btn-default(ng-click="camera.fitOnSelectedNodes()")

@@ -1,29 +1,45 @@
+
+
 div(ng-include='"components/navbar/navbar.html"')
 
 .container
   .row
-    .col-sm-12
-      h2 APIs
-      ul.list-group
-        li.list-group-item(ng-repeat="api in apis")
-          h4 {{api.name}}
-          .btn-group(role="group")
-            a.btn.btn-default(href="{{deviceManagerUrl+'/apis/'+api.name}}", target="_blank")
-              i.fa.fa-eye
-            a.btn.btn-info(href="/swagger-editor/#/?backend={{deviceManagerUrl+'/apis/'+api.name | encodeUri}}", target="_blank")
-              i.fa.fa-edit
-            button.btn.btn-danger(ng-click="deleteApi(api)")
-              i.fa.fa-trash
-  form.form-inline(name="newapiform", ng-submit="newApi()")
-    div.form-group
-      label(for="apiClass") New Application Interface:
-      |  
-      input.form-control(type="text", required, id="apiClass", name="apiClass", ng-model='newApiClass', placeholder="Class name")
-      label(for="apiSelect")  Device Capability:
-      select.form-control(ng-model="selectedDevCap", id="apiSelect")
-        option(ng-repeat="devCap in devCaps") {{devCap.name}}
-      |  
-      input.form-control(type="submit", value="Create", ng-disabled="!newApiClass")
+    .col-sm-9
+      div.liot-title REST API templates
+      .row.col-sm-12
+        div.col-sm-6.col-md-4.col-lg-4.top-buffer(ng-repeat="api in apis", data-mh='apiGroup')
+          div.liot-item
+            div.liot-item-title {{api.name}}
+            br
+            span Required capabilities: {{api.devcap}}
+            br
+            span Description: {{api.description}}          
+            br
+            div.icons-liot
+              .btn-group(role="group")
+                a.btn.btn-default(href="{{deviceManagerUrl+'/apis/'+api.name}}", target="_blank")
+                  i.fa.fa-bars
+                a.btn.btn-default(href="/swagger-editor/#/?backend={{deviceManagerUrl+'/apis/'+api.name | encodeUri}}", 
+                    | target="_blank")
+                  i.fa.fa-edit
+                button.btn.btn-default(ng-click="deleteApi(api)")
+                  i.fa.fa-trash
 
+    .col-sm-3       
+        div
+          div.liot-title Create new
+          span(for="apiClass") Name of template:
+          |  
+          input(type="text", required, id="apiClass", name="apiClass", ng-model='newApiClass', placeholder="template name")
+          br
+          br
+          span(for="apiSelect")  Required device capability:
+          select(ng-model="selectedDevCap", id="apiSelect")
+            option(ng-repeat="devCap in devCaps") {{devCap.name}}
+          |  
+          br
+          br
+          button.btn.liot-button(value="Create", ng-disabled="!newApiClass" ng-click='newApi()') Create
 
-div(ng-include='"components/footer/footer.html"')
+//Add the footer and specify name of current page (as found in components/footer/footer.controller.js)
+liot-footer(current-page='APIs')

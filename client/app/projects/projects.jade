@@ -12,14 +12,16 @@ div(ng-include='"components/navbar/navbar.html"')
     .col-sm-9
       div.liot-title Existing projects
       .row.col-lg-12
-        ul.list-unstyled.row-eq-height.col-md-4.col-lg-4.col-sm-6.top-buffer(ng-repeat='project in projects', data-mh='projects')          
+        ul.list-unstyled.col-md-6.col-lg-6.col-sm-6.top-buffer(ng-repeat='project in projects', data-mh='projects')          
           div.liot-item
-            div.liot-item-title
+            div.liot-item-title.clearfix
               i.fa.fa-file-code-o.pull-left 
-              p {{project.name}}
-            a.btn.btn-sm.liot-button(ng-href="/mycode/{{project.name}}") Edit
-            p Version: {{project.version}}
-            p Description: {{project.description}}
+              p.pull-left {{project.name}} : {{project.version}}
+              a.btn.btn-sm.btn-primary.pull-right(ng-href="/project/{{project.name}}") Edit
+            //div.clearfix
+            //p Version: {{project.version}}
+            p {{project.description}}
+            
           
     .col-sm-3
       div.liot-title Create new
@@ -38,5 +40,5 @@ div(ng-include='"components/navbar/navbar.html"')
             button.btn.liot-button(type='submit', ng-click="createProject()") Create
 
 //Add the footer and specify name of current page (as found in components/footer/footer.controller.js)
-liot-footer(current-page='myProjects')
+liot-footer(current-page='projects')
 
