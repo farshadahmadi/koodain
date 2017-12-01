@@ -1,7 +1,10 @@
 'use strict';
 
 angular.module('koodainApp')
-  .controller('HostsCtrl', function ($scope, $http, $uibModal, $interval, $resource, Notification) {
+  .controller('HostsCtrl', function ($scope, $http, $uibModal, $interval, $resource, Notification, deviceManagerUrl, DeviceManager) {
+
+    // Returns an object with wich we can manage resources registered to RR
+    var deviceManager = DeviceManager(deviceManagerUrl);
 
     function getHosts(){
       $http({
@@ -47,20 +50,34 @@ angular.module('koodainApp')
       console.log(host.name);
     }
 
-    $scope.triggerDeployment = function(host){
-      $http({
-        method: 'PUT',
-        url: '/api/visualdevices/' + host.name + '/deployment'//,
-        //data: {hostname: host.name},
-      }).then(function(res){
-        console.log(res.data);
-        //$scope.ok();
-      }).catch(function(err){
-        console.log(err.data);
-        //$scope.errorLog = JSON.stringify(err.data, null, 4);
-      });
+    var removeDevice = function(host){
+      return deviceManager.removeDevice('siotad-' + host.name)
+        .then(function(res){
+          return res
+        })
+        .catch(function(err){
+          return err;
+        });
+    }
 
-      console.log(host.name);
+    $scope.triggerDeployment = function(host){
+      removeDevice(host)
+        .then(function(){
+          return $http({
+            method: 'PUT',
+            url: '/api/visualdevices/' + host.name + '/deployment'//,
+            //data: {hostname: host.name},
+          })
+        })
+        .then(function(res){
+          console.log(res.data);
+          //$scope.ok();
+        }).catch(function(err){
+          console.log(err.data);
+          //$scope.errorLog = JSON.stringify(err.data, null, 4);
+        });
+
+        console.log(host.name);
     }
 
     // Opens a new modal view for creating a new host.
@@ -86,10 +103,10 @@ angular.module('koodainApp')
           host: function() { return host; }
         }
       }).result.then(function(hostName) {
-        //console.log(hostName);
         var h = $resource('/api/visualdevices/' + hostName);
         return h.remove().$promise;
-        //return hostName;
+      }).then(function(res){
+        return deviceManager.removeDevice('siotad-' + host.name);
       }).then(function(res) {
         // New project successfully saved, reload projects.
         //$scope.projects = Project.query();
