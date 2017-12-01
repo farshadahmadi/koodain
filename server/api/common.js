@@ -9,6 +9,7 @@
 
 function errorHandler(res) {
   return function(err) {
+    console.log(err);
     if (typeof err === 'number') {
       res.status(err).json({"error": err});
     }

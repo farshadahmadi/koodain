@@ -63,6 +63,96 @@ exports.createService = function(service){
   return request(option);
 }
 
+exports.getReplicationControllers = function(){
+
+  var option = {
+    uri: URL + "/replicationcontrollers",
+    method: "GET",
+    headers: {
+      authorization: "Bearer " + token
+    },
+    strictSSL: false,
+    json: true
+  }
+
+  return request(option);
+}
+
+exports.getReplicationController = function(rcName){
+
+  var option = {
+    uri: URL + "/replicationcontrollers/" + rcName,
+    method: "GET",
+    headers: {
+      authorization: "Bearer " + token
+    },
+    strictSSL: false,
+    json: true
+  }
+
+  return request(option);
+}
+
+exports.deleteReplicationController = function(rcName){
+
+  var option = {
+    uri: URL + "/replicationcontrollers/" + rcName,
+    method: "DELETE",
+    headers: {
+      authorization: "Bearer " + token
+    },
+    strictSSL: false,
+    json: true
+  }
+
+  return request(option);
+}
+
+exports.deleteService = function(sName){
+
+  var option = {
+    uri: URL + "/services/" + sName,
+    method: "DELETE",
+    headers: {
+      authorization: "Bearer " + token
+    },
+    strictSSL: false,
+    json: true
+  }
+
+  return request(option);
+}
+
+exports.getPods = function(){
+
+  var option = {
+    uri: URL + "/pods",
+    method: "GET",
+    headers: {
+      authorization: "Bearer " + token
+    },
+    strictSSL: false,
+    json: true
+  }
+
+  return request(option);
+}
+
+exports.deletePod = function(pName){
+
+  var option = {
+    uri: URL + "/pods/" + pName,
+    method: "DELETE",
+    headers: {
+      authorization: "Bearer " + token
+    },
+    strictSSL: false,
+    json: true
+  }
+
+  return request(option);
+}
+
 /*exports.getApi = function(){
 
   var option = {
