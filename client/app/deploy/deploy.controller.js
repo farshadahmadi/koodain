@@ -1114,7 +1114,7 @@ angular.module('koodainApp')
 
     $http({
       method: 'DELETE',
-      url: '/api/projects/delete',
+      url: '/api/projects/apps/delete',
       data: {devices: devs},
       headers: {
         'Content-Type': 'application/json;charset=utf-8'
