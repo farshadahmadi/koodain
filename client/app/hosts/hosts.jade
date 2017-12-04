@@ -11,6 +11,7 @@ div(ng-include='"components/navbar/navbar.html"')
           th Restart Build
           th Deployment status
           th Restart Deployment
+          th Container Status
           th Delete Host
         tr(ng-repeat="host in hosts")
           td {{host.name}}
@@ -20,10 +21,12 @@ div(ng-include='"components/navbar/navbar.html"')
               i.fa.fa-rotate-right
           td {{host.deploymentStatus}}
           td
-            button.btn.btn-primary(ng-disabled='host.deploymentStatus !== "Complete" && host.deploymentStatus !== "Failed" && host.deploymentStatus !== "Canceled" ', ng-click="triggerDeployment(host)") 
+            button.btn.btn-primary(ng-disabled='host.buildStatus !== "Complete"', ng-click="triggerDeployment(host)") 
               i.fa.fa-rotate-right
           td
-            button.btn.btn-danger(ng-disbaled='host.s !== "Complete"', ng-click="openDeleteHostModal(host)")
+            {{host.podStatus}}
+          td
+            button.btn.btn-danger(ng-click="openDeleteHostModal(host)")
               i.fa.fa-trash
     .com-sm-12
       button.btn.btn-primary(ng-click="openNewHostModal()")
