@@ -16,15 +16,11 @@ angular.module('koodainApp')
 
     $scope.devList;
     $scope.displayed = [];
-    $scope.installedAppsLoaded = false;
     $scope.loadDevices = function () {
       return deviceManager.queryDevicess().then(function(devices) {
         console.log(devices);
         $scope.devList = devices;
-        if(!$scope.installedAppsLoaded) {
-          $scope.getInstalledApps();
-          $scope.installedAppsLoaded = true;
-        }        
+        $scope.getInstalledApps();
       }).then(function(devs){
         //$scope.$apply();
         return "done";
@@ -72,7 +68,11 @@ angular.module('koodainApp')
       })
     };
   
-
+    // "Piping" HTTP request through server.
+    // This is necessary for some network configurations...
+    function devicePipeUrl(url) {
+      return '/api/pipe/'  + url;
+    }
  
 
   $scope.installedApps = [];
@@ -92,7 +92,8 @@ angular.module('koodainApp')
           name: app.name,
           version: app.version,
           device: dev,
-          status: app.status
+          status: app.status,
+          canRollback: app.canRollback
         };
         if(!$scope.installedProjectNames.includes(app.name)) {
           $scope.installedProjectNames.push(app.name);
@@ -144,7 +145,7 @@ angular.module('koodainApp')
           url: '/api/projects/' + app.name.slice(10) + '/package',
           data: {deviceUrl: device.url, appId: app.id}
         }).then(function(res){
-          Notification.error("Updating the app was successful");
+          Notification.success("Updating the app " + app.name + " in " + device.name + " was successful");
           $scope.loadDevices();
         }).catch(function(err){
           Notification.error("Connection to the application was not successful.");
@@ -161,6 +162,8 @@ angular.module('koodainApp')
           // This is a bit of quickndirty way to update app,
           // would be better to load it from the server for realz...
           //app.status = response.data.status;
+          Notification.success("Rollback of the app " + app.name + " in " + device.name + " was successful");
+          
           $scope.loadDevices();
         }, function(error){
           Notification.error("Connection to the application was not succeccfull.");
@@ -178,9 +181,10 @@ angular.module('koodainApp')
           // This is a bit of quickndirty way to update app,
           // would be better to load it from the server for realz...
           //app.status = response.data.status;
-          return $scope.loadDevices().then(function(){
-            return response;
-          });
+          //$scope.loadDevices();
+          app.status = status;
+          Notification.success(status + " the app " + app.name + " in " + app.device.name + " was successful");
+          
         }, function(error){
           if (app.status !== "installed") {
             Notification.error("Starting the application was not succeccfull.");
@@ -200,10 +204,8 @@ angular.module('koodainApp')
           method: 'DELETE',
         })
         .then(function(res) {
-          // remove the app from the list of selected Apps.
-          selApps.splice(selApps.indexOf(app), 1);
-          // remove the app ID from the list of selected App IDs.
-          $scope.selAppIds.splice($scope.selAppIds.indexOf(app.id), 1);
+          Notification.success("Removing the app " + app.name + " in " + app.device.name + " was successful");
+          
           $scope.loadDevices();
         })
         .catch(function(error){

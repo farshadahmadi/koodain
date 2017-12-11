@@ -332,6 +332,7 @@ angular.module('koodainApp')
                 }
         })
         .then(function() {
+          $scope.stagedDeployments = []; 
           $scope.status = 'You deployed staged apps';
         }, function() {
           $scope.status = 'You cancelled the dialog.';
@@ -350,6 +351,8 @@ angular.module('koodainApp')
     $scope.clearSelection = function() {
         $scope.gridApi.selection.clearSelectedRows();
         $scope.projGridApi.selection.clearSelectedRows();
+        $scope.gridOptions.data = $scope.devList;
+        $scope.projGridOptions.data = $scope.projects;
     }
 
     $scope.openMapView = function() {
@@ -361,8 +364,7 @@ angular.module('koodainApp')
         var modalScope = $rootScope.$new();
         modalScope.selectedDevIds = $scope.selectedDeviceIds;
         modalScope.selectedAppIds = [];
-        $uibModal.open({
-          
+        $uibModal.open({          
           templateUrl: 'mapSheet.html',
           controller: 'MapViewCtrl',
           size: 'lg',

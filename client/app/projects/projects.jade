@@ -17,9 +17,11 @@ div(ng-include='"components/navbar/navbar.html"')
             div.liot-item-title.clearfix
               i.fa.fa-file-code-o.pull-left 
               p.pull-left {{project.name}} : {{project.version}}
-              .btn-group.pull-right(ng-if="app.status !=='installed'", role="group")
-                a.btn.btn-xs.btn-primary(ng-href="/project/{{project.name}}") Edit
-                a.btn.btn-xs.btn-primary(ng-href="/project/{{project.name}}") Delete
+              .btn-group.pull-right(role="group")
+                a.btn.btn-xs.btn-primary(ng-href="/project/{{project.name}}")
+                  i.fa.fa-edit
+                a.btn.btn-xs.btn-primary(ng-click="deleteProjectModal(project)")
+                  i.fa.fa-trash
 
             //div.clearfix
             //p Version: {{project.version}}
@@ -45,4 +47,26 @@ div(ng-include='"components/navbar/navbar.html"')
 
 //Add the footer and specify name of current page (as found in components/footer/footer.controller.js)
 liot-footer(current-page='projects')
+
+
+// Template for the delete project modal dialog.
+// https://docs.angularjs.org/api/ng/directive/script
+script(type="text/ng-template", id="deleteproject.html")
+  .modal-header
+    button(type="button", class="close", ng-click="cancel()") &times;
+    h4.modal-title Delete Project
+  .modal-body
+    form(role="form", name="newprojectform", ng-submit="ok()")
+      .form-group
+        label(for="projectname")
+          | Enter project name to confirm deletion: 
+          strong(style='color:red;') {{project.name}}
+        input.form-control(type="text", required, ng-pattern="/^[a-z][a-z0-9]*$/", id="projectname", name="projectname", placeholder="", ng-model="projectName")
+        span.error(ng-if="newprojectform.projectname.$error.pattern") Project name must match 
+          code [a-z][a-z0-9]*
+        span(ng-if="newprojectform.projectname.$error.required || !newprojectform.projectname.$invalid")
+          i.fa
+  .modal-footer
+      button.btn.btn-default(type="submit", ng-click="cancel()") Cancel
+      button.btn.btn-danger(type="submit", ng-disabled="newprojectform.projectname.$invalid || (project.name !== projectName)", ng-click="ok()") Delete Project
 

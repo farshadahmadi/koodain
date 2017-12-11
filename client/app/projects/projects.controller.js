@@ -60,24 +60,31 @@ angular.module('koodainApp').controller('ProjectsCtrl', function ($scope, $http,
       // Save the project
       newProject.$save().then(function(){
         // Once the project is created, write the descrption to the new project's package.json
-        $resource('/api/projects/' + $scope.newProj.name + '/files/package.json').get().$promise.then(function(packageJson) {
-          var projJson = JSON.parse(packageJson.content);                           
+        $resource('/api/projects/' + $scope.newProj.name + '/files/package.json').get()
+          .$promise.then(function(packageJson) {
+          var projJson = JSON.parse(packageJson.content);
+          $scope.newProj.version = projJson.version;                          
           projJson.description = $scope.newProj.description;
           var File = $resource('/api/projects/'+ $scope.newProj.name + '/files/:name', null, {
             update: {method: 'PUT' }
             });
           packageJson.content = JSON.stringify(projJson, undefined, 2);
-          updatePackageJson(File, packageJson);         
+          updatePackageJson(File, packageJson); 
+          $scope.projects.push($scope.newProj);
+          $scope.newProj = {
+            name: '',
+            description: ''
+          };     
          }, function(response) {
              Notification.error(res.data.error);
          }); //end of writing to the package.json file
 
         // Update the UI with the new project
-        $resource('/api/projects/' + $scope.newProj.name).get().$promise.then(function(savedProj) {
-          $scope.projects.push(savedProj);
-          getProjDetails(savedProj);
-          makeEqualHgtRows();
-        });
+        // $resource('/api/projects/' + $scope.newProj.name).get().$promise.then(function(savedProj) {
+        //   $scope.projects.push(savedProj);
+        //   getProjDetails(savedProj);
+        //   makeEqualHgtRows();
+        // });
 
 
       },function(res) {
@@ -95,6 +102,38 @@ angular.module('koodainApp').controller('ProjectsCtrl', function ($scope, $http,
         console.log( u.$promise.$$state) ;      
     };
 
+    // Opens a new modal view for deleting a project.
+    $scope.deleteProjectModal = function(project) {
+      $uibModal.open({
+        controller: 'deleteProjectCtrl',
+        templateUrl: 'deleteproject.html',
+        resolve: {
+          project: function() { return project; }
+        }
+      }).result.then(function(projectName) {
+        console.log(name);
+        var p = $resource('/api/projects/' + projectName);
+        p.remove();
+        var projIndex = $scope.projects.indexOf(project);
+        $scope.projects.splice(projIndex, 1);
+        //return name;
+      });
+    };
+
+  })
+
+   /**
+   * Controller for the delete a project modal dialog.
+   */
+  .controller('deleteProjectCtrl', function ($scope, $uibModalInstance, project) {
+    $scope.project = project;
+    $scope.ok = function() {
+      $uibModalInstance.close($scope.project.name);
+    };
+    $scope.cancel = function() {
+      $uibModalInstance.dismiss('cancel');
+    };
   });
+
 
 
