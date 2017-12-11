@@ -15,7 +15,7 @@ div(ng-include='"components/navbar/navbar.html"')
       .sidebar
         .files.container Source
           ul
-            li.project-file(ng-repeat="file in files.files | filter:{isDirectory: false} | orderBy:'name'",
+            li.project-file(ng-repeat="file in files.files | filter:{isDirectory: false, name: '!agent.js'} | orderBy:'name'",
               ng-class="{active: activeFile.name===file.name}", ng-click="openFile(file)")
               | {{file.name}} 
               i.fa.fa-circle-o-notch.fa-spin(ng-if="updating[file.name].status===0")

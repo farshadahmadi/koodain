@@ -30,9 +30,9 @@ angular.module('koodainApp')
     $scope.resources = resources;
 
     // Added by Farshad for debugging
-    console.log($scope.project);
-    console.log($scope.files);
-    console.log($scope.resources);
+    //console.log($scope.project);
+    //console.log($scope.files);
+    //console.log($scope.resources);
 
     $scope.changeView = function(view){
       $state.go("deploy", {project:$scope.project.name});
@@ -151,7 +151,7 @@ angular.module('koodainApp')
 
     function turnMainToModule(f){
       //var firstLine = "module.exports = function(" + $scope.project.name  +"){\n";
-      var firstLine = "module.exports = function($app, $router, $request, console, listEndpoints, getEndpointDetails, event, getNumberOfEndpoints, createLifecycleEventSubscription){\n";
+      var firstLine = "module.exports = function($app, $router, $request, console, impact){\n";
       var lastLine = "\n}";
       f.content = firstLine + f.content + lastLine;
     }
@@ -189,50 +189,112 @@ angular.module('koodainApp')
         //if (prefix.length === 0) { callback(null, []); return };
         var wordList = [
           {
-            caption: "createLifecycleEventSubscription",
-            snippet: "var ${1:configObject} = {\n\tcriteria: {\n\t\tserialNumbers: ['${2}']\n\t},\n\tevents:['${3}'],\n\tdeletionPolicy: ${4:0},\n\tgroupName:'${5}',\n\tsubsciptionType:'lifecycleEvents'\n}\n createLifecycleEventSubscription(${1:configObject})",
-            description: "The device selection criteria is a list of serial numbers."
+            caption: "deleteSubscription", 
+            snippet: "impact.services.deleteSubscription({subscriptionId:'${0}'})",
+            description: "Deletes either resources or lifecycle event subsciption with the given subscription ID.",
+            media: "impact service"
+          },
+          {
+            caption: "createResourceEventSubscription",
+            snippet: "var ${1:configObject} = {\n\tcriteria: {\n\t\tmanufacturerData: {\n\t\t\tmake:'${2}',\n\t\t\tmodel:'${3}',\n\t\t\tfirmwareVersion:'${4}'}\n\t},\n\tresources:[{\n\t\tconditions:{\n\t\t\tgt:${5:0},\n\t\t\tlt:${6:0},\n\t\t\tpmin:${7:0},\n\t\t\tsteps:${8:0}\n\t\t},\n\t\tresourcePath:'${9}'\n\t}],\n\tdeletionPolicy: ${10:0},\n\tgroupName:'${11}',\n\tsubsciptionType:'resources'\n}\nimpact.services.createResourceEventSubscription(${1:configObject})",
+            description: "The device selection criteria is a combination of manufacturer-related information like make, model, and firware version.",
+            media: "impact service"
+          },
+          {
+            caption: "createResourceEventSubscription",
+            snippet: "var ${1:configObject} = {\n\tcriteria: {\n\t\tserialNumbers: ['${2}']\n\t},\n\tresources:[{\n\t\tconditions:{\n\t\t\tgt:${3:0},\n\t\t\tlt:${4:0},\n\t\t\tpmin:${5:0},\n\t\t\tsteps:${6:0}\n\t\t},\n\t\tresourcePath:'${7}'\n\t}],\n\tdeletionPolicy: ${8:0},\n\tgroupName:'${9}',\n\tsubsciptionType:'resources'\n}\nimpact.services.createResourceEventSubscription(${1:configObject})",
+            description: "The device selection criteria is a list of serial numbers.",
+            media: "impact service"
           },
           {
             caption: "createLifecycleEventSubscription",
-            snippet: "var ${1:configObject} = {\n\tcriteria: {\n\t\tmanufacturerData: {\n\t\t\tmake:'${2}',\n\t\t\tmodel:'${3},'\n\t\t\tfirmwareVersion:'${4}'}\n\t},\n\tevents:['${3}'],\n\tdeletionPolicy: ${4:0},\n\tgroupName:'${5}',\n\tsubsciptionType:'lifecycleEvents'\n}\n createLifecycleEventSubscription(${1:configObject})",
-            description: "The device selection criteria is a combination of manufacturer-related information like make, model, and firware version."
+            snippet: "var ${1:configObject} = {\n\tcriteria: {\n\t\tserialNumbers: ['${2}']\n\t},\n\tevents:['${3}'],\n\tdeletionPolicy: ${4:0},\n\tgroupName:'${5}',\n\tsubsciptionType:'lifecycleEvents'\n}\nimpact.services.createLifecycleEventSubscription(${1:configObject})",
+            description: "The device selection criteria is a list of serial numbers.",
+            media: "impact service"
+          },
+          {
+            caption: "createLifecycleEventSubscription",
+            snippet: "var ${1:configObject} = {\n\tcriteria: {\n\t\tmanufacturerData: {\n\t\t\tmake:'${2}',\n\t\t\tmodel:'${3}',\n\t\t\tfirmwareVersion:'${4}'}\n\t},\n\tevents:['${3}'],\n\tdeletionPolicy: ${4:0},\n\tgroupName:'${5}',\n\tsubsciptionType:'lifecycleEvents'\n}\nimpact.services.createLifecycleEventSubscription(${1:configObject})",
+            description: "The device selection criteria is a combination of manufacturer-related information like make, model, and firware version.",
+            media: "impact service"
           },
           {
             caption: "listEndpoints", 
-            snippet: "listEndpoints({groupName:'${1}', startOffset: ${2:1}, endOffset:${0:1}})",
-            description: "The startOffset must start from 1 and the endOffset must not be bigger than the total number of devces."
+            snippet: "impact.services.listEndpoints({groupName:'${1}', startOffset: ${2:1}, endOffset:${0:1}})",
+            description: "The startOffset must start from 1 and the endOffset must not be bigger than the total number of devces.",
+            media: "impact service"
           },
           {
             caption: "getNumberOfEndpoints",
-            snippet: "getNumberOfEndpoints({groupName:'${0}'})",
-            description: "Gets the total number of devices."
+            snippet: "impact.services.getNumberOfEndpoints({groupName:'${0}'})",
+            description: "Gets the total number of devices.",
+            media: "impact service"
+          },
+          {
+            caption: "getSubscriptionDetails",
+            snippet: "impact.services.getSubscriptionDetails({subscriptionId:'${0}'})",
+            description: "Returns the subscription details for an (lifecycle or resource) event.",
+            media: "impact service"
+          },
+          {
+            caption: "readResource",
+            snippet: "impact.services.readResource({serialNumber:'${1}', resourcePath:'${0}'})",
+            description: "The response contains a requestId to which an event should listen to get the asynchronous data",
+            media: "impact service"
           },
           {
             caption: "getEndpointDetails",
-            snippet: "getEndpointDetails({serialNumber:'${0}'})",
-            description: "The response contains a requestId to which an event should listen to get the asynchronous data"
+            snippet: "impact.services.getEndpointDetails({serialNumber:'${0}'})",
+            description: "The response contains a requestId to which an event should listen to get the asynchronous data",
+            media: "impact service"
+          },
+          {
+            caption: "getResourceEventSubscriptions",
+            snippet: "impact.services.getResourceEventSubscriptions({groupName:'${0}'})",
+            description: "Returns the list of subscriptions for resource events.",
+            media: "impact service"
+          },
+          {
+            caption: "getLifecycleEventSubscriptions",
+            snippet: "impact.services.getLifecycleEventSubscriptions({groupName:'${0}'})",
+            description: "Returns the list of subscriptions for lifecycle events.",
+            media: "impact service"
+          },
+          {
+            caption: "getAllEventSubscriptions",
+            snippet: "impact.services.getAllEventSubscriptions({groupName:'${0}'})",
+            description: "Returns the list of all subscriptions (resource and lifleccyle events).",
+            media: "impact service"
+          },
+          {
+            caption: "deleteAllSubscriptions", 
+            snippet: "impact.services.deleteAllSubscriptions()",
+            description: "Deletes all event subsciptions created by this app.",
+            media: "impact service"
           },
           {
             caption: "event",
-            snippet: "event.on(${1:id}, function(${2:data}){\n\t${0}\n});",
-            description: "An event listener which listens to either requestId (for Resource Events) or subscriptionId (for Lifecycle Events) to get their associated asynchronous data."
+            snippet: "impact.event.on(${1:id}, function(${2:data}){\n\t${0}\n});",
+            description: "An event listener which listens to either requestId (for Resource Events) or subscriptionId (for Lifecycle Events) to get their associated asynchronous data.",
+            media: "impact event"
           },
           {
             caption: "then",
             snippet: ".then(function(${1:res}){\n\t${0}\n})",
-            description: "A code helper for promises."
+            description: "A code helper for promises.",
+            media: "JS snoppet"
           },
           {
             caption: "catch",
             snippet: ".catch(function(${1:err}){\n\t${0}\n});",
-            description: "A code helper for promises."
+            description: "A code helper for promises.",
+            media: "JS snippet"
           }
         ];
         callback(null, wordList.map(function(word) {
           return {
             caption: word.caption,
-            meta: "snippet",
+            meta: word.media,
             type: "snippet",
             snippet: word.snippet,
             description: word.description
@@ -268,8 +330,8 @@ angular.module('koodainApp')
       $scope.mainFile = mainJss[0];
 
       var c = $scope.mainFile.content
-      console.log('c' + c);
-      console.log(c.split("\n"));
+      //console.log('c' + c);
+      //console.log(c.split("\n"));
 
       /*var tree = esprima.parse($scope.mainFile.content, {comment:true, range:true, loc:true});
       var lines = $scope.mainFile.content.split("\n");
@@ -283,10 +345,10 @@ angular.module('koodainApp')
       $scope.mainFile.content = lines.join("\n");*/
       
       var lines = $scope.mainFile.content.split("\n");
-      console.log(lines);
+      //console.log(lines);
       lines.splice(lines.length - 1, 1);
       lines.splice(0, 1);
-      console.log(lines);
+      //console.log(lines);
       $scope.mainFile.content = lines.join("\n");
     }
 

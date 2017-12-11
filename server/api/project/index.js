@@ -20,6 +20,7 @@ var router = express.Router();
 router.get('/', controller.index);
 router.get('/:project', controller.show);
 router.post('/', controller.create);
+router.delete('/:project', controller.remove);
 
 router.get('/:project/files', fileCtrl.show);
 router.get('/:project/files/:file(*)', fileCtrl.show);
@@ -31,6 +32,6 @@ router.delete('/:project/files/:file(*)', fileCtrl.destroy);
 //router.post('/:project/package', packageCtrl.deploy);
 router.put('/:project/package', packageCtrl.update);
 router.post('/deploy', packageCtrl.deploys);
-router.delete('/delete', packageCtrl.removeApp);
+router.delete('/apps/delete', packageCtrl.removeApp);
 
 module.exports = router;

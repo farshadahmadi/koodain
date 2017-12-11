@@ -3,7 +3,7 @@
   "apiVersion": "v1",
   "metadata": {
     "name": "<%= project.name %>",
-    "namespace": "node-mongo2",
+    "namespace": "<%= project.namespace %>",
     "labels": {
       "app": "<%= project.name %>"
     }
@@ -25,7 +25,7 @@
           ],
           "from": {
             "kind": "ImageStreamTag",
-            "namespace": "node-mongo2",
+            "namespace": "<%= project.namespace %>",
             "name": "<%= project.name %>:latest"
           }
         }
@@ -71,6 +71,10 @@
             {
               "name": "DEVICE_LOCATION_Y",
               "value": "<%= device.location.y %>"
+            },
+            {
+              "name": "RR_URL",
+              "value": "<%= rr.url %>"
             }
             ],
             "resources": {},

@@ -109,7 +109,7 @@ exports.show = function(req, res) {
       res.status(404).json({error: "No such file"});
     }
     else {
-      console.log(err);
+      //console.log(err);
       res.status(500).json({error: "File error"});
     }
   }).then(null, errorHandler(res));
@@ -127,7 +127,7 @@ function createFile(filename, content) {
 
 function writeFile(filename, content) {
   content = content || '';
-  console.log('2: ' + content);
+  //console.log('2: ' + content);
   return fsp.writeFileAsync(filename, content, {flag: 'w'}).catch(function(err){
     throw err;
   });

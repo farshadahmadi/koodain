@@ -1,11 +1,14 @@
 'use strict';
 
 var express = require('express');
-var hosts = require('./visualdevice.controller');
+var hostCtrl = require('./visualdevice.controller');
 
 var router = express.Router();
 
-router.get('/', hosts.list);
-router.post('/', hosts.create);
+router.get('/', hostCtrl.list);
+router.post('/', hostCtrl.create);
+router.delete('/:host', hostCtrl.remove);
+router.post('/:host', hostCtrl.trigger);
+router.put('/:host/deployment', hostCtrl.triggerDeployment);
 
 module.exports = router;

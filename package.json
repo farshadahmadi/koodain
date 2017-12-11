@@ -34,6 +34,7 @@
     "passport-twitter": "latest",
     "request": "^2.69.0",
     "request-promise": "^1.0.2",
+    "rimraf": "^2.6.2",
     "serve-favicon": "~2.0.1",
     "tmp": "0.0.28"
   },
