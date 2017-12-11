@@ -15,6 +15,7 @@ angular.module('koodainApp')
     var deviceManager = DeviceManager(deviceManagerUrl);
 
     $scope.devList;
+    $scope.displayed = [];
     $scope.installedAppsLoaded = false;
     $scope.loadDevices = function () {
       return deviceManager.queryDevicess().then(function(devices) {
@@ -223,9 +224,11 @@ angular.module('koodainApp')
                   }
           })
           .then(function() {
-            $scope.status = 'You modified selected apps';
+            $scope.installedAppsLoaded = false;
+            $scope.loadDevices();
+            console.log('You modified selected apps');
           }, function() {
-            $scope.status = 'You cancelled the dialog.';
+            console.log('You cancelled the dialog.');
           });
     };
 
@@ -236,4 +239,24 @@ angular.module('koodainApp')
         });
     };
 
-});
+    $scope.showQueryWindow = function() {
+      $mdDialog.show({
+        controller: 'querySheetCtrl',
+        templateUrl: 'querySheet.html',
+        parent: angular.element(document.body),
+        clickOutsideToClose:false,
+        fullscreen: $scope.customFullscreen, // Only for -xs, -sm breakpoints.
+      })
+      .then(function(resData) {
+        console.log("Result data: ", resData);
+        $scope.installedAppsLoaded = false;
+        $scope.devList = resData.queriedDevs;
+        $scope.getInstalledApps();
+        console.log('You selected devices/apps using query');
+      }, function() {
+        console.log('You cancelled the query dialog.');
+      });
+    }
+
+
+    });

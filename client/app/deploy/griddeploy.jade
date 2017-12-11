@@ -70,20 +70,18 @@
                                     i.fa.fa-list
                             i(ng-if="app.status ==='installed'", style="color: red").fa.fa-spinner.fa-pulse.fa-2x.fa-fw
                             span(ng-if="app.status ==='installed'", style="color: red") Trying to run the application
-
+            button.btn.btn-primary(type="submit", ng-click="clearSelections()") Clear selection
+                span
+            button.btn.btn-primary(ng-click="openMapView()") View in Map
+                span
+            button.btn.btn-primary(ng-click="modifySelectedApps()") Update
+            
         .col-sm-3
-            //Empty for now - Add query options                               
-
-
+            button.btn-sm.btn-primary(ng-click="showQueryWindow()")
+                i.fa.fa-filter Advanced search
     .row
         .col-sm-12
             span
-    .row            
-        button.btn.btn-primary(type="submit", ng-click="clearSelections()") Clear selection
-        span
-        button.btn.btn-primary(ng-click="openMapView()") View in Map
-        span
-        button.btn.btn-primary(ng-click="modifySelectedApps()") Update
         
 
         
@@ -119,7 +117,7 @@ script(type="text/ng-template", id="deploysheet.html")
             md-dialog-actions(layout="row")
                 span.flex 
                 md-button.md-autofocus(ng-click="deploy()") Deploy
-                md-button.md-autofocus(ng-click="cancel()") Cancel
+                md-button.md-autofocus(ng-click="cancel()") Close
 
 
 script(type="text/ng-template", id="updateSheet.html")
@@ -133,7 +131,7 @@ script(type="text/ng-template", id="updateSheet.html")
                         md-icon(md-font-icon="fa-window-close" class="fa")
             md-dialog-content
                 .container.md-dialog-content
-                    ul.list-unstyled(ng-repeat="app in installedApps")                       
+                    ul.list-unstyled(ng-repeat="app in installedApps")
                         li(ng-init="app.confirmModification = true" ng-if="app.isSelected && app.isSelected===true")
                             md-checkbox(ng-model="app.confirmModification") {{app.name.replace('liquidiot-','')}} in {{app.device.name}} 
                     
@@ -146,16 +144,17 @@ script(type="text/ng-template", id="updateSheet.html")
             md-dialog-actions(layout="row")
                 span.flex 
                 .btn-group(role="group")                                
-                    button.btn-sm.btn-primary(ng-click="setAppStatus('running')")
+                    button.btn-sm.btn-primary(ng-click="setAllAppsStatus('running')")
                         i.fa.fa-play Run
-                    button.btn-sm.btn-primary(ng-click="setAppStatus('paused')")
+                    button.btn-sm.btn-primary(ng-click="setAllAppsStatus('paused')")
                         i.fa.fa-pause Pause
-                    button.btn-sm.btn-warning(ng-click="rollbackApp()")
+                    button.btn-sm.btn-primary(ng-click="rollbackAllApps()")
                         i.fa.fa-rotate-left Rollback
-                    button.btn-sm.btn-primary(ng-click="updateApp()")
+                    button.btn-sm.btn-primary(ng-click="updateAllApps()")
                         i.fa.fa-rotate-right Update
-                    button.btn-sm.btn-danger(ng-click="removeApp()")
+                    button.btn-sm.btn-danger(ng-click="removeAllApps()")
                         i.fa.fa-trash Remove
+                    button.btn-sm.btn-primary(ng-click="cancel()") Close
             
         
 script(type="text/ng-template", id="mapSheet.html")
@@ -175,5 +174,30 @@ script(type="text/ng-template", id="mapSheet.html")
                 button.btn.btn-default(ng-click="camera.crawl()", ng-show="isCrawlingPossible" )
                     span.fa.fa-arrows-alt  crawl in selection
 
-            
+script(type="text/ng-template", id="querySheet.html")
+    .md-dialog(aria-label="Advanced Query")
+        form.ng-cloak
+            md-toolbar(style="background-color: #46c8ff")
+                .container.md-toolbar-tools
+                    h2 Advanced filter with query
+                    span.flex
+                    md-button.md-icon-button(ng-click="cancel()")
+                        md-icon(md-font-icon="fa-window-close" class="fa")
+            md-dialog-content
+                .container
+                    form
+                    .form-group
+                        label(for="queryStr") query:
+                        textarea.form-control(rows="5", id="queryStr", ng-model="userQuery", placeholder="Example query: FOR dev in devices return dev")
+                        button.btn-sm.btn-primary(ng-click="executeQuery()") Execute
+                    form
+                    .form-group
+                        label(for="result") result:
+                        textarea.form-control(rows="5", id="result", ng-model="queryResult", placeholder="Query results")
+            md-dialog-actions(layout="row")
+                span.flex 
+                .btn-group(role="group")                                
+                    md-button.md-autofocus(ng-click="applyQueryResult()") Apply query result
+                    md-button.md-autofocus(ng-click="cancel()") Cancel
+                        
         

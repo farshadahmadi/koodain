@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Controller: MyHomeCtrl', function () {
+describe('Controller: HomeCtrl', function () {
 
   // load the controller's module
   beforeEach(module('koodainApp'));
@@ -10,7 +10,7 @@ describe('Controller: MyHomeCtrl', function () {
   // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller, $rootScope) {
     scope = $rootScope.$new();
-    MyHomeCtrl = $controller('MyHomeCtrl', {
+    MyHomeCtrl = $controller('HomeCtrl', {
       $scope: scope
     });
   }));

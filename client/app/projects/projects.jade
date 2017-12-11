@@ -11,16 +11,20 @@ div(ng-include='"components/navbar/navbar.html"')
   .row
     .col-sm-9
       div.liot-title Existing projects
-      .row.col-lg-12
-        ul.list-unstyled.col-md-6.col-lg-6.col-sm-6.top-buffer(ng-repeat='project in projects', data-mh='projects')          
+      .row.col-lg-12(ng-init="visibleLimit = 6")
+        ul.list-unstyled.col-md-6.col-lg-6.col-sm-6.top-buffer(ng-repeat='project in projects | limitTo: visibleLimit as results', data-mh='projects')          
           div.liot-item
             div.liot-item-title.clearfix
               i.fa.fa-file-code-o.pull-left 
               p.pull-left {{project.name}} : {{project.version}}
-              a.btn.btn-sm.btn-primary.pull-right(ng-href="/project/{{project.name}}") Edit
+              .btn-group.pull-right(ng-if="app.status !=='installed'", role="group")
+                a.btn.btn-xs.btn-primary(ng-href="/project/{{project.name}}") Edit
+                a.btn.btn-xs.btn-primary(ng-href="/project/{{project.name}}") Delete
+
             //div.clearfix
             //p Version: {{project.version}}
             p {{project.description}}
+      button.btn-primary(ng-hide="results.length === projects.length" ng-click="visibleLimit = visibleLimit +2") show more...
             
           
     .col-sm-3
