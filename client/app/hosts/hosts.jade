@@ -6,28 +6,11 @@ div(ng-include='"components/navbar/navbar.html"')
       h2 Hosts
       table.table.table-bordered.table-hover
         thead
-          th Name
-          th Build Status
-          th Restart Build
-          th Deployment status
-          th Restart Deployment
-          th Container Status
-          th Delete Host
+          th name
+          th build status
         tr(ng-repeat="host in hosts")
           td {{host.name}}
           td {{host.buildStatus}}
-          td
-            button.btn.btn-primary(ng-disabled='host.buildStatus !== "Failed" && host.buildStatus !== "Canceled" ', ng-click="triggerBuild(host)") 
-              i.fa.fa-rotate-right
-          td {{host.deploymentStatus}}
-          td
-            button.btn.btn-primary(ng-disabled='host.buildStatus !== "Complete"', ng-click="triggerDeployment(host)") 
-              i.fa.fa-rotate-right
-          td
-            {{host.podStatus}}
-          td
-            button.btn.btn-danger(ng-click="openDeleteHostModal(host)")
-              i.fa.fa-trash
     .com-sm-12
       button.btn.btn-primary(ng-click="openNewHostModal()")
         i.fa.fa-plus
@@ -39,7 +22,6 @@ script(type="text/ng-template" id="newhost.html")
     h4.modal-title New Host
   .modal-body
     form(role="form", name="newhostform")
-      p Do you want to create a new host?
       .form-group
         label(for="hostname") Host name:
         input.form-control(type="text", required, ng-pattern="/^[a-z][a-z0-9-]*$/", id="hostname", name="hostname", placeholder="", ng-model="host.name")
@@ -54,23 +36,5 @@ script(type="text/ng-template" id="newhost.html")
   .modal-footer
     button.btn.btn-default(ng-click="cancel()") Cancel
     button.btn.btn-primary(ng-disabled="newhostform.hostname.$invalid", ng-click="createHost()") Create host
-    //button.btn.btn-primary(ng-click="createHost()") Confirm
-
-// Template for the delete project modal dialog.
-// https://docs.angularjs.org/api/ng/directive/script
-script(type="text/ng-template", id="deletehost.html")
-  .modal-header
-    button(type="button", class="close", ng-click="cancel()") &times;
-    h4.modal-title Delete Host
-  .modal-body
-    form(role="form", name="deletehostform", ng-submit="ok()")
-      .form-group
-        label(for="hostname")
-          | If you sure you want to delete the host enter the host name: 
-          strong(style='color:red;') {{host.name}}
-        input.form-control(type="text", required, id="hostname", name="hostname", placeholder="", ng-model="hostName")
-  .modal-footer
-      button.btn.btn-default(type="submit", ng-click="cancel()") Cancel
-      button.btn.btn-danger(type="submit", ng-disabled="host.name !== hostName", ng-click="ok()") Delete host
 
 div(ng-include='"components/footer/footer.html"')

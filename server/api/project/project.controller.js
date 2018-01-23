@@ -19,11 +19,6 @@ var _ = require('lodash');
 var Project = require('./project.model');
 var addProjectFiles = require('./projectfile.controller').addProjectFiles;
 var errorHandler = require('../common').errorHandler;
-var rimraf = require('rimraf');
-var path = require('path');
-
-var env = require('../../config/environment');
-var GITDIR = env.git.projects;
 
 // Get list of projects
 exports.index = function(req, res) {
@@ -39,19 +34,6 @@ exports.show = function(req, res) {
     return res.json(project);
   }).then(null, errorHandler(res));
 };
-
-exports.remove = function(req, res) {
-  Project.findOneAndRemove({name: req.params.project})
-    .then(function(project){
-      //console.log(project.name);
-      return removeProjectDir(project);
-    })
-    .then(function(data){
-      //console.log(data);
-      return res.sendStatus(202);
-    })
-    .then(null, errorHandler(res));
-}
 
 // Create a new project.
 exports.create = function(req, res) {
@@ -74,20 +56,6 @@ function createProject(data) {
   });
 }
 exports.createProject = createProject;
-
-function removeProjectDir(project){
-  var projectDir = path.resolve(GITDIR, project.name);
-  return new Promise(function (resolve, reject) {
-    rimraf(projectDir, function(err){
-      if(err) {
-        //console.log(err.toString());
-        reject(err);
-      } else {
-        resolve();
-      }
-    });
-  });
-}
 
 function initProjectFiles(project) {
   // The examplepackage dir contains a template project.
