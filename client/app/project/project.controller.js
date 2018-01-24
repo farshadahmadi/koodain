@@ -151,7 +151,7 @@ angular.module('koodainApp')
 
     function turnMainToModule(f){
       //var firstLine = "module.exports = function(" + $scope.project.name  +"){\n";
-      var firstLine = "module.exports = function($app, $router, $request, console, listEndpoints, getEndpointDetails, event, getNumberOfEndpoints, createLifecycleEventSubscription){\n";
+      var firstLine = "module.exports = function($app, $router, $request, console, listEndpoints, getEndpointDetails, event, getNumberOfEndpoints){\n";
       var lastLine = "\n}";
       f.content = firstLine + f.content + lastLine;
     }
@@ -188,54 +188,22 @@ angular.module('koodainApp')
       getCompletions: function(editor, session, pos, prefix, callback) {
         //if (prefix.length === 0) { callback(null, []); return };
         var wordList = [
-          {
-            caption: "createLifecycleEventSubscription",
-            snippet: "var ${1:configObject} = {\n\tcriteria: {\n\t\tserialNumbers: ['${2}']\n\t},\n\tevents:['${3}'],\n\tdeletionPolicy: ${4:0},\n\tgroupName:'${5}',\n\tsubsciptionType:'lifecycleEvents'\n}\n createLifecycleEventSubscription(${1:configObject})",
-            description: "The device selection criteria is a list of serial numbers."
-          },
-          {
-            caption: "createLifecycleEventSubscription",
-            snippet: "var ${1:configObject} = {\n\tcriteria: {\n\t\tmanufacturerData: {\n\t\t\tmake:'${2}',\n\t\t\tmodel:'${3},'\n\t\t\tfirmwareVersion:'${4}'}\n\t},\n\tevents:['${3}'],\n\tdeletionPolicy: ${4:0},\n\tgroupName:'${5}',\n\tsubsciptionType:'lifecycleEvents'\n}\n createLifecycleEventSubscription(${1:configObject})",
-            description: "The device selection criteria is a combination of manufacturer-related information like make, model, and firware version."
-          },
-          {
-            caption: "listEndpoints", 
-            snippet: "listEndpoints({groupName:'${1}', startOffset: ${2:1}, endOffset:${0:1}})",
-            description: "The startOffset must start from 1 and the endOffset must not be bigger than the total number of devces."
-          },
-          {
-            caption: "getNumberOfEndpoints",
-            snippet: "getNumberOfEndpoints({groupName:'${0}'})",
-            description: "Gets the total number of devices."
-          },
-          {
-            caption: "getEndpointDetails",
-            snippet: "getEndpointDetails({serialNumber:'${0}'})",
-            description: "The response contains a requestId to which an event should listen to get the asynchronous data"
-          },
-          {
-            caption: "event",
-            snippet: "event.on(${1:id}, function(${2:data}){\n\t${0}\n});",
-            description: "An event listener which listens to either requestId (for Resource Events) or subscriptionId (for Lifecycle Events) to get their associated asynchronous data."
-          },
-          {
-            caption: "then",
-            snippet: ".then(function(${1:res}){\n\t${0}\n})",
-            description: "A code helper for promises."
-          },
-          {
-            caption: "catch",
-            snippet: ".catch(function(${1:err}){\n\t${0}\n});",
-            description: "A code helper for promises."
-          }
+          //{caption: "listEndpoints", snippet:"listEndpoints({groupName:'${1}', startOffset: ${2:1}, endOffset:${3:1}})\n\t.then(function(listOfEndpoints){\n\t\t${4}\n\t\ttaskCompleted()\n\t})\n\t.catch(function(error){\n\t\t${0}\n\t\ttaskCompleted()\n\t});"},
+          {caption: "listEndpoints", snippet:"listEndpoints({groupName:'${1}', startOffset: ${2:1}, endOffset:${0:1}})"},
+          //{caption: "getNumberOfEndpoints", snippet:"getNumberOfEndpoints({groupName:'${1}'})\n\t.then(function(${2:numberOfEndpoints}){\n\t\t${3}\n\t\ttaskCompleted()\n\t})\n\t.catch(function(error){\n\t\t${0}\n\t\ttaskCompleted()\n\t});"},
+          {caption: "getNumberOfEndpoints", snippet:"getNumberOfEndpoints({groupName:'${0}'})"},
+          //{caption: "getEndpointDetails", snippet:"getEndpointDetails({serialNumber:'${1}'})\n\t.then(function(${2:id}){\n\t\t${3}\n\t\ttaskCompleted()\n\t})\n\t.catch(function(error){\n\t\t${0}\n\t\ttaskCompleted()\n\t});"},
+          {caption: "getEndpointDetails", snippet:"getEndpointDetails({serialNumber:'${0}'})"},
+          {caption: "event", snippet:"event.on(${1:id}, function(${2:data}){\n\t${0}\n});"},
+          {caption: "then", snippet:".then(function(${1:res}){\n\t${0}\n})"},
+          {caption: "catch", snippet:".catch(function(${1:err}){\n\t${0}\n});"}
         ];
         callback(null, wordList.map(function(word) {
           return {
             caption: word.caption,
             meta: "snippet",
             type: "snippet",
-            snippet: word.snippet,
-            description: word.description
+            snippet: word.snippet
           }
         }));
       },
@@ -243,7 +211,6 @@ angular.module('koodainApp')
         if (item.type == "snippet" && !item.docHTML) {
           item.docHTML = [
             "<b>", lang.escapeHTML(item.caption), "</b>", "<hr></hr>",
-            lang.escapeHTML(item.description), "<hr></hr>",
             lang.escapeHTML(item.snippet)
           ].join("");
         }
