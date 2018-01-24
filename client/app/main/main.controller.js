@@ -34,9 +34,7 @@ angular.module('koodainApp')
         $scope.projects = Project.query();
       },function(res) {
         // Could not create the project, for some reason.
-        if(res.data) {
-          Notification.error(res.data.error);
-        }
+        Notification.error(res.data.error);
       });
     };
 
@@ -58,9 +56,7 @@ angular.module('koodainApp')
         $scope.projects = Project.query();
       },function(res) {
         // Could not create the project, for some reason.
-        if(res.data) {
-          Notification.error(res.data.error);
-        }
+        Notification.error(res.data.error);
       });
     };
 

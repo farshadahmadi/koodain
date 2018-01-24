@@ -46,8 +46,7 @@ exports.getBuildConfigs = function(){
     headers: {
       authorization: "Bearer " + token
     },
-    strictSSL: false,
-    json: true
+    strictSSL: false
   }
 
   return request(option);
@@ -61,68 +60,7 @@ exports.getBuild = function(buildName){
     headers: {
       authorization: "Bearer " + token
     },
-    strictSSL: false,
-    json: true
-  }
-
-  return request(option);
-}
-
-exports.getBuilds = function(){
-
-  var option = {
-    uri: URL + "/builds",
-    method: "GET",
-    headers: {
-      authorization: "Bearer " + token
-    },
-    strictSSL: false,
-    json: true
-  }
-
-  return request(option);
-}
-
-exports.getDeploymentConfigs = function(){
-
-  var option = {
-    uri: URL + "/deploymentconfigs",
-    method: "GET",
-    headers: {
-      authorization: "Bearer " + token
-    },
-    strictSSL: false,
-    json: true
-  }
-
-  return request(option);
-}
-
-exports.getDeploymentConfig = function(dcName){
-
-  var option = {
-    uri: URL + "/deploymentconfigs/" + dcName,
-    method: "GET",
-    headers: {
-      authorization: "Bearer " + token
-    },
-    strictSSL: false,
-    json: true
-  }
-
-  return request(option);
-}
-
-exports.getImageStreams = function(){
-
-  var option = {
-    uri: URL + "/imagestreams",
-    method: "GET",
-    headers: {
-      authorization: "Bearer " + token
-    },
-    strictSSL: false,
-    json: true
+    strictSSL: false
   }
 
   return request(option);
@@ -190,93 +128,3 @@ exports.createRoute = function(route){
   return request(option);
 }
 
-exports.deleteDeploymentConfig = function(dcName){
-
-  var option = {
-    uri: URL + "/deploymentconfigs/" + dcName,
-    method: "DELETE",
-    headers: {
-      authorization: "Bearer " + token
-    },
-    strictSSL: false,
-    json: true
-  }
-
-  return request(option);
-}
-
-exports.deleteBuildConfig = function(bcName){
-
-  var option = {
-    uri: URL + "/buildconfigs/" + bcName,
-    method: "DELETE",
-    headers: {
-      authorization: "Bearer " + token
-    },
-    strictSSL: false,
-    json: true
-  }
-
-  return request(option);
-}
-
-exports.deleteBuild = function(bName){
-
-  var option = {
-    uri: URL + "/builds/" + bName,
-    method: "DELETE",
-    headers: {
-      authorization: "Bearer " + token
-    },
-    strictSSL: false,
-    json: true
-  }
-
-  return request(option);
-}
-
-exports.deleteRoute = function(rName){
-
-  var option = {
-    uri: URL + "/routes/" + rName,
-    method: "DELETE",
-    headers: {
-      authorization: "Bearer " + token
-    },
-    strictSSL: false,
-    json: true
-  }
-
-  return request(option);
-}
-
-exports.deleteImageStream = function(isName){
-
-  var option = {
-    uri: URL + "/imagestreams/" + isName,
-    method: "DELETE",
-    headers: {
-      authorization: "Bearer " + token
-    },
-    strictSSL: false,
-    json: true
-  }
-
-  return request(option);
-}
-
-exports.triggerBuild = function(bName){
-
-  var option = {
-    uri: URL + "/buildconfigs/" + bName + "/webhooks/1234/generic",
-    method: "POST",
-    //body: route,
-    headers: {
-      authorization: "Bearer " + token
-    },
-    strictSSL: false,
-    json: true
-  }
-
-  return request(option);
-}

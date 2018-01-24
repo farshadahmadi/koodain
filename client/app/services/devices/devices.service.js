@@ -291,12 +291,6 @@ angular.module('koodainApp')
       //console.log(devs);
       return devs;*/
     }
-  
-    // "Piping" HTTP request through server.
-    // This is necessary for some network configurations...
-    function devicePipeUrl(url) {
-      return '/api/pipe/'  + url;
-    }
 
     function queryDevicess(deviceQuery){
 
@@ -307,7 +301,7 @@ angular.module('koodainApp')
 
       return $http({
         method: 'GET',
-        url: devicePipeUrl(deviceManagerUrl),
+        url: deviceManagerUrl,
         params: {device: deviceQuery}
       }).then(function(res) {
         console.log(res);
