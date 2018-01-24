@@ -70,14 +70,14 @@ angular.module('koodainApp')
           })
         })
         .then(function(res){
-          console.log(res);
+          console.log(res.data);
           //$scope.ok();
         }).catch(function(err){
           console.log(err.data);
           //$scope.errorLog = JSON.stringify(err.data, null, 4);
         });
 
-        //console.log(host.name);
+        console.log(host.name);
     }
 
     // Opens a new modal view for creating a new host.

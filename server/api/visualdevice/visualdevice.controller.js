@@ -18,8 +18,6 @@ exports.list = function (req, res) {
   // get all build configs
   openshift.getBuildConfigs().then(function(buildConfigs){
 
-    var globalRcs;
-
     var buildPromises = buildConfigs.items
       // filter the build configs that their name starts with host
       .filter(function(buildConfig){
@@ -70,44 +68,10 @@ exports.list = function (req, res) {
             return Promise.all(rcPromises);
           })
           .then(function(rcs){
-            globalRcs = rcs;
-
-            // get all pods
-            return kubernetes.getPods()
-              .then(function(allPods){
-                return allPods.items
-                  // filter the pods that are for a specific host
-                  .filter(function(pod){
-                    return pod.metadata.labels.app && pod.metadata.labels.app.startsWith('siotad-');
-                    //return pod.metadata.labels.app === hostName;
-                  });
-                // map the list of "pods" to the list of "delete pod promises"
-                /*.map(function(pod){
-                  return kubernetes.deletePod(pod.metadata.name);
-                });*/
-              });
-
-          })
-          .then(function(pods){
-
-            //console.log(pods);
-
-            var ps = pods.map(function(p){
-              //var key = p.metadata.labels.app;
-                return {name: p.metadata.labels.app, podStatus: p.status.phase};
-              });
-                  
-            var podsObj = {};
-            ps.forEach(function(p){
-              podsObj[p.name] = p;
-            });
-
-            console.log(ps);
-
-                  var dps = globalRcs
+                  var dps = rcs
                     // extract the most important information of deployment (name and status)
                     .map(function(rc){
-                      //var key = rc.metadata.labels.app;
+                      var key = rc.metadata.labels.app;
                       return {name: rc.metadata.labels.app, deploymentStatus: rc.metadata.annotations['openshift.io/deployment.phase']};
                     });
 
@@ -121,16 +85,10 @@ exports.list = function (req, res) {
                     // if there is an deployment status just add it to the build info
                     if(build.buildStatus !== 'Complete'){
                       build.deploymentStatus = 'Not started';
-                      build.podStatus = 'Not started';
                       //build.deploymentStatus = dpsObj[build.name].deploymentStatus;
                     // if there is not deployment started, yet the build does not started.
                     } else {
                       build.deploymentStatus = dpsObj[build.name].deploymentStatus;
-                      if(build.deploymentStatus === 'Complete'){
-                        build.podStatus = podsObj[build.name].podStatus;
-                      } else {
-                        build.podStatus = 'Not started';
-                      }
                       //build.deploymentStatus = 'Not started';
                     }
                     // remove siotad- from the name of build
