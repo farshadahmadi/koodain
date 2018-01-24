@@ -151,7 +151,7 @@ angular.module('koodainApp')
 
     function turnMainToModule(f){
       //var firstLine = "module.exports = function(" + $scope.project.name  +"){\n";
-      var firstLine = "module.exports = function($app, $router, $request, console, listEndpoints){\n";
+      var firstLine = "module.exports = function($app, $router, $request, console){\n";
       var lastLine = "\n}";
       f.content = firstLine + f.content + lastLine;
     }
@@ -180,34 +180,6 @@ angular.module('koodainApp')
 
     // Ace editor modes
     var modelist = ace.require('ace/ext/modelist');
-    var langTools = ace.require("ace/ext/language_tools");
-    var lang = ace.require('ace/lib/lang');
-    //console.log(ltools);
-
-    var staticWordCompleter = {
-      getCompletions: function(editor, session, pos, prefix, callback) {
-        //if (prefix.length === 0) { callback(null, []); return };
-        var wordList = [{caption: "listEndpoints", snippet:"listEndpoints({groupName:'${1}', startOffset: ${2:0}, endOffset:${3:0}})\n\t.then(function(res){\n\t\t${4}\n\t\ttaskCompleted()\n\t})\n\t.catch(function(error){\n\t\t${0}\n\t\ttaskCompleted()\n\t});"}];
-        callback(null, wordList.map(function(word) {
-          return {
-            caption: word.caption,
-            meta: "snippet",
-            type: "snippet",
-            snippet: word.snippet
-          }
-        }));
-      },
-      getDocTooltip: function(item) {
-        if (item.type == "snippet" && !item.docHTML) {
-          item.docHTML = [
-            "<b>", lang.escapeHTML(item.caption), "</b>", "<hr></hr>",
-            lang.escapeHTML(item.snippet)
-          ].join("");
-        }
-      }
-    }
-
-    langTools.setCompleters([staticWordCompleter])
 
     var projectUrl = '/api/projects/' + $stateParams.project;
 
@@ -252,12 +224,7 @@ angular.module('koodainApp')
     $scope.aceLoaded = function(_editor) {
       editor = _editor;
       editor.$blockScrolling = Infinity;
-      editor.setOptions({
-        fontSize: '11pt',
-        enableBasicAutocompletion: true,
-        enableSnippets: true,
-        enableLiveAutocompletion: true
-      });
+      editor.setOptions({fontSize: '11pt'});
     };
 
 
