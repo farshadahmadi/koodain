@@ -47,22 +47,6 @@ angular.module('koodainApp')
       console.log(host.name);
     }
 
-    $scope.triggerDeployment = function(host){
-      $http({
-        method: 'PUT',
-        url: '/api/visualdevices/' + host.name + '/deployment'//,
-        //data: {hostname: host.name},
-      }).then(function(res){
-        console.log(res.data);
-        //$scope.ok();
-      }).catch(function(err){
-        console.log(err.data);
-        //$scope.errorLog = JSON.stringify(err.data, null, 4);
-      });
-
-      console.log(host.name);
-    }
-
     // Opens a new modal view for creating a new host.
     $scope.openNewHostModal = function() {
       $uibModal.open({

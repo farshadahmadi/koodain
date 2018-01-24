@@ -295,26 +295,3 @@ exports.trigger = function(req, res){
   //res.status(200).json({hostname: hostName});
   //openshift.triggerBuild();
 }
-
-exports.triggerDeployment = function(req, res){
-
-  var hostName = 'siotad-' + req.params.host;
-
-  openshift.getDeploymentConfig(hostName)
-    .then(function(dc){
-      // one way to trigger a build is to change the deployment configuration (DC)
-      // just changing the DC by editing a n environment variable
-      dc.spec.template.spec.containers[0].env[5] = {name: "random_number", value: String(Math.floor(Math.random() * 1000000))};
-      //console.log(dc);
-      //response.metadata.labels.newlabel = "Hi";
-      //response.status.lastVersion = 11;
-      return openshift.replaceDeploymentConfig(hostName, dc);
-    })
-    .then(function(response){
-      console.log(response);
-      res.status(200).json(response);
-    })
-    .catch(errorHandler(res));
-  //res.status(200).json({hostname: hostName});
-  //openshift.triggerBuild();
-}

@@ -174,22 +174,6 @@ exports.createDeploymentConfig = function(depConfig){
   return request(option);
 }
 
-exports.replaceDeploymentConfig = function(dcName, depConfig){
-
-  var option = {
-    uri: URL + "/deploymentconfigs/" + dcName,
-    method: "PUT",
-    body: depConfig,
-    headers: {
-      authorization: "Bearer " + token
-    },
-    strictSSL: false,
-    json: true
-  }
-
-  return request(option);
-}
-
 exports.createRoute = function(route){
 
   var option = {
