@@ -337,3 +337,33 @@ angular.module('koodainApp')
     $mdDialog.cancel();
   }
 });
+
+/**
+ * Controller for showing application log.
+ */
+angular.module('koodainApp')
+.controller('AppLogCtrl', function($scope, $http, $uibModalInstance, Notification, device, app) {
+
+    // TODO: refactor, this is needed in 2(?) controllers...
+    function devicePipeUrl(url) {
+      return '/api/pipe/'  + url;
+    }
+
+    $scope.device = device;
+    $scope.app = app;
+    $scope.cancel = function() {
+      $uibModalInstance.dismiss('cancel');
+    };
+    app._logInterval = setInterval(function() {
+      var url = device.url + '/app/' + app.id + '/log';
+      $http({
+        method: 'GET',
+        url: devicePipeUrl(url),
+      }).then(function(response) {
+        $scope.log = response.data.message;
+      },function(error){
+        $scope.cancel();
+        Notification.error("Connection to the application was not successful.");
+      });
+    }, 2000);
+  });

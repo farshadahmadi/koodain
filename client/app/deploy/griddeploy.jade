@@ -200,4 +200,13 @@ script(type="text/ng-template", id="querySheet.html")
                     md-button.md-autofocus(ng-click="applyQueryResult()") Apply query result
                     md-button.md-autofocus(ng-click="cancel()") Cancel
                         
-        
+
+
+// Application log modal dialog
+script(type="text/ng-template", id="applog.html")
+  .modal-header
+    button(type="button", class="close", ng-click="cancel()") &times;
+    h4.modal-title Log of <strong>{{app.name}}</strong> at <strong>{{device.name}}</strong>
+  .modal-body
+    pre
+      | {{log}}

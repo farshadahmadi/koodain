@@ -63,12 +63,4 @@ liot-footer(current-page='deploy')
 //<liot-footer current-page='mydeploy'></liot-footer>
      
 
-// Application log modal dialog
-script(type="text/ng-template", id="applog.html")
-  .modal-header
-    button(type="button", class="close", ng-click="cancel()") &times;
-    h4.modal-title Log of <strong>{{app.name}}</strong> at <strong>{{device.name}}</strong>
-  .modal-body
-    pre
-      | {{log}}
 

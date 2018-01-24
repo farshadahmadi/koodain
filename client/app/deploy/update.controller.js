@@ -235,6 +235,19 @@ angular.module('koodainApp')
     };
 
 
+    $scope.openLogModal = function(device, app) {
+      $uibModal.open({
+        controller: 'AppLogCtrl',
+        templateUrl: 'applog.html',
+        resolve: {
+          device: device,
+          app: app,
+        }
+      }).result.then(null, function() {
+        clearInterval(app._logInterval);
+      });
+    };
+
     $scope.clearSelections = function() {
         $scope.installedApps.forEach(function(app){
             app.isRowSelected = false;
