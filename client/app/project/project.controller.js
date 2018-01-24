@@ -30,9 +30,9 @@ angular.module('koodainApp')
     $scope.resources = resources;
 
     // Added by Farshad for debugging
-    //console.log($scope.project);
-    //console.log($scope.files);
-    //console.log($scope.resources);
+    console.log($scope.project);
+    console.log($scope.files);
+    console.log($scope.resources);
 
     $scope.changeView = function(view){
       $state.go("deploy", {project:$scope.project.name});
@@ -330,8 +330,8 @@ angular.module('koodainApp')
       $scope.mainFile = mainJss[0];
 
       var c = $scope.mainFile.content
-      //console.log('c' + c);
-      //console.log(c.split("\n"));
+      console.log('c' + c);
+      console.log(c.split("\n"));
 
       /*var tree = esprima.parse($scope.mainFile.content, {comment:true, range:true, loc:true});
       var lines = $scope.mainFile.content.split("\n");
@@ -345,10 +345,10 @@ angular.module('koodainApp')
       $scope.mainFile.content = lines.join("\n");*/
       
       var lines = $scope.mainFile.content.split("\n");
-      //console.log(lines);
+      console.log(lines);
       lines.splice(lines.length - 1, 1);
       lines.splice(0, 1);
-      //console.log(lines);
+      console.log(lines);
       $scope.mainFile.content = lines.join("\n");
     }
 
