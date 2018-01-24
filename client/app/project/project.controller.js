@@ -151,7 +151,7 @@ angular.module('koodainApp')
 
     function turnMainToModule(f){
       //var firstLine = "module.exports = function(" + $scope.project.name  +"){\n";
-      var firstLine = "module.exports = function($app, $router, $request, console, listEndpoints, getEndpointDetails, event, getNumberOfEndpoints){\n";
+      var firstLine = "module.exports = function($app, $router, $request, console, listEndpoints){\n";
       var lastLine = "\n}";
       f.content = firstLine + f.content + lastLine;
     }
@@ -187,17 +187,7 @@ angular.module('koodainApp')
     var staticWordCompleter = {
       getCompletions: function(editor, session, pos, prefix, callback) {
         //if (prefix.length === 0) { callback(null, []); return };
-        var wordList = [
-          //{caption: "listEndpoints", snippet:"listEndpoints({groupName:'${1}', startOffset: ${2:1}, endOffset:${3:1}})\n\t.then(function(listOfEndpoints){\n\t\t${4}\n\t\ttaskCompleted()\n\t})\n\t.catch(function(error){\n\t\t${0}\n\t\ttaskCompleted()\n\t});"},
-          {caption: "listEndpoints", snippet:"listEndpoints({groupName:'${1}', startOffset: ${2:1}, endOffset:${0:1}})"},
-          //{caption: "getNumberOfEndpoints", snippet:"getNumberOfEndpoints({groupName:'${1}'})\n\t.then(function(${2:numberOfEndpoints}){\n\t\t${3}\n\t\ttaskCompleted()\n\t})\n\t.catch(function(error){\n\t\t${0}\n\t\ttaskCompleted()\n\t});"},
-          {caption: "getNumberOfEndpoints", snippet:"getNumberOfEndpoints({groupName:'${0}'})"},
-          //{caption: "getEndpointDetails", snippet:"getEndpointDetails({serialNumber:'${1}'})\n\t.then(function(${2:id}){\n\t\t${3}\n\t\ttaskCompleted()\n\t})\n\t.catch(function(error){\n\t\t${0}\n\t\ttaskCompleted()\n\t});"},
-          {caption: "getEndpointDetails", snippet:"getEndpointDetails({serialNumber:'${0}'})"},
-          {caption: "event", snippet:"event.on(${1:id}, function(${2:data}){\n\t${0}\n});"},
-          {caption: "then", snippet:".then(function(${1:res}){\n\t${0}\n})"},
-          {caption: "catch", snippet:".catch(function(${1:err}){\n\t${0}\n});"}
-        ];
+        var wordList = [{caption: "listEndpoints", snippet:"listEndpoints({groupName:'${1}', startOffset: ${2:0}, endOffset:${3:0}})\n\t.then(function(res){\n\t\t${4}\n\t\ttaskCompleted()\n\t})\n\t.catch(function(error){\n\t\t${0}\n\t\ttaskCompleted()\n\t});"}];
         callback(null, wordList.map(function(word) {
           return {
             caption: word.caption,
@@ -266,7 +256,7 @@ angular.module('koodainApp')
         fontSize: '11pt',
         enableBasicAutocompletion: true,
         enableSnippets: true,
-        enableLiveAutocompletion: false
+        enableLiveAutocompletion: true
       });
     };
 
