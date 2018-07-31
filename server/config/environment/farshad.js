@@ -9,7 +9,7 @@ module.exports = {
     },
   
   git: {
-          projects: '/home/liquid-iot/Desktop/workspace'
+          projects: '/home/farshad/Desktop/workspace'
     },
   
   seedDB: false
